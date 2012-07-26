@@ -13,10 +13,10 @@
 (defn three-sphere-in-front [this]
    (let [mat (Material. (.getAssetManager this)
                          "Common/MatDefs/Misc/Unshaded.j3md")
-          cam (.getCamera this)
-          rot (.getRotation cam)
-          loc (.getLocation cam)
-          root (.getRootNode this)]
+         cam (.getCamera this)
+         rot (.getRotation cam)
+         loc (.getLocation cam)
+         root (.getRootNode this)]
       (dotimes [x 3]
         (.attachChild root
           (geom :shape (Sphere. 16 16 1)
@@ -31,7 +31,7 @@
 (defn make-app []
   (proxy [SimpleApplication] []
     (simpleInitApp []
-      (input/on-key (.getInputManager this) KeyInput/KEY_F12
+      (input/on-key (.getInputManager this) :action KeyInput/KEY_F12
         [_ name value tpf]
         (three-sphere-in-front this)))))
  

@@ -8,6 +8,6 @@ FIXME: write
 
 ## License
 
-Copyright (C) 2012 FIXME
+Copyright (C) 2012 
 
 Distributed under the MIT License.

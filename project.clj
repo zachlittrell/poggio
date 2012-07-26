@@ -2,6 +2,7 @@
   :main davel.core
   :description "FIXME: write description"
   :repositories {"oss-sonatype" "https://oss.sonatype.org/content/repositories/snapshots/"}
+  :dev-dependencies [[lein-autodoc "0.9.0"]]
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [com.jme3/eventbus "3.0.0.20120512-SNAPSHOT"]
                  [com.jme3/j-ogg-oggd "3.0.0.20120512-SNAPSHOT"]

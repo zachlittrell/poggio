@@ -30,7 +30,7 @@
   [event trigger & trigger-args]
   (let [event-name (str event)]
     `(defmacro ~event [input-manager# type# ~@trigger-args bindings# ~'& body#]
-       (if-let [[listener-class# on-listener-call#] (listener-options type#)]
+       (let [[listener-class# on-listener-call#] (listener-options type#)]
          `(add-listener ~input-manager#
             (str "jme-clj~" ~~event-name (clojure.lang.RT/nextID))
             (reify ~listener-class#

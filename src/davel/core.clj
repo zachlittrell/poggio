@@ -31,9 +31,10 @@
 (defn make-app []
   (proxy [SimpleApplication] []
     (simpleInitApp []
-      (input/on-key (.getInputManager this) :action KeyInput/KEY_F12
-        [_ name value tpf]
-        (three-sphere-in-front this)))))
+      (doto (.getInputManager this)
+        (input/on-key* :action KeyInput/KEY_F12
+          [_ name value tpf]
+          (three-sphere-in-front this))))))
  
 
 (defn -main []

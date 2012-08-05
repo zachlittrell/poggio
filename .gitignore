@@ -9,3 +9,4 @@
 /.lein-deps-sum
 private*
 /autodoc
+/native

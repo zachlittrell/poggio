@@ -1,10 +1,10 @@
 (ns davel.core
   (:use [jme-clj [geometry :only [geom]]]
-        [nifty-clj [nifty :only [screen
-                                 layer
-                                 panel
-                                 text
-                                 button]]])
+        [nifty-clj [builders :only [screen
+                                    layer
+                                    panel
+                                    text
+                                    button]]])
   (:require [jme-clj.input :as input])
   (:import (com.jme3.app SimpleApplication)
            (com.jme3.input KeyInput)

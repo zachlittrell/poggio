@@ -1,8 +1,9 @@
-(ns nifty-clj.nifty
+(ns nifty-clj.builders
   (:use [functions.utilities :only [no-op]]
-        [control.defhelpers :only [def-opts-constructor]])
+        [control.defutilities :only [def-opts-constructor]])
   (:import [de.lessvoid.nifty Nifty]
-           [de.lessvoid.nifty.builder ElementBuilder 
+           [de.lessvoid.nifty.builder EffectBuilder
+                                      ElementBuilder 
                                       ElementBuilder$Align
                                       ElementBuilder$ChildLayoutType
                                       ElementBuilder$VAlign
@@ -111,6 +112,58 @@
                  name]
   (.name element-build name))
 
+(defn set-active-effect![^ElementBuilder element-build
+                        ^EffectBuilder effect]
+  (.onActiveEffect element-build effect))
+
+(defn set-click-effect![^ElementBuilder element-build
+                       ^EffectBuilder effect]
+  (.onClickEffect element-build effect))
+
+(defn set-custom-effect![^ElementBuilder element-build
+                        ^EffectBuilder effect]
+  (.onCustomEffect element-build effect))
+
+(defn set-end-hover-effect![^ElementBuilder element-build
+                           ^EffectBuilder effect]
+  (.onEndHoverEffect element-build effect))
+
+(defn set-end-screen-effect![^ElementBuilder element-build
+                            ^EffectBuilder effect]
+  (.onEndScreenEffect element-build effect))
+
+(defn set-focus-effect![^ElementBuilder element-build
+                       ^EffectBuilder effect]
+  (.onFocusEffect element-build effect))
+
+(defn set-get-focus-effect![^ElementBuilder element-build
+                           ^EffectBuilder effect]
+  (.onGetFocusEffect element-build effect))
+
+(defn set-hide-effect![^ElementBuilder element-build
+                        ^EffectBuilder effect]
+  (.onHideEffect element-build effect))
+
+(defn set-hover-effect![^ElementBuilder element-build
+                        ^EffectBuilder effect]
+  (.onHoverEffect element-build effect))
+
+(defn set-lost-focus-effect![^ElementBuilder element-build
+                        ^EffectBuilder effect]
+  (.onLostFocusEffect element-build effect))
+
+(defn set-show-effect![^ElementBuilder element-build
+                       ^EffectBuilder effect]
+  (.onShowEffect element-build effect))
+
+(defn set-start-hover-effect![^ElementBuilder element-build
+                        ^EffectBuilder effect]
+  (.onStartHoverEffect element-build effect))
+
+(defn set-start-screen-effect![^ElementBuilder element-build
+                        ^EffectBuilder effect]
+  (.onStartScreenEffect element-build effect))
+
 (defn set-padding! [^ElementBuilder element-build
                     padding]
   (.padding element-build padding))
@@ -178,40 +231,53 @@
 
 
 (def element-builder-handlers
-  {:align             set-align!
-   :background-color  set-background-color!
-   :background-image  set-background-image!
-   :child-layout      set-child-layout!
-   :child-clip?       set-child-clip!
-   :color             set-color!
-   :controls          add-controls!
-   :controller        set-controller!
-   :filename          set-filename!
-   :focusable?        set-focusable! 
-   :font              set-font!
-   :height            set-height!
-   :images            add-images!
-   :image-mode        set-image-mode!
-   :input-mapping     set-input-mapping!
-   :inset             set-inset!
-   :name              set-name!
-   :padding           set-padding!
-   :padding-bottom    set-padding-bottom!
-   :padding-left      set-padding-left!
-   :padding-right     set-padding-right!
-   :padding-top       set-padding-top!
-   :panels            add-panels!
-   :selection-color   set-selection-color!
-   :style             set-style!
-   :text              set-text!
-   :text-halign       set-text-halign!
-   :text-valign       set-text-valign!
-   :valign            set-valign!
-   :visible?          set-visible!
-   :visible-to-mouse? set-visible-to-mouse!
-   :width             set-width!
-   :x                 set-x!
-   :y                 set-y!})
+  {:align               set-align!
+   :background-color    set-background-color!
+   :background-image    set-background-image!
+   :child-layout        set-child-layout!
+   :child-clip?         set-child-clip!
+   :color               set-color!
+   :controls            add-controls!
+   :controller          set-controller!
+   :filename            set-filename!
+   :focusable?          set-focusable! 
+   :font                set-font!
+   :height              set-height!
+   :images              add-images!
+   :image-mode          set-image-mode!
+   :input-mapping       set-input-mapping!
+   :inset               set-inset!
+   :name                set-name!
+   :active-effect       set-active-effect!
+   :click-effect        set-click-effect!
+   :custom-effect       set-custom-effect!
+   :end-hover-effect    set-end-hover-effect!
+   :end-screen-effect   set-end-screen-effect!
+   :focus-effect        set-focus-effect!
+   :get-focus-effect    set-get-focus-effect!
+   :hide-effect         set-hide-effect!
+   :hover-effect        set-hover-effect!
+   :lost-focus-effect   set-lost-focus-effect!
+   :show-effect         set-show-effect!
+   :start-hover-effect  set-start-hover-effect!
+   :start-screen-effect set-start-screen-effect!
+   :padding             set-padding!
+   :padding-bottom      set-padding-bottom!
+   :padding-left        set-padding-left!
+   :padding-right       set-padding-right!
+   :padding-top         set-padding-top!
+   :panels              add-panels!
+   :selection-color     set-selection-color!
+   :style               set-style!
+   :text                set-text!
+   :text-halign         set-text-halign!
+   :text-valign         set-text-valign!
+   :valign              set-valign!
+   :visible?            set-visible!
+   :visible-to-mouse?   set-visible-to-mouse!
+   :width               set-width!
+   :x                   set-x!
+   :y                   set-y!})
 
 (defmacro def-element-builder [name defaults constructor handlers]
   `(def-opts-constructor ~name ~defaults ~constructor
@@ -220,26 +286,28 @@
 (def-element-builder layer
   {:id "layer generated LayerBuilder"}
   (LayerBuilder. id)
-  {})
+  {:id no-op})
 
 (def-element-builder panel
   {:id "panel generated PanelBuilder"}
   (PanelBuilder. id)
-  {})
+  {:id no-op})
 
 (def-element-builder image
   {:id "image generated ImageBuilder"}
   (ImageBuilder. id)
-  {})
+  {:id no-op})
 
 (def-element-builder text
   {:id "text-generated TextBuilder"}
   (TextBuilder. id)
-  {:wrap? (fn [^TextBuilder text-build wrap?]
+  {:id    no-op
+   :wrap? (fn [^TextBuilder text-build wrap?]
             (.wrap text-build wrap?))})
 
 (def-element-builder button
   {:id    "button-generated ButtonBuilder"
    :label "Click here"}
   (ButtonBuilder. id label)
-  {:label no-op})
+  {:id    no-op
+   :label no-op})

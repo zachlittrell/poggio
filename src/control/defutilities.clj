@@ -1,4 +1,4 @@
-(ns control.defhelpers
+(ns control.defutilities
   (:use [control.io :only [err-println]]))
 
 (defn keyword->symbol

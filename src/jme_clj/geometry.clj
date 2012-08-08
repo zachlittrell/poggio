@@ -1,6 +1,6 @@
 (ns jme-clj.geometry
   (:use [functions.utilities :only [no-op]]
-        [control.defhelpers :only [def-opts-constructor]])
+        [control.defutilities :only [def-opts-constructor]])
   (:import [com.jme3.material Material] 
            [com.jme3.math Vector3f]
            [com.jme3.scene Geometry]

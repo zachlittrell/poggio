@@ -1,12 +1,18 @@
 (ns davel.core
-  (:use [jme-clj [geometry :only [geom]]])
+  (:use [jme-clj [geometry :only [geom]]]
+        [nifty-clj [nifty :only [screen
+                                 layer
+                                 panel
+                                 text
+                                 button]]])
   (:require [jme-clj.input :as input])
   (:import (com.jme3.app SimpleApplication)
            (com.jme3.input KeyInput)
            (com.jme3.math ColorRGBA Vector3f)
            (com.jme3.material Material)
            (com.jme3.scene Geometry)
-           (com.jme3.scene.shape Sphere)))
+           (com.jme3.scene.shape Sphere)
+           (com.jme3.niftygui.NiftyJmeDisplay)))
 
        
 
@@ -31,11 +37,23 @@
 (defn make-app []
   (proxy [SimpleApplication] []
     (simpleInitApp []
+
       (doto (.getInputManager this)
         (input/on-key* :action KeyInput/KEY_F12
           [_ name value tpf]
           (three-sphere-in-front this))))))
  
+
+(defn build-gui []
+  (screen :id "My Screen!"
+          :layers
+           [(layer :id "My layer!"
+                   :panels
+                    [(panel :id "My panel!"
+                            :controls
+                             [(button "My Button!"
+                                      "Click me, puh-lease!")])])]))
+
 
 (defn -main []
   (doto (make-app)

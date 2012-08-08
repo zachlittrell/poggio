@@ -1,4 +1,6 @@
 (ns jme-clj.input
+  (:use [clojure.core.match :only [match]]
+        [jme-clj.collision :only [closest-collision-from-camera]])
   (:import [com.jme3.input InputManager]
            [com.jme3.input.controls ActionListener
                                     AnalogListener
@@ -59,7 +61,7 @@
 (def-trigger-event* on-mouse-button MouseButtonTrigger mouse-button)
 (def-trigger-event* on-mouse-axis MouseAxisTrigger mouse-axis negative)
 
-(def trigger-event-to-trigger
+(def trigger-event->trigger
   {:on-key          KeyTrigger
    :on-mouse-button MouseButtonTrigger
    :on-mouse-axis   MouseAxisTrigger})
@@ -69,4 +71,43 @@
    :on-mouse-button `on-mouse-button
    :on-mouse-axis   `on-mouse-axis})
 
+(defn on-select-action-code
+  "Returns the code to be used by on-select-listener for
+   handling different types of actions."
+  [input-manager key action]
+  (match (seq action)
+    ([:on-key type key-code bindings & body] :seq)
+      `(on-key ~input-manager ~type ~key ~key-code ~bindings ~@body)
+    ([:on-mouse-button type mouse-button bindings & body] :seq)
+      `(on-mouse-button ~input-manager ~type ~key ~mouse-button ~bindings ~@body)
+    ([:on-mouse-axis type mouse-axis negative bindings & body] :seq)
+      `(on-mouse-axis ~input-manager ~type ~key ~mouse-axis ~negative ~bindings ~@body)))
 
+(defmacro on-select-listener[input-manager camera collidables name & actions]
+  (let [id (clojure.lang.RT/nextID)
+        mappings (map-indexed (fn [index [action-name & _]]
+                                [(str "on-select-listener-"
+                                      id
+                                      "-" index)
+                                 (trigger-event->trigger action-name)]) actions)
+        manager (gensym "manager")
+        add-actions (map-indexed
+                      (fn [index action]
+                        (on-select-action-code
+                          manager
+                          (str "on-select-listener-"
+                                id
+                                "-" index)
+                          action))
+                         actions)]
+    `(let [~manager ~input-manager
+           collidables# ~collidables
+           camera# ~camera]
+       (reify ActionListener
+         (onAction [_ _ _ _]
+           (doseq [[name# trigger#] ~mappings]
+             (.deleteTrigger ~manager name# trigger#))
+           (when-let [~name (closest-collision-from-camera
+                              camera#
+                              collidables#)]
+             ~@add-actions))))))

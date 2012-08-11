@@ -1,6 +1,14 @@
 (ns nifty-clj.builders
   (:use [functions.utilities :only [no-op]]
-        [control.defutilities :only [def-opts-constructor]])
+        [control.defutilities :only [def-opts-constructor
+                                     keyword->adder-defn-form
+                                     keyword->adder-symbol
+                                     keyword->setter-defn-form
+                                     predicate-keyword->setter-symbol
+                                     keyword->setter-symbol
+                                     def-directive-map
+                                     default-director
+                                     default-directives-map]])
   (:import [de.lessvoid.nifty Nifty]
            [de.lessvoid.nifty.builder EffectBuilder
                                       ElementBuilder 
@@ -34,267 +42,115 @@
    :overlay        ElementBuilder$ChildLayoutType/Overlay
    :vertical       ElementBuilder$ChildLayoutType/Vertical})
 
-(defn set-child-layout! [^ElementBuilder element-build layout-keyword]
-  (.childLayout element-build 
-                (child-layout-keyword->child-layout layout-keyword)))
-
-
 (def align-keyword->align
   {:center ElementBuilder$Align/Center
    :left   ElementBuilder$Align/Left
    :right  ElementBuilder$Align/Right})
-
-(defn set-align! [^ElementBuilder element-build align-keyword]
-  (.align element-build
-          (align-keyword->align align-keyword)))
 
 (def valign-keyword->valign
   {:bottom ElementBuilder$VAlign/Bottom
    :center ElementBuilder$VAlign/Center
    :top    ElementBuilder$VAlign/Top})
 
-(defn set-valign! [^ElementBuilder element-build valign-keyword]
-  (.valign element-build
-           (valign-keyword->valign valign-keyword)))
+(def keyword->align-setter-defn-form
+  (partial keyword->setter-defn-form
+           (partial list `align-keyword->align)))
 
-(defn set-width! [^ElementBuilder element-build ^String width]
-  (.width element-build width))
+(def keyword->child-layout-setter-defn-form
+  (partial keyword->setter-defn-form
+           (partial list `child-layout-keyword->child-layout)))
 
-(defn set-height! [^ElementBuilder element-build ^String height]
-  (.height element-build height))
+(def keyword->valign-setter-defn-form
+  (partial keyword->setter-defn-form
+           (partial list `valign-keyword->valign)))
 
-(defn set-background-color! [^ElementBuilder element-build
-                            color]
-  (.backgroundColor element-build color))
-
-(defn set-background-image! [^ElementBuilder element-build
-                             backgroundImage]
-  (.backgroundImage element-build backgroundImage))
-
-(defn set-child-clip! [^ElementBuilder element-build
-                       child-clip?]
-  (.childClip element-build child-clip?))
-
-(defn set-color! [^ElementBuilder element-build
-                  color]
-  (.color element-build color))
-
-(defn set-controller! [^ElementBuilder element-build
-                       controller]
-  (.controller element-build controller))
-
-(defn set-filename! [^ElementBuilder element-build
-                     filename]
-  (.filename element-build filename))
-
-
-(defn set-focusable! [^ElementBuilder element-build
-                      focusable?]
-  (.focusable element-build focusable?))
-
-(defn set-font! [^ElementBuilder element-build
-                 font]
-  (.font element-build font))
-
-(defn set-input-mapping! [^ElementBuilder element-build
-                          mapping]
-  (.inputMapping element-build mapping))
-
-(defn set-image-mode! [^ElementBuilder element-build
-                       image-mode]
-  (.imageMode element-build image-mode))
-
-(defn set-inset! [^ElementBuilder element-build
-                  inset]
-  (.inset element-build inset))
-
-(defn set-name! [^ElementBuilder element-build
-                 name]
-  (.name element-build name))
-
-(defn set-active-effect![^ElementBuilder element-build
-                        ^EffectBuilder effect]
-  (.onActiveEffect element-build effect))
-
-(defn set-click-effect![^ElementBuilder element-build
-                       ^EffectBuilder effect]
-  (.onClickEffect element-build effect))
-
-(defn set-custom-effect![^ElementBuilder element-build
-                        ^EffectBuilder effect]
-  (.onCustomEffect element-build effect))
-
-(defn set-end-hover-effect![^ElementBuilder element-build
-                           ^EffectBuilder effect]
-  (.onEndHoverEffect element-build effect))
-
-(defn set-end-screen-effect![^ElementBuilder element-build
-                            ^EffectBuilder effect]
-  (.onEndScreenEffect element-build effect))
-
-(defn set-focus-effect![^ElementBuilder element-build
-                       ^EffectBuilder effect]
-  (.onFocusEffect element-build effect))
-
-(defn set-get-focus-effect![^ElementBuilder element-build
-                           ^EffectBuilder effect]
-  (.onGetFocusEffect element-build effect))
-
-(defn set-hide-effect![^ElementBuilder element-build
-                        ^EffectBuilder effect]
-  (.onHideEffect element-build effect))
-
-(defn set-hover-effect![^ElementBuilder element-build
-                        ^EffectBuilder effect]
-  (.onHoverEffect element-build effect))
-
-(defn set-lost-focus-effect![^ElementBuilder element-build
-                        ^EffectBuilder effect]
-  (.onLostFocusEffect element-build effect))
-
-(defn set-show-effect![^ElementBuilder element-build
-                       ^EffectBuilder effect]
-  (.onShowEffect element-build effect))
-
-(defn set-start-hover-effect![^ElementBuilder element-build
-                        ^EffectBuilder effect]
-  (.onStartHoverEffect element-build effect))
-
-(defn set-start-screen-effect![^ElementBuilder element-build
-                        ^EffectBuilder effect]
-  (.onStartScreenEffect element-build effect))
-
-(defn set-padding! [^ElementBuilder element-build
-                    padding]
-  (.padding element-build padding))
-
-(defn set-padding-bottom! [^ElementBuilder element-build
-                           padding]
-  (.paddingBottom element-build padding))
-
-(defn set-padding-left! [^ElementBuilder element-build
-                          padding]
-  (.paddingLeft element-build padding))
-
-(defn set-padding-right! [^ElementBuilder element-build
-                          padding]
-  (.paddingRight element-build padding))
-
-(defn set-padding-top! [^ElementBuilder element-build
-                          padding]
-  (.paddingTop element-build padding))
-
-(defn set-selection-color! [^ElementBuilder element-build
-                            color]
-  (.selectionColor element-build color))
-
-(defn set-style! [^ElementBuilder element-build
-                  style]
-  (.style element-build style))
-
-(defn set-text! [^ElementBuilder element-build
-                 text]
-  (.text element-build text))
-
-(defn set-text-halign! [^ElementBuilder element-build
-                       align-keyword]
-  (.textHAlign element-build (align-keyword->align align-keyword)))
-
-(defn set-text-valign! [^ElementBuilder element-build
-                        valign-keyword]
-  (.textVAlign element-build (valign-keyword->valign valign-keyword)))
-
-(defn set-visible! [^ElementBuilder element-build
-                    visible?]
-  (.visible element-build visible?))
-
-(defn set-visible-to-mouse! [^ElementBuilder element-build
-                             visible?]
-  (.visibleToMouse element-build visible?))
-
-(defn set-x! [^ElementBuilder element-build
-              x]
-  (.x element-build x))
-
-(defn set-y! [^ElementBuilder element-build
-              y]
-  (.y element-build y))
-
-(defn add-images![^ElementBuilder element-build images]
-  (doseq [image images] (.image element-build image)))
-
-(defn add-panels! [^ElementBuilder element-build panels]
-  (doseq [panel panels] (.panel element-build panel)))
-
-(defn add-controls! [^ElementBuilder element-build controls]
-  (doseq [control controls] (.control element-build control)))
-
+(def-directive-map element-builder-directives-map
+  (let [setter-map (:setter default-directives-map)]
+    (assoc default-directives-map
+           :align-setter 
+              (assoc setter-map
+                     :form keyword->align-setter-defn-form)
+           :child-layout-setter
+              (assoc setter-map
+                     :form keyword->child-layout-setter-defn-form)
+           :valign-setter
+              (assoc setter-map
+                     :form keyword->valign-setter-defn-form)
+           :predicate-setter
+              (assoc setter-map
+                     :name predicate-keyword->setter-symbol)))
+    default-director)
 
 (def element-builder-handlers
-  {:align               set-align!
-   :background-color    set-background-color!
-   :background-image    set-background-image!
-   :child-layout        set-child-layout!
-   :child-clip?         set-child-clip!
-   :color               set-color!
-   :controls            add-controls!
-   :controller          set-controller!
-   :filename            set-filename!
-   :focusable?          set-focusable! 
-   :font                set-font!
-   :height              set-height!
-   :images              add-images!
-   :image-mode          set-image-mode!
-   :input-mapping       set-input-mapping!
-   :inset               set-inset!
-   :name                set-name!
-   :active-effect       set-active-effect!
-   :click-effect        set-click-effect!
-   :custom-effect       set-custom-effect!
-   :end-hover-effect    set-end-hover-effect!
-   :end-screen-effect   set-end-screen-effect!
-   :focus-effect        set-focus-effect!
-   :get-focus-effect    set-get-focus-effect!
-   :hide-effect         set-hide-effect!
-   :hover-effect        set-hover-effect!
-   :lost-focus-effect   set-lost-focus-effect!
-   :show-effect         set-show-effect!
-   :start-hover-effect  set-start-hover-effect!
-   :start-screen-effect set-start-screen-effect!
-   :padding             set-padding!
-   :padding-bottom      set-padding-bottom!
-   :padding-left        set-padding-left!
-   :padding-right       set-padding-right!
-   :padding-top         set-padding-top!
-   :panels              add-panels!
-   :selection-color     set-selection-color!
-   :style               set-style!
-   :text                set-text!
-   :text-halign         set-text-halign!
-   :text-valign         set-text-valign!
-   :valign              set-valign!
-   :visible?            set-visible!
-   :visible-to-mouse?   set-visible-to-mouse!
-   :width               set-width!
-   :x                   set-x!
-   :y                   set-y!})
+  (element-builder-directives-map 
+    [:align                  :align-setter]
+    [:background-color       :setter]
+    [:background-image       :setter]
+    [:child-layout           :child-layout-setter]
+    [:child-clip?            :predicate-setter]
+    [:color                  :setter]
+    [:controls               :adder]
+    [:controller             :setter]
+    [:filename               :setter]
+    [:focusable?             :predicate-setter]
+    [:font                   :setter]
+    [:height                 :setter]
+    [:images                 :adder]
+    [:image-mode             :setter]
+    [:input-mapping          :setter]
+    [:inset                  :setter]
+    [:name                   :setter]
+    [:on-active-effect       :setter]
+    [:on-click-effect        :setter]
+    [:on-custom-effect       :setter]
+    [:on-end-hover-effect    :setter]
+    [:on-end-screen-effect   :setter]
+    [:on-focus-effect        :setter]
+    [:on-get-focus-effect    :setter]
+    [:on-hide-effect         :setter]
+    [:on-hover-effect        :setter]
+    [:on-lost-focus-effect   :setter]
+    [:on-show-effect         :setter]
+    [:on-start-hover-effect  :setter]
+    [:on-start-screen-effect :setter]
+    [:padding                :setter]
+    [:padding-bottom         :setter]
+    [:padding-left           :setter]
+    [:padding-right          :setter]
+    [:padding-top            :setter]
+    [:panels                 :adder]
+    [:selection-color        :setter]
+    [:style                  :setter]
+    [:text                   :setter]
+    [:text-halign            :align-setter]
+    [:text-valign            :valign-setter]
+    [:valign                 :valign-setter]
+    [:visible?               :predicate-setter]
+    [:visible-to-mouse?      :predicate-setter]
+    [:width                  :setter]
+    [:x                      :setter]
+    [:y                      :setter]))
 
-(defmacro def-element-builder [name defaults constructor handlers]
+(defmacro def-element-builder 
+  "This macro creates a function similar to 
+   def-opts-constructor, except it merges the handlers
+   with element-builder-handlers."
+  [name defaults constructor handlers]
   `(def-opts-constructor ~name ~defaults ~constructor
                          (merge element-builder-handlers ~handlers)))
 
 (def-element-builder layer
-  {:id "layer generated LayerBuilder"}
+  {:id "layer-generated LayerBuilder"}
   (LayerBuilder. id)
   {:id no-op})
 
 (def-element-builder panel
-  {:id "panel generated PanelBuilder"}
+  {:id "panel-generated PanelBuilder"}
   (PanelBuilder. id)
   {:id no-op})
 
 (def-element-builder image
-  {:id "image generated ImageBuilder"}
+  {:id "image-generated ImageBuilder"}
   (ImageBuilder. id)
   {:id no-op})
 

@@ -96,19 +96,26 @@
         (doseq [addend# ~val-sym*]
           (~fn-name instance# addend#))))))
 
-(def default-directives-map
+(def ^{:doc "The default directives used by directive maps."}
+  default-directives-map
   {:setter {:name keyword->setter-symbol
             :form keyword->setter-defn-form}
    :adder  {:name keyword->adder-symbol
             :form keyword->adder-defn-form}})
 
 (defn default-director
+  "The default director for computing directives. Expects
+   directives to have a function for :name and :form,
+   where ((:name directive) key) returns a name, while 
+   ((:form directive) name key) returns a form to be computed.
+   Returns a form that computes the directive's form and returns
+   a vector that pairs the key with name."
   [key directive]
   (let [name ((:name directive) key)
         form ((:form directive) name key)]
     `(do 
        ~form
-       (vector ~key ~name))))
+       [~key ~name])))
 
 (defmacro def-directive-map
   "Creates a macro called name that takes directives of the form

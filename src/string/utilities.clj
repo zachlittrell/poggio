@@ -1,4 +1,5 @@
-(ns string.utilities)
+(ns string.utilities
+  (:require [clojure.string :as str]))
 
 (defn upper-case-word [word]
   "Returns the word with the first letter
@@ -31,3 +32,10 @@
                            (lower-case-word word))
                 (map upper-case-word words)))))
 
+(defn split-camel-case
+  "Takes a word in camel-case (either upper or lower)
+   and returns it split into a vector. Note,
+   this expects it to be true camel-case and cannot handle
+   certain cases like HTMLEditorKit properly."
+  [s]
+  (str/split s #"(?<!^)(?=[A-Z])")) 

@@ -9,7 +9,13 @@
                                      def-directive-map
                                      default-director
                                      default-directives-map]])
-  (:import [de.lessvoid.nifty Nifty]
+  (:import [com.jme3.app Application] 
+           [com.jme3.asset AssetManager]
+           [com.jme3.audio AudioRenderer]
+           [com.jme3.input InputManager]
+           [com.jme3.niftygui NiftyJmeDisplay]
+           [com.jme3.renderer ViewPort]
+           [de.lessvoid.nifty Nifty]
            [de.lessvoid.nifty.builder EffectBuilder
                                       ElementBuilder 
                                       ElementBuilder$Align
@@ -21,8 +27,42 @@
                                       PanelBuilder
                                       TextBuilder]
            [de.lessvoid.nifty.controls.button.builder ButtonBuilder]
+           [de.lessvoid.nifty.controls.checkbox.builder CheckboxBuilder]
+           [de.lessvoid.nifty.controls.label.builder LabelBuilder]
+           [de.lessvoid.nifty.controls.scrollpanel.builder ScrollPanelBuilder]
+           [de.lessvoid.nifty.controls.textfield.builder TextFieldBuilder]
            [de.lessvoid.nifty.screen DefaultScreenController
                                      ScreenController]))
+
+
+(defprotocol NiftyJmeDisplayer
+  (asset-manager [this])
+  (input-manager [this])
+  (audio-renderer [this])
+  (view-port [this]))
+
+(extend-type Application
+  NiftyJmeDisplayer
+  (asset-manager [app] (.getAssetManager app))
+  (input-manager [app] (.getInputManager app))
+  (audio-renderer [app] (.getAudioRenderer app))
+  (view-port [app] (.getGuiViewPort app)))
+
+(defn nifty-jme-display
+  "Returns a new NiftyJmeDisplay object using the given
+   arguments. You can instead send an object that implements
+   the NiftyJmeDisplayer protocol to provide the arguments."
+  ([displayer]
+   (nifty-jme-display (asset-manager displayer)
+                      (input-manager displayer)
+                      (audio-renderer displayer)
+                      (view-port displayer)))
+  ([^AssetManager asset-manager ^InputManager input-manager
+    ^AudioRenderer audio-renderer ^ViewPort view-port]
+   (NiftyJmeDisplay. asset-manager
+                     input-manager
+                     audio-renderer
+                     view-port)))
 
 (def-opts-constructor screen
   {:id "screen-builder generated ScreenBuilder"
@@ -35,12 +75,12 @@
                (.layer screen-build layer)))})
 
 (def child-layout-keyword->child-layout
-  {:absolute       ElementBuilder$ChildLayoutType/Absolute
-   :asolute-inside ElementBuilder$ChildLayoutType/AbsoluteInside
-   :center         ElementBuilder$ChildLayoutType/Center
-   :horizontal     ElementBuilder$ChildLayoutType/Horizontal
-   :overlay        ElementBuilder$ChildLayoutType/Overlay
-   :vertical       ElementBuilder$ChildLayoutType/Vertical})
+  {:absolute        ElementBuilder$ChildLayoutType/Absolute
+   :absolute-inside ElementBuilder$ChildLayoutType/AbsoluteInside
+   :center          ElementBuilder$ChildLayoutType/Center
+   :horizontal      ElementBuilder$ChildLayoutType/Horizontal
+   :overlay         ElementBuilder$ChildLayoutType/Overlay
+   :vertical        ElementBuilder$ChildLayoutType/Vertical})
 
 (def align-keyword->align
   {:center ElementBuilder$Align/Center
@@ -167,3 +207,75 @@
   (ButtonBuilder. id label)
   {:id    no-op
    :label no-op})
+
+(def-element-builder label
+  {:id "label-generated LabelBuilder"
+   :text "Label"}
+  (LabelBuilder. id)
+  {:id no-op})
+
+(def-element-builder checkbox
+  {:id "checkbox-generated CheckboxBuilder"}
+  (CheckboxBuilder. id)
+  {:id no-op
+   :checked? (fn [^CheckboxBuilder checkbox-build
+                  checked?]
+               (.checked checkbox-build checked?))})
+
+(def-element-builder scroll-panel
+  {:id "scroll-panel-generated ScrollPanelBuilder"}
+  (ScrollPanelBuilder. id)
+  {:id no-op})
+   
+(def-element-builder text-field
+  {:id "text-field-generated TextFieldBuilder"}
+  (TextFieldBuilder. id)
+  {:id no-op
+   :max-length (fn [^TextFieldBuilder text-field-build
+                    max-length]
+                 (.maxLength text-field-build max-length))
+   :password-char (fn [^TextFieldBuilder text-field-build
+                       password-char]
+                    (.passwordChar text-field-build password-char))})
+
+(def-opts-constructor effect
+  {:effect-name "fade"}
+  (EffectBuilder. effect-name)
+  {:alternate-disable (fn [^EffectBuilder effect-build
+                           alternate-disable]
+                        (.alternateDisable effect-build
+                                           alternate-disable))
+   :alternate-enable (fn [^EffectBuilder effect-build
+                          alternate-enable]
+                       (.alternateEnable effect-build
+                                         alternate-enable))
+   :effect-name no-op
+   :effect-parameters (fn [^EffectBuilder effect-build
+                           parameter-map]
+                        (doseq [[key val] parameter-map]
+                          (.effectParameter key val)))
+   :inherit? (fn [^EffectBuilder effect-build
+                  inherit?]
+               (.inherit effect-build inherit?))
+   :length (fn [^EffectBuilder effect-build
+                milliseconds]
+             (.length effect-build milliseconds))
+   :never-stop-rendering? (fn [^EffectBuilder effect-build
+                               never-stop-rendering?]
+                            (.neverStopRendering effect-build
+                                                 never-stop-rendering?))
+   :one-shot? (fn [^EffectBuilder effect-build
+                   one-shot?]
+                (.oneShot effect-build one-shot?))
+   :overlay? (fn [^EffectBuilder effect-build
+                  overlay?]
+               (.overlay effect-build overlay?))
+   :post? (fn [^EffectBuilder effect-build
+               post?]
+            (.post effect-build post?))
+   :start-delay (fn [^EffectBuilder effect-build
+                     start-delay]
+                  (.startDelay effect-build start-delay))
+   :time-type (fn [^EffectBuilder effect-build
+                   time-type]
+                (.timeType effect-build time-type))})

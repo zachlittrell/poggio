@@ -44,17 +44,6 @@
           (three-sphere-in-front this))))))
  
 
-(defn build-gui []
-  (screen :id "My Screen!"
-          :layers
-           [(layer :id "My layer!"
-                   :panels
-                    [(panel :id "My panel!"
-                            :controls
-                             [(button "My Button!"
-                                      "Click me, puh-lease!")])])]))
-
-
 (defn -main []
   (doto (make-app)
         (.start)))

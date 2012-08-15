@@ -1,7 +1,7 @@
 (ns string.utilities
   (:require [clojure.string :as str]))
 
-(defn upper-case-word [word]
+(defn upper-case-word [^String word]
   "Returns the word with the first letter
    capitalized."
   (if (zero? (.length word))
@@ -9,7 +9,7 @@
     (str (Character/toUpperCase (.charAt word 0))
          (.substring word 1))))
 
-(defn lower-case-word [word]
+(defn lower-case-word [^String word]
   "Returns the word with the first letter
    lowercase."
   (if (zero? (.length word))

@@ -1,5 +1,6 @@
 (ns control.defutilities
   (:use [control.io :only [err-println]]
+        [functions.utilities :only [no-op]]
         [string.utilities :only [dash->camel-case]]))
 
 (defn keyword->symbol
@@ -56,6 +57,24 @@
          val-sym* (f val-sym)]
      `(defn ~setter-name [instance# ~val-sym]
         (~fn-name instance# ~val-sym*)))))
+
+(defn predicate-keyword->defsetter-form
+  "Returns the form from keyword->defsetter-form,
+   but with the predicate part of the keyword properly trimmed."
+  ([setter-name keyword]
+   (predicate-keyword->defsetter-form identity setter-name keyword))
+  ([f setter-name setter-keyword]
+   (let [name (name setter-keyword)]
+     (keyword->defsetter-form 
+       f
+       setter-name
+       (keyword (.substring name 0 (dec (.length name))))))))
+
+(defmacro defsetter 
+  "Defines a function of the form returned by
+   (keyword->defsetter-form setter-name keyword."
+  [setter-name keyword]
+  (keyword->defsetter-form setter-name keyword))
      
 
 (defn keyword->adder-symbol 
@@ -86,12 +105,46 @@
         (doseq [addend# ~val-sym*]
           (~fn-name instance# addend#))))))
 
+(defmacro defadder 
+ "Defines a function with the form of (keyword->defadder-form adder-name keyword)"
+  [adder-name keyword]
+  (keyword->defadder-form adder-name keyword))
+
+(defn keyword->def-map-adder-form
+  "The same as keyword->defadder-form, except the resulting
+   function takes a map and applies its key and vector to
+   the internal function."
+  ([adder-name keyword]
+   (keyword->def-map-adder-form identity adder-name keyword))
+  ([f adder-name keyword]
+   (let [name (name keyword)
+         fn-name (symbol (str "." (-> name
+                                    (.substring 0 (dec (.length name)))
+                                    (dash->camel-case))))
+         val-sym (gensym "val")
+         val-sym* (f val-sym)]
+     `(defn ~adder-name [instance# ~val-sym]
+        (doseq [[key# val#] ~val-sym*]
+          (~fn-name instance# key# val#))))))
+
+(defmacro def-map-adder
+  "Defines a function with the form of 
+  (keyword->def-map-adder-form adder-name keyword)"
+  [adder-name keyword]
+  (keyword->def-map-adder-form adder-name keyword))
+
 (def ^{:doc "The default directives used by directive maps."}
   default-directives-map
-  {:setter {:name keyword->setter-symbol
-            :form keyword->defsetter-form}
-   :adder  {:name keyword->adder-symbol
-            :form keyword->defadder-form}})
+  {:setter           {:name keyword->setter-symbol
+                      :form keyword->defsetter-form}
+   :predicate-setter {:name predicate-keyword->setter-symbol
+                      :form predicate-keyword->defsetter-form}
+   :adder            {:name keyword->adder-symbol
+                      :form keyword->defadder-form}
+   :no-op            {:name (constantly `no-op)
+                      :form (constantly `nil)}
+   :map-adder        {:name keyword->adder-symbol
+                      :form keyword->def-map-adder-form}})
 
 (defn default-director
   "The default director for computing directives. Expects

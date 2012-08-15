@@ -1,8 +1,10 @@
 (ns nifty-clj.builders
   (:use [functions.utilities :only [no-op]]
         [control.defutilities :only [def-opts-constructor
+                                     defadder
                                      keyword->defadder-form
                                      keyword->adder-symbol
+                                     defsetter
                                      keyword->defsetter-form
                                      predicate-keyword->setter-symbol
                                      keyword->setter-symbol
@@ -132,10 +134,7 @@
                      :form keyword->def-child-layout-setter-form)
            :valign-setter
               (assoc setter-map
-                     :form keyword->def-valign-setter-form)
-           :predicate-setter
-              (assoc setter-map
-                     :name predicate-keyword->setter-symbol)))
+                     :form keyword->def-valign-setter-form)))
     default-director)
 
 (defn nifty-method-invoker
@@ -219,12 +218,12 @@
   (ImageBuilder. id)
   {:id no-op})
 
+(defsetter set-wrap! :wrap?)
 (def-element-builder text
   {:id "text-generated TextBuilder"}
   (TextBuilder. id)
   {:id    no-op
-   :wrap? (fn [^TextBuilder text-build wrap?]
-            (.wrap text-build wrap?))})
+   :wrap? set-wrap!})
 
 (def-element-builder button
   {:id    "button-generated ButtonBuilder"
@@ -239,68 +238,40 @@
   (LabelBuilder. id)
   {:id no-op})
 
+(defsetter set-checked! :checked?)
 (def-element-builder checkbox
   {:id "checkbox-generated CheckboxBuilder"}
   (CheckboxBuilder. id)
   {:id no-op
-   :checked? (fn [^CheckboxBuilder checkbox-build
-                  checked?]
-               (.checked checkbox-build checked?))})
+   :checked? set-checked!})
 
 (def-element-builder scroll-panel
   {:id "scroll-panel-generated ScrollPanelBuilder"}
   (ScrollPanelBuilder. id)
   {:id no-op})
    
+(defsetter set-max-length! :max-length)
+(defsetter set-password-char! :password-char)
 (def-element-builder text-field
   {:id "text-field-generated TextFieldBuilder"}
   (TextFieldBuilder. id)
   {:id no-op
-   :max-length (fn [^TextFieldBuilder text-field-build
-                    max-length]
-                 (.maxLength text-field-build max-length))
-   :password-char (fn [^TextFieldBuilder text-field-build
-                       password-char]
-                    (.passwordChar text-field-build password-char))})
+   :max-length set-max-length!
+   :password-char set-password-char!})
 
 (def-opts-constructor effect
   {:effect-name "fade"}
   (EffectBuilder. effect-name)
-  {:alternate-disable (fn [^EffectBuilder effect-build
-                           alternate-disable]
-                        (.alternateDisable effect-build
-                                           alternate-disable))
-   :alternate-enable (fn [^EffectBuilder effect-build
-                          alternate-enable]
-                       (.alternateEnable effect-build
-                                         alternate-enable))
-   :effect-name no-op
-   :effect-parameters (fn [^EffectBuilder effect-build
-                           parameter-map]
-                        (doseq [[key val] parameter-map]
-                          (.effectParameter key val)))
-   :inherit? (fn [^EffectBuilder effect-build
-                  inherit?]
-               (.inherit effect-build inherit?))
-   :length (fn [^EffectBuilder effect-build
-                milliseconds]
-             (.length effect-build milliseconds))
-   :never-stop-rendering? (fn [^EffectBuilder effect-build
-                               never-stop-rendering?]
-                            (.neverStopRendering effect-build
-                                                 never-stop-rendering?))
-   :one-shot? (fn [^EffectBuilder effect-build
-                   one-shot?]
-                (.oneShot effect-build one-shot?))
-   :overlay? (fn [^EffectBuilder effect-build
-                  overlay?]
-               (.overlay effect-build overlay?))
-   :post? (fn [^EffectBuilder effect-build
-               post?]
-            (.post effect-build post?))
-   :start-delay (fn [^EffectBuilder effect-build
-                     start-delay]
-                  (.startDelay effect-build start-delay))
-   :time-type (fn [^EffectBuilder effect-build
-                   time-type]
-                (.timeType effect-build time-type))})
+  (element-builder-directives-map
+    [:alternate-disable     :setter]
+    [:alternate-enable      :setter]
+    [:effect-name           :no-op]
+    [:effect-parameters     :map-adder]
+    [:inherit?              :predicate-setter]
+    [:length                :setter]
+    [:never-stop-rendering? :predicate-setter]
+    [:one-shot?             :predicate-setter]
+    [:overlay?              :predicate-setter]
+    [:post?                 :predicate-setter]
+    [:start-delay           :setter]
+    [:time-type             :setter]))

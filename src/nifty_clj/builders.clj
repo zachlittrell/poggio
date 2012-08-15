@@ -84,8 +84,8 @@
       
 
 (def-opts-constructor screen
-  {:id "screen-builder generated ScreenBuilder"
-   :controller (DefaultScreenController.)}
+  {id "screen-builder generated ScreenBuilder"
+   controller (DefaultScreenController.)}
   (ScreenBuilder. id controller)
   {:id no-op
    :controller no-op
@@ -204,63 +204,63 @@
                          (merge element-builder-handlers ~handlers)))
 
 (def-element-builder layer
-  {:id "layer-generated LayerBuilder"}
+  {id "layer-generated LayerBuilder"}
   (LayerBuilder. id)
   {:id no-op})
 
 (def-element-builder panel
-  {:id "panel-generated PanelBuilder"}
+  {id "panel-generated PanelBuilder"}
   (PanelBuilder. id)
   {:id no-op})
 
 (def-element-builder image
-  {:id "image-generated ImageBuilder"}
+  {id "image-generated ImageBuilder"}
   (ImageBuilder. id)
   {:id no-op})
 
 (defsetter set-wrap! :wrap?)
 (def-element-builder text
-  {:id "text-generated TextBuilder"}
+  {id "text-generated TextBuilder"}
   (TextBuilder. id)
   {:id    no-op
    :wrap? set-wrap!})
 
 (def-element-builder button
-  {:id    "button-generated ButtonBuilder"
-   :label "Click here"}
+  {id    "button-generated ButtonBuilder"
+   label "Click here"}
   (ButtonBuilder. id label)
   {:id    no-op
    :label no-op})
 
 (def-element-builder label
-  {:id "label-generated LabelBuilder"
-   :text "Label"}
+  {id "label-generated LabelBuilder"
+   text "Label"}
   (LabelBuilder. id)
   {:id no-op})
 
 (defsetter set-checked! :checked?)
 (def-element-builder checkbox
-  {:id "checkbox-generated CheckboxBuilder"}
+  {id "checkbox-generated CheckboxBuilder"}
   (CheckboxBuilder. id)
   {:id no-op
    :checked? set-checked!})
 
 (def-element-builder scroll-panel
-  {:id "scroll-panel-generated ScrollPanelBuilder"}
+  {id "scroll-panel-generated ScrollPanelBuilder"}
   (ScrollPanelBuilder. id)
   {:id no-op})
    
 (defsetter set-max-length! :max-length)
 (defsetter set-password-char! :password-char)
 (def-element-builder text-field
-  {:id "text-field-generated TextFieldBuilder"}
+  {id "text-field-generated TextFieldBuilder"}
   (TextFieldBuilder. id)
   {:id no-op
    :max-length set-max-length!
    :password-char set-password-char!})
 
 (def-opts-constructor effect
-  {:effect-name "fade"}
+  {effect-name "fade"}
   (EffectBuilder. effect-name)
   (element-builder-directives-map
     [:alternate-disable     :setter]

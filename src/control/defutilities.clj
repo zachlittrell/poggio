@@ -41,7 +41,7 @@
   (let [name (name keyword)]
     (symbol (str "set-" (.substring name 0 (dec (.length name))) "!"))))
 
-(defn keyword->setter-defn-form
+(defn keyword->defsetter-form
   "Returns a form for creating a defn of the form
    (defn name [instance val]
      (.keywordInCamelCase instance val))
@@ -49,9 +49,7 @@
   that will take the symbol for val and return a replacement
   form." 
   ([setter-name keyword]
-    (let [fn-name (symbol (str "." (dash->camel-case (name keyword))))]
-      `(defn ~setter-name [instance# val#]
-         (~fn-name instance# val#))))
+   (keyword->defsetter-form identity setter-name keyword))
   ([f setter-name keyword]
    (let [fn-name (symbol (str "." (dash->camel-case (name keyword))))
          val-sym (gensym "val")
@@ -65,7 +63,7 @@
   [keyword]
   (symbol (str "add-" (name keyword) "!"))) 
 
-(defn keyword->adder-defn-form
+(defn keyword->defadder-form
   "Returns a form for creating a defn of the form
    (defn name [instances val]
      (doseq [instance instances]
@@ -74,15 +72,7 @@
   that will take the symbol for val and return a replacement
   form."
   ([adder-name keyword]
-    (let [name (name keyword)
-          fn-name (symbol 
-                   (str "." 
-                     (-> name
-                       (.substring 0 (dec (.length name)))
-                       (dash->camel-case))))]
-      `(defn ~adder-name [instance# val#]
-         (doseq [addend# val#]
-           (~fn-name instance# addend#)))))
+    (keyword->defadder-form identity adder-name keyword))
   ([f adder-name keyword]
    (let [name (name keyword)
          fn-name (symbol 
@@ -99,9 +89,9 @@
 (def ^{:doc "The default directives used by directive maps."}
   default-directives-map
   {:setter {:name keyword->setter-symbol
-            :form keyword->setter-defn-form}
+            :form keyword->defsetter-form}
    :adder  {:name keyword->adder-symbol
-            :form keyword->adder-defn-form}})
+            :form keyword->defadder-form}})
 
 (defn default-director
   "The default director for computing directives. Expects

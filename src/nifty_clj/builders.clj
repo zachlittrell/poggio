@@ -1,9 +1,9 @@
 (ns nifty-clj.builders
   (:use [functions.utilities :only [no-op]]
         [control.defutilities :only [def-opts-constructor
-                                     keyword->adder-defn-form
+                                     keyword->defadder-form
                                      keyword->adder-symbol
-                                     keyword->setter-defn-form
+                                     keyword->defsetter-form
                                      predicate-keyword->setter-symbol
                                      keyword->setter-symbol
                                      def-directive-map
@@ -15,7 +15,7 @@
            [com.jme3.input InputManager]
            [com.jme3.niftygui NiftyJmeDisplay]
            [com.jme3.renderer ViewPort]
-           [de.lessvoid.nifty Nifty]
+           [de.lessvoid.nifty Nifty NiftyMethodInvoker]
            [de.lessvoid.nifty.builder EffectBuilder
                                       ElementBuilder 
                                       ElementBuilder$Align
@@ -33,7 +33,6 @@
            [de.lessvoid.nifty.controls.textfield.builder TextFieldBuilder]
            [de.lessvoid.nifty.screen DefaultScreenController
                                      ScreenController]))
-
 
 (defprotocol NiftyJmeDisplayer
   (asset-manager [this])
@@ -64,6 +63,24 @@
                      audio-renderer
                      view-port)))
 
+(defn nifty
+  "Returns a Nifty instance from a newly created NiftyJmeDisplay
+   that is automatically added to its viewport. See nifty-jme-display
+   for details about parameters."
+  ([displayer]
+   (nifty (asset-manager displayer)
+          (input-manager displayer)
+          (audio-renderer displayer)
+          (view-port displayer)))
+  ([asset-manager input-manager audio-renderer view-port]
+   (let [display (nifty-jme-display asset-manager
+                                    input-manager
+                                    audio-renderer
+                                    view-port)]
+     (.addProcessor view-port display)
+     (.getNifty display))))
+      
+
 (def-opts-constructor screen
   {:id "screen-builder generated ScreenBuilder"
    :controller (DefaultScreenController.)}
@@ -92,16 +109,16 @@
    :center ElementBuilder$VAlign/Center
    :top    ElementBuilder$VAlign/Top})
 
-(def keyword->align-setter-defn-form
-  (partial keyword->setter-defn-form
+(def keyword->def-align-setter-form
+  (partial keyword->defsetter-form
            (partial list `align-keyword->align)))
 
-(def keyword->child-layout-setter-defn-form
-  (partial keyword->setter-defn-form
+(def keyword->def-child-layout-setter-form
+  (partial keyword->defsetter-form
            (partial list `child-layout-keyword->child-layout)))
 
-(def keyword->valign-setter-defn-form
-  (partial keyword->setter-defn-form
+(def keyword->def-valign-setter-form
+  (partial keyword->defsetter-form
            (partial list `valign-keyword->valign)))
 
 (def-directive-map element-builder-directives-map
@@ -109,17 +126,25 @@
     (assoc default-directives-map
            :align-setter 
               (assoc setter-map
-                     :form keyword->align-setter-defn-form)
+                     :form keyword->def-align-setter-form)
            :child-layout-setter
               (assoc setter-map
-                     :form keyword->child-layout-setter-defn-form)
+                     :form keyword->def-child-layout-setter-form)
            :valign-setter
               (assoc setter-map
-                     :form keyword->valign-setter-defn-form)
+                     :form keyword->def-valign-setter-form)
            :predicate-setter
               (assoc setter-map
                      :name predicate-keyword->setter-symbol)))
     default-director)
+
+(defn nifty-method-invoker
+  "Returns a Nifty Method Invoker that calls function f on
+   invocation."
+  [f]
+  (proxy [NiftyMethodInvoker] [nil]
+    (invoke [_] (do (f) true))
+    (performInvoke [_] (f))))
 
 (def element-builder-handlers
   (element-builder-directives-map 

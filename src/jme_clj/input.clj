@@ -10,7 +10,7 @@
                                     MouseButtonTrigger
                                     Trigger]))
 
-(defn add-listener
+(defn add-listener!
   "Attaches the listener to the given triggers, using a specific key."
   ([manager key listener & triggers]
     (doto manager
@@ -33,7 +33,7 @@
   [event trigger & trigger-args]
   `(defmacro ~event [input-manager# type# key# ~@trigger-args bindings# ~'& body#]
      (let [[listener-class# on-listener-call#] (listener-options type#)]
-       `(add-listener ~input-manager#
+       `(add-listener! ~input-manager#
                       ~key# 
                      (reify ~listener-class#
                        (~on-listener-call# ~bindings#
@@ -57,9 +57,9 @@
                    ~bindings#
                    ~@body#)))))
 
-(def-trigger-event* on-key KeyTrigger key-code)
-(def-trigger-event* on-mouse-button MouseButtonTrigger mouse-button)
-(def-trigger-event* on-mouse-axis MouseAxisTrigger mouse-axis negative)
+(def-trigger-event* on-key! KeyTrigger key-code)
+(def-trigger-event* on-mouse-button! MouseButtonTrigger mouse-button)
+(def-trigger-event* on-mouse-axis! MouseAxisTrigger mouse-axis negative)
 
 (def trigger-event->trigger
   {:on-key          KeyTrigger
@@ -67,9 +67,9 @@
    :on-mouse-axis   MouseAxisTrigger})
 
 (def trigger-events
-  {:on-key          `on-key
-   :on-mouse-button `on-mouse-button
-   :on-mouse-axis   `on-mouse-axis})
+  {:on-key          `on-key!
+   :on-mouse-button `on-mouse-button!
+   :on-mouse-axis   `on-mouse-axis!})
 
 (defn on-select-action-code
   "Returns the code to be used by on-select-listener for
@@ -77,11 +77,11 @@
   [input-manager key action]
   (match (seq action)
     ([:on-key type key-code bindings & body] :seq)
-      `(on-key ~input-manager ~type ~key ~key-code ~bindings ~@body)
+      `(on-key! ~input-manager ~type ~key ~key-code ~bindings ~@body)
     ([:on-mouse-button type mouse-button bindings & body] :seq)
-      `(on-mouse-button ~input-manager ~type ~key ~mouse-button ~bindings ~@body)
+      `(on-mouse-button! ~input-manager ~type ~key ~mouse-button ~bindings ~@body)
     ([:on-mouse-axis type mouse-axis negative bindings & body] :seq)
-      `(on-mouse-axis ~input-manager ~type ~key ~mouse-axis ~negative ~bindings ~@body)))
+      `(on-mouse-axis! ~input-manager ~type ~key ~mouse-axis ~negative ~bindings ~@body)))
 
 (defmacro on-select-listener[input-manager camera collidables name & actions]
   (let [id (clojure.lang.RT/nextID)

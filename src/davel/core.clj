@@ -39,7 +39,7 @@
     (simpleInitApp []
 
       (doto (.getInputManager this)
-        (input/on-key* :action KeyInput/KEY_F12
+        (input/on-key!* :action KeyInput/KEY_F12
           [_ name value tpf]
           (three-sphere-in-front this))))))
  

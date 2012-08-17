@@ -171,3 +171,6 @@
       (let [pairs# (for [[key# directive#] directives#]
                       (director# key# (directive-map# directive#)))]
         (list `into {} (cons `list pairs#))))))
+
+(def-directive-map default-directive-map default-directives-map
+                                         default-director)

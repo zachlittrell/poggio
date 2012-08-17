@@ -4,12 +4,14 @@
                                      defadder
                                      keyword->defadder-form
                                      keyword->adder-symbol
+                                     def-map-adder
                                      defsetter
                                      keyword->defsetter-form
                                      predicate-keyword->setter-symbol
                                      keyword->setter-symbol
                                      def-directive-map
                                      default-director
+                                     default-directive-map
                                      default-directives-map]])
   (:import [com.jme3.app Application] 
            [com.jme3.asset AssetManager]
@@ -23,11 +25,14 @@
                                       ElementBuilder$Align
                                       ElementBuilder$ChildLayoutType
                                       ElementBuilder$VAlign
+                                      HoverEffectBuilder
                                       ScreenBuilder
                                       ImageBuilder
                                       LayerBuilder
                                       PanelBuilder
                                       TextBuilder]
+           [de.lessvoid.nifty.effects Falloff$HoverFalloffConstraint
+                                      Falloff$HoverFalloffType]
            [de.lessvoid.nifty.controls.button.builder ButtonBuilder]
            [de.lessvoid.nifty.controls.checkbox.builder CheckboxBuilder]
            [de.lessvoid.nifty.controls.label.builder LabelBuilder]
@@ -137,63 +142,61 @@
                      :form keyword->def-valign-setter-form)))
     default-director)
 
-(defn nifty-method-invoker
-  "Returns a Nifty Method Invoker that calls function f on
-   invocation."
-  [f]
-  (proxy [NiftyMethodInvoker] [nil]
-    (invoke [_] (do (f) true))
-    (performInvoke [_] (f))))
-
 (def element-builder-handlers
   (element-builder-directives-map 
-    [:align                  :align-setter]
-    [:background-color       :setter]
-    [:background-image       :setter]
-    [:child-layout           :child-layout-setter]
-    [:child-clip?            :predicate-setter]
-    [:color                  :setter]
-    [:controls               :adder]
-    [:controller             :setter]
-    [:filename               :setter]
-    [:focusable?             :predicate-setter]
-    [:font                   :setter]
-    [:height                 :setter]
-    [:images                 :adder]
-    [:image-mode             :setter]
-    [:input-mapping          :setter]
-    [:inset                  :setter]
-    [:name                   :setter]
-    [:on-active-effect       :setter]
-    [:on-click-effect        :setter]
-    [:on-custom-effect       :setter]
-    [:on-end-hover-effect    :setter]
-    [:on-end-screen-effect   :setter]
-    [:on-focus-effect        :setter]
-    [:on-get-focus-effect    :setter]
-    [:on-hide-effect         :setter]
-    [:on-hover-effect        :setter]
-    [:on-lost-focus-effect   :setter]
-    [:on-show-effect         :setter]
-    [:on-start-hover-effect  :setter]
-    [:on-start-screen-effect :setter]
-    [:padding                :setter]
-    [:padding-bottom         :setter]
-    [:padding-left           :setter]
-    [:padding-right          :setter]
-    [:padding-top            :setter]
-    [:panels                 :adder]
-    [:selection-color        :setter]
-    [:style                  :setter]
-    [:text                   :setter]
-    [:text-halign            :align-setter]
-    [:text-valign            :valign-setter]
-    [:valign                 :valign-setter]
-    [:visible?               :predicate-setter]
-    [:visible-to-mouse?      :predicate-setter]
-    [:width                  :setter]
-    [:x                      :setter]
-    [:y                      :setter]))
+    [:align                           :align-setter]
+    [:background-color                :setter]
+    [:background-image                :setter]
+    [:child-layout                    :child-layout-setter]
+    [:child-clip?                     :predicate-setter]
+    [:color                           :setter]
+    [:controls                        :adder]
+    [:controller                      :setter]
+    [:filename                        :setter]
+    [:focusable?                      :predicate-setter]
+    [:font                            :setter]
+    [:height                          :setter]
+    [:images                          :adder]
+    [:image-mode                      :setter]
+    [:input-mapping                   :setter]
+    [:inset                           :setter]
+    [:interact-on-click               :setter]
+    [:interact-on-click-alternate-key :setter]
+    [:interact-on-click-mouse-move    :setter]
+    [:interact-on-click-repeat        :setter]
+    [:interact-on-mouse-over          :setter]
+    [:interact-on-release             :setter]
+    [:name                            :setter]
+    [:on-active-effect                :setter]
+    [:on-click-effect                 :setter]
+    [:on-custom-effect                :setter]
+    [:on-end-hover-effect             :setter]
+    [:on-end-screen-effect            :setter]
+    [:on-focus-effect                 :setter]
+    [:on-get-focus-effect             :setter]
+    [:on-hide-effect                  :setter]
+    [:on-hover-effect                 :setter]
+    [:on-lost-focus-effect            :setter]
+    [:on-show-effect                  :setter]
+    [:on-start-hover-effect           :setter]
+    [:on-start-screen-effect          :setter]
+    [:padding                         :setter]
+    [:padding-bottom                  :setter]
+    [:padding-left                    :setter]
+    [:padding-right                   :setter]
+    [:padding-top                     :setter]
+    [:panels                          :adder]
+    [:selection-color                 :setter]
+    [:style                           :setter]
+    [:text                            :setter]
+    [:text-halign                     :align-setter]
+    [:text-valign                     :valign-setter]
+    [:valign                          :valign-setter]
+    [:visible?                        :predicate-setter]
+    [:visible-to-mouse?               :predicate-setter]
+    [:width                           :setter]
+    [:x                               :setter]
+    [:y                               :setter]))
 
 (defmacro def-element-builder 
   "This macro creates a function similar to 
@@ -262,9 +265,10 @@
 (def-opts-constructor effect
   {effect-name "fade"}
   (EffectBuilder. effect-name)
-  (element-builder-directives-map
+  (default-directive-map
     [:alternate-disable     :setter]
     [:alternate-enable      :setter]
+    [:custom-key            :setter]
     [:effect-name           :no-op]
     [:effect-parameters     :map-adder]
     [:inherit?              :predicate-setter]
@@ -275,3 +279,41 @@
     [:post?                 :predicate-setter]
     [:start-delay           :setter]
     [:time-type             :setter]))
+
+(def keyword->hover-falloff-constraint
+  {:both       Falloff$HoverFalloffConstraint/both
+   :horizontal Falloff$HoverFalloffConstraint/horizontal
+   :none       Falloff$HoverFalloffConstraint/none
+   :vertical   Falloff$HoverFalloffConstraint/vertical})
+
+(def keyword->hover-falloff-type
+  {:linear     Falloff$HoverFalloffType/linear
+   :none       Falloff$HoverFalloffType/none})
+
+(defn set-hover-falloff-constraint! [effect-build keyword]
+  (.hoverFalloffConstraint effect-build 
+                           (keyword->hover-falloff-constraint keyword)))
+(defn set-hover-falloff-type! [effect-build keyword]
+  (.hoverFalloffConstraint effect-build
+                           (keyword->hover-falloff-type keyword)))
+(defsetter set-hover-height! :hover-height)
+(def-map-adder add-hover-parameters! :hover-parameters)
+(defsetter set-hover-width! :hover-width)
+(def-opts-constructor hover-effect
+  {effect-name "fade"}
+  (HoverEffectBuilder. effect-name)
+  {:alternate-disable        set-alternate-disable!
+   :alternate-enable         set-alternate-enable!
+   :custom-key               set-custom-key!
+   :effect-name              no-op
+   :effect-parameters        add-effect-parameters!
+   :hover-falloff-constraint set-hover-falloff-constraint!
+   :hover-falloff-type       set-hover-falloff-type!
+   :hover-height             set-hover-height!
+   :hover-parameters         add-hover-parameters!
+   :hover-width              set-hover-width!
+   :inherit?                 set-inherit!
+   :never-stop-rendering?    set-never-stop-rendering!
+   :overlay?                 set-overlay!
+   :post?                    set-post!})
+  

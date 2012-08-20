@@ -1,5 +1,5 @@
 (ns nifty-clj.events
-  (:use [string.utilities :only [dash->camel-case]])
+  (:use [data.string :only [dash->camel-case]])
   (:import [de.lessvoid.nifty NiftyMethodInvoker]))
 
 (defn ifn-nifty-method-invoker
@@ -31,22 +31,22 @@
 
 (def element-interaction-click-methods
   [:on-click :on-click-mouse-move :on-release])
+
 (defmacro def-element-interaction-click-handler-setters
   [click-name click-hander]
-  (let [setters (for [method element-interaction-click-methods]
-                  (let [method-str (name method)
-                        method-name (symbol (str "set-" click-name
-                                                 "-" method-str "!"))
-                        method-call (symbol
-                                      (str ".set"
-                                         (dash->camel-case 
+  (let [setters 
+         (for [method element-interaction-click-methods]
+           (let [method-str (name method)
+                 method-name (symbol (str "set-" click-name
+                                          "-" method-str "!"))
+                 method-call (symbol (str ".set"
+                                          (dash->camel-case 
                                              method-str
                                              true)
                                          "Method"))]
-                    `(defn ~method-name [element# invoker#]
-                       (~method-call (~click-handlers element#)
-                                     (nifty-method-invoker
-                                       invoker#)))))]
+             `(defn ~method-name [element# invoker#]
+                (~method-call (~click-handlers element#)
+                              (nifty-method-invoker invoker#)))))]
     `(do
        ~@setters)))
 

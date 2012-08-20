@@ -1,7 +1,7 @@
 (ns control.defutilities
   (:use [control.io :only [err-println]]
         [functions.utilities :only [no-op]]
-        [string.utilities :only [dash->camel-case]]))
+        [data.string :only [dash->camel-case]]))
 
 (defn keyword->symbol
   "Converts a keyword to a symbol."

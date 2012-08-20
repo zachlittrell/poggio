@@ -75,17 +75,26 @@
    that is automatically added to its viewport. See nifty-jme-display
    for details about parameters."
   ([displayer]
+   (nifty displayer true))
+  ([displayer load-defaults?]
    (nifty (asset-manager displayer)
           (input-manager displayer)
           (audio-renderer displayer)
-          (view-port displayer)))
+          (view-port displayer)
+          load-defaults?))
   ([asset-manager input-manager audio-renderer view-port]
+   (nifty asset-manager input-manager audio-renderer view-port true))
+  ([asset-manager input-manager audio-renderer view-port load-defaults?]
    (let [display (nifty-jme-display asset-manager
                                     input-manager
                                     audio-renderer
                                     view-port)]
      (.addProcessor view-port display)
-     (.getNifty display))))
+     (let [display-nifty (.getNifty display)]
+       (if load-defaults?
+         (.loadStyleFile display-nifty "nifty-default-styles.xml")
+         (.loadControlFile display-nifty "nifty-default-controls.xml"))
+       display-nifty))))
       
 
 (def-opts-constructor screen
@@ -262,23 +271,39 @@
    :max-length set-max-length!
    :password-char set-password-char!})
 
+(def keyword->def-vararg-setter-form
+  (partial keyword->defsetter-form
+           (partial list `into-array `String)))
+
+(def-directive-map effects-directive-map
+  (let [setter-map (:setter default-directives-map)]
+    (assoc default-directives-map
+           :vararg-setter 
+              (assoc setter-map
+                     :form keyword->def-vararg-setter-form)))
+    default-director)
+
+
 (def-opts-constructor effect
   {effect-name "fade"}
   (EffectBuilder. effect-name)
-  (default-directive-map
-    [:alternate-disable     :setter]
-    [:alternate-enable      :setter]
-    [:custom-key            :setter]
-    [:effect-name           :no-op]
-    [:effect-parameters     :map-adder]
-    [:inherit?              :predicate-setter]
-    [:length                :setter]
-    [:never-stop-rendering? :predicate-setter]
-    [:one-shot?             :predicate-setter]
-    [:overlay?              :predicate-setter]
-    [:post?                 :predicate-setter]
-    [:start-delay           :setter]
-    [:time-type             :setter]))
+  (effects-directive-map
+    [:alternate-disable        :setter]
+    [:alternate-enable         :setter]
+    [:custom-key               :setter]
+    [:effect-name              :no-op]
+    [:effect-parameters        :map-adder]
+    [:effect-value             :vararg-setter]
+    [:inherit?                 :predicate-setter]
+    [:length                   :setter]
+    [:never-stop-rendering?    :predicate-setter]
+    [:on-end-effect-callback   :setter]
+    [:one-shot?                :predicate-setter]
+    [:on-start-effect-callback :setter]
+    [:overlay?                 :predicate-setter]
+    [:post?                    :predicate-setter]
+    [:start-delay              :setter]
+    [:time-type                :setter]))
 
 (def keyword->hover-falloff-constraint
   {:both       Falloff$HoverFalloffConstraint/both
@@ -299,6 +324,7 @@
 (defsetter set-hover-height! :hover-height)
 (def-map-adder add-hover-parameters! :hover-parameters)
 (defsetter set-hover-width! :hover-width)
+
 (def-opts-constructor hover-effect
   {effect-name "fade"}
   (HoverEffectBuilder. effect-name)
@@ -307,6 +333,7 @@
    :custom-key               set-custom-key!
    :effect-name              no-op
    :effect-parameters        add-effect-parameters!
+   :effect-value             set-effect-value!
    :hover-falloff-constraint set-hover-falloff-constraint!
    :hover-falloff-type       set-hover-falloff-type!
    :hover-height             set-hover-height!

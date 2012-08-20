@@ -98,14 +98,13 @@
       
 
 (def-opts-constructor screen
-  {id "screen-builder generated ScreenBuilder"
-   controller (DefaultScreenController.)}
-  (ScreenBuilder. id controller)
-  {:id no-op
-   :controller no-op
-   :layers (fn [^ScreenBuilder screen-build layers]
-             (doseq [layer layers]
-               (.layer screen-build layer)))})
+  {id "screen-builder generated ScreenBuilder"}
+  (ScreenBuilder. id)
+  (default-directive-map
+    [:id                    :no-op]
+    [:controller            :setter]
+    [:default-focus-element :setter]
+    [:layers                :adder]))
 
 (def child-layout-keyword->child-layout
   {:absolute        ElementBuilder$ChildLayoutType/Absolute

@@ -1,12 +1,8 @@
 (ns control.defutilities
   (:use [control.io :only [err-println]]
         [functions.utilities :only [no-op]]
-        [data.string :only [dash->camel-case]]))
-
-(defn keyword->symbol
-  "Converts a keyword to a symbol."
-  [keyword]
-  (symbol (name keyword)))
+        [data [string :only [dash->camel-case]]
+              [keyword :only [keyword->symbol]]]))
 
 (defmacro def-opts-constructor
   "Defines a function called name that takes (currently) only keyword

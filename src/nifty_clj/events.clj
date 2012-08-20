@@ -1,6 +1,7 @@
 (ns nifty-clj.events
   (:use [data.string :only [dash->camel-case]])
-  (:import [de.lessvoid.nifty NiftyMethodInvoker]))
+  (:import [clojure.lang IFn]
+           [de.lessvoid.nifty NiftyMethodInvoker]))
 
 (defn ifn-nifty-method-invoker
   "Returns a Nifty Method Invoker that calls function f on

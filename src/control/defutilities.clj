@@ -131,16 +131,22 @@
 
 (def ^{:doc "The default directives used by directive maps."}
   default-directives-map
-  {:setter           {:name keyword->setter-symbol
-                      :form keyword->defsetter-form}
-   :predicate-setter {:name predicate-keyword->setter-symbol
-                      :form predicate-keyword->defsetter-form}
-   :adder            {:name keyword->adder-symbol
-                      :form keyword->defadder-form}
-   :no-op            {:name (constantly `no-op)
-                      :form (constantly `nil)}
-   :map-adder        {:name keyword->adder-symbol
-                      :form keyword->def-map-adder-form}})
+  {:setter                   {:name keyword->setter-symbol
+                              :form keyword->defsetter-form}
+   :defined-setter           {:name keyword->setter-symbol
+                              :form (constantly `nil)}
+   :predicate-setter         {:name predicate-keyword->setter-symbol
+                              :form predicate-keyword->defsetter-form}
+   :defined-predicate-setter {:name predicate-keyword->setter-symbol
+                              :form (constantly `nil)}
+   :adder                    {:name keyword->adder-symbol
+                              :form keyword->defadder-form}
+   :defined-adder            {:name keyword->adder-symbol
+                              :form (constantly `nil)}
+   :no-op                    {:name (constantly `no-op)
+                              :form (constantly `nil)}
+   :map-adder                {:name keyword->adder-symbol
+                              :form keyword->def-map-adder-form}})
 
 (defn default-director
   "The default director for computing directives. Expects

@@ -104,6 +104,7 @@
     [:id                    :no-op]
     [:controller            :setter]
     [:default-focus-element :setter]
+    [:input-mapping         :setter]
     [:layers                :adder]))
 
 (def child-layout-keyword->child-layout
@@ -159,14 +160,14 @@
     [:child-clip?                     :predicate-setter]
     [:color                           :setter]
     [:controls                        :adder]
-    [:controller                      :setter]
+    [:controller                      :defined-setter]
     [:filename                        :setter]
     [:focusable?                      :predicate-setter]
     [:font                            :setter]
     [:height                          :setter]
     [:images                          :adder]
     [:image-mode                      :setter]
-    [:input-mapping                   :setter]
+    [:input-mapping                   :defined-setter]
     [:inset                           :setter]
     [:interact-on-click               :setter]
     [:interact-on-click-alternate-key :setter]
@@ -320,26 +321,23 @@
 (defn set-hover-falloff-type! [effect-build keyword]
   (.hoverFalloffConstraint effect-build
                            (keyword->hover-falloff-type keyword)))
-(defsetter set-hover-height! :hover-height)
-(def-map-adder add-hover-parameters! :hover-parameters)
-(defsetter set-hover-width! :hover-width)
 
 (def-opts-constructor hover-effect
   {effect-name "fade"}
   (HoverEffectBuilder. effect-name)
-  {:alternate-disable        set-alternate-disable!
-   :alternate-enable         set-alternate-enable!
-   :custom-key               set-custom-key!
-   :effect-name              no-op
-   :effect-parameters        add-effect-parameters!
-   :effect-value             set-effect-value!
-   :hover-falloff-constraint set-hover-falloff-constraint!
-   :hover-falloff-type       set-hover-falloff-type!
-   :hover-height             set-hover-height!
-   :hover-parameters         add-hover-parameters!
-   :hover-width              set-hover-width!
-   :inherit?                 set-inherit!
-   :never-stop-rendering?    set-never-stop-rendering!
-   :overlay?                 set-overlay!
-   :post?                    set-post!})
-  
+  (default-directive-map
+    [:alternate-disable        :defined-setter]
+    [:alternate-enable         :defined-setter]
+    [:custom-key               :defined-setter]
+    [:effect-name              :no-op]
+    [:effect-parameters        :defined-adder]
+    [:effect-value             :defined-setter]
+    [:hover-falloff-constraint :defined-setter]
+    [:hover-falloff-type       :defined-setter]
+    [:hover-height             :setter]
+    [:hover-parameters         :adder]
+    [:hover-width              :setter]
+    [:inherit?                 :defined-predicate-setter]
+    [:never-stop-rendering?    :defined-predicate-setter]
+    [:overlay?                 :defined-predicate-setter]
+    [:post?                    :defined-predicate-setter]))

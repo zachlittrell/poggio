@@ -1,4 +1,4 @@
-(ns davel.core
+(ns poggio.core
   (:use [jme-clj [geometry :only [geom]]]
         [nifty-clj [builders :only [screen
                                     layer

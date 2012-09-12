@@ -1,5 +1,5 @@
-(defproject davel "1.0.0-SNAPSHOT"
-  :main davel.core
+(defproject poggio "1.0.0-SNAPSHOT"
+  :main poggio.core
   :description "FIXME: write description"
   :repositories {"oss-sonatype" "https://oss.sonatype.org/content/repositories/snapshots/"}
   :dev-dependencies [[lein-autodoc "0.9.0"]]

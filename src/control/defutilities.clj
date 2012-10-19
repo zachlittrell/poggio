@@ -1,178 +1,185 @@
 (ns control.defutilities
+  (:require [clojure.string :as str])
   (:use [control.io :only [err-println]]
         [functions.utilities :only [no-op]]
-        [data [string :only [dash->camel-case]]
+        [data [map :only [key-map intersecting-merge]]
+              [string :only [dash->camel-case]]
               [keyword :only [keyword->symbol]]]))
 
-(defmacro def-opts-constructor
-  "Defines a function called name that takes (currently) only keyword
-   arguments, using all default values for keys as defined in 
-   defaults, calling constructor (with defaults defined in the bindings)
-   and for each option given, the instance created by
-   constructor is passed, along with the option, to the 
-   handler in handlers with the matching key."
-  [name defaults constructor handlers]
-  (let [{:as defaults-map} defaults
-        default-symbols (map keyword->symbol (keys defaults-map))]
-    `(let [handlers# ~handlers]
-       (defn ~name [~'& options#]
-         (let [{:keys [~@default-symbols]
-                :as opts-map#
-                :or ~defaults-map} options#
-               instance# ~constructor]
-           (doseq [[key# val#] opts-map#]
-             (if-let [handle# (handlers# key#)]
-               (handle# instance# val#)
-               (err-println key# " is not a valid option.")))
-           instance#)))))
+(def default-argument-modifiers
+  {:thread-in (fn [instance option arg]
+                  (list* (first arg) instance (next arg)))
+   :append-in (fn [instance option arg]
+                  (concat arg (list instance)))})
 
-(defn keyword->setter-symbol 
-  "Returns a symbol of the form set-keyword!"
-  [keyword]
-  (symbol (str "set-" (name keyword) "!"))) 
+(def default-instance-modifiers {})
 
-(defn predicate-keyword->setter-symbol
-  "Returns a symbol of the form set-keyword!, with the
-   last character trimmed off the end of the keyword."
-  [keyword]
-  (let [name (name keyword)]
-    (symbol (str "set-" (.substring name 0 (dec (.length name))) "!"))))
+(def default-fn-name-modifiers
+  {:replace (fn [name option [pattern replacement]]
+                (str/replace name pattern replacement))}) 
 
-(defn keyword->defsetter-form
-  "Returns a form for creating a defn of the form
-   (defn name [instance val]
-     (.keywordInCamelCase instance val))
-   A function, f, can be optionally passed
-  that will take the symbol for val and return a replacement
-  form." 
-  ([setter-name keyword]
-   (keyword->defsetter-form identity setter-name keyword))
-  ([f setter-name keyword]
-   (let [fn-name (symbol (str "." (dash->camel-case (name keyword))))
-         val-sym (gensym "val")
-         val-sym* (f val-sym)]
-     `(defn ~setter-name [instance# ~val-sym]
-        (~fn-name instance# ~val-sym*)))))
+(defn default-modifiers-handlers 
+  "Returns a pair with the first element being
+   the symbol of the fn-name modified as specified
+   by args, prepended with ., and turned into
+   camel-case, and instance and argument modified as specified
+   by args."
+  [fn-name instance argument & args]
+  (let [{:as args-map} args]
+    (loop [fn-name fn-name
+           instance instance
+           argument argument
+           args (seq args-map)]
+      (if-let [[[keyword arg] & more] args]
+        (if-let [f (default-instance-modifiers keyword)]
+          (recur fn-name (f instance) argument more)
+          (if-let [f (default-fn-name-modifiers keyword)]
+            (recur (f fn-name) instance argument more)
+            (if-let [f (default-argument-modifiers keyword)]
+              (recur fn-name instance (f argument) more)
+              (err-println "No such argument called:" keyword))))
+        [(symbol (str "." (dash->camel-case (name fn-name)))) 
+                 instance
+                 argument]))))
 
-(defn predicate-keyword->defsetter-form
-  "Returns the form from keyword->defsetter-form,
-   but with the predicate part of the keyword properly trimmed."
-  ([setter-name keyword]
-   (predicate-keyword->defsetter-form identity setter-name keyword))
-  ([f setter-name setter-keyword]
-   (let [name (name setter-keyword)]
-     (keyword->defsetter-form 
-       f
-       setter-name
-       (keyword (.substring name 0 (dec (.length name))))))))
+(defn default-directive-handler
+  "Returns a form that simply applies instance and argument to the function."
+  ([instance argument name-keyword & args]
+   (let [[fn-name instance argument] (apply default-modifiers-handlers 
+                                     name-keyword
+                                     instance
+                                     argument
+                                     args)]
+     `(~fn-name ~instance ~argument))))
 
-(defmacro defsetter 
-  "Defines a function of the form returned by
-   (keyword->defsetter-form setter-name keyword."
-  [setter-name keyword]
-  (keyword->defsetter-form setter-name keyword))
-     
+(defn setter-directive-handler
+  "Returns a form similar to default-directive-handler,
+   but prepended with 'set'"
+  [instance argument name-keyword & args]
+  (apply default-directive-handler
+         instance
+         argument
+         (keyword (str "set-" (name name-keyword)))
+         args))
 
-(defn keyword->adder-symbol 
-  "Returns a symbol of the form add-keyword!"
-  [keyword]
-  (symbol (str "add-" (name keyword) "!"))) 
 
-(defn keyword->defadder-form
-  "Returns a form for creating a defn of the form
-   (defn name [instances val]
-     (doseq [instance instances]
-       (.keywordInCamelCase instance val)))
-  A function, f, can be optionally passed
-  that will take the symbol for val and return a replacement
-  form."
-  ([adder-name keyword]
-    (keyword->defadder-form identity adder-name keyword))
-  ([f adder-name keyword]
-   (let [name (name keyword)
-         fn-name (symbol 
-                   (str "." 
-                     (-> name
-                       (.substring 0 (dec (.length name)))
-                       (dash->camel-case))))
-         val-sym (gensym "val")
-         val-sym* (f val-sym)]
-     `(defn ~adder-name [instance# ~val-sym]
-        (doseq [addend# ~val-sym*]
-          (~fn-name instance# addend#))))))
+(defn do-seq-directive-handler
+  "Returns a form that loops over every element
+   in argument and applies our function to the instance
+   with the element"
+  [instance argument name-keyword & args]
+  (let [[fn-name instance argument] (apply default-modifiers-handlers
+                                    name-keyword
+                                    instance
+                                    argument
+                                    args)]
+    `(doseq [variable# ~argument]
+       (~fn-name ~instance variable#))))
 
-(defmacro defadder 
- "Defines a function with the form of (keyword->defadder-form adder-name keyword)"
-  [adder-name keyword]
-  (keyword->defadder-form adder-name keyword))
+(defn map-do-seq-directive-handler
+  "Returns a form that loops over every key-value pair 
+   in argument, and applies our function to the instance
+   with the key and value."
+  [instance argument name-keyword & args]
+  (let [[fn-name instance argument] (apply default-modifiers-handlers
+                                    name-keyword
+                                    instance
+                                    argument
+                                    args)]
+    `(doseq [[key# val#] ~argument]
+       (~fn-name ~instance key# val#))))
+       
 
-(defn keyword->def-map-adder-form
-  "The same as keyword->defadder-form, except the resulting
-   function takes a map and applies its key and vector to
-   the internal function."
-  ([adder-name keyword]
-   (keyword->def-map-adder-form identity adder-name keyword))
-  ([f adder-name keyword]
-   (let [name (name keyword)
-         fn-name (symbol (str "." (-> name
-                                    (.substring 0 (dec (.length name)))
-                                    (dash->camel-case))))
-         val-sym (gensym "val")
-         val-sym* (f val-sym)]
-     `(defn ~adder-name [instance# ~val-sym]
-        (doseq [[key# val#] ~val-sym*]
-          (~fn-name instance# key# val#))))))
-
-(defmacro def-map-adder
-  "Defines a function with the form of 
-  (keyword->def-map-adder-form adder-name keyword)"
-  [adder-name keyword]
-  (keyword->def-map-adder-form adder-name keyword))
-
-(def ^{:doc "The default directives used by directive maps."}
-  default-directives-map
-  {:setter                   {:name keyword->setter-symbol
-                              :form keyword->defsetter-form}
-   :defined-setter           {:name keyword->setter-symbol
-                              :form (constantly `nil)}
-   :predicate-setter         {:name predicate-keyword->setter-symbol
-                              :form predicate-keyword->defsetter-form}
-   :defined-predicate-setter {:name predicate-keyword->setter-symbol
-                              :form (constantly `nil)}
-   :adder                    {:name keyword->adder-symbol
-                              :form keyword->defadder-form}
-   :defined-adder            {:name keyword->adder-symbol
-                              :form (constantly `nil)}
-   :no-op                    {:name (constantly `no-op)
-                              :form (constantly `nil)}
-   :map-adder                {:name keyword->adder-symbol
-                              :form keyword->def-map-adder-form}})
+(def default-director-directives-handlers
+  ;;TODO remember to handle defaults better
+  ;;This default will not be adequate for nifty builders
+  {:simple default-directive-handler
+   :setter setter-directive-handler
+   :no-op (constantly nil)
+   :do-seq do-seq-directive-handler
+   :map-do-seq map-do-seq-directive-handler})
 
 (defn default-director
-  "The default director for computing directives. Expects
-   directives to have a function for :name and :form,
-   where ((:name directive) key) returns a name, while 
-   ((:form directive) name key) returns a form to be computed.
-   Returns a form that computes the directive's form and returns
-   a vector that pairs the key with name."
-  [key directive]
-  (let [name ((:name directive) key)
-        form ((:form directive) name key)]
-    `(do 
-       ~form
-       [~key ~name])))
+  "Returns a form that modifies the symbol instance
+   with the given function name, possibly a directive
+   (if no directive is given, :default is used), and
+   any additional args."
+  ([instance argument name]
+   (default-director instance argument name :simple))
+  ([instance argument name directive & args]
+   (apply (default-director-directives-handlers directive)
+           instance 
+           argument
+           name
+           args)))
 
-(defmacro def-directive-map
-  "Creates a macro called name that takes directives of the form
-  [:key :val] and returns a map with :key mapped to the value
-  as dictated by val in the directive map. May have a side effect."
-  [name directive-map director]
-  `(let [director# ~director
-         directive-map# ~directive-map]
-    (defmacro ~name [~'& directives#]
-      (let [pairs# (for [[key# directive#] directives#]
-                      (director# key# (directive-map# directive#)))]
-        (list `into {} (cons `list pairs#))))))
+(defmacro def-directed-opts-constructor-body*
+  "Returns the body of the macro specified in
+   def-directed-opts-constructor-body, which
+   creates an instance of the object made by
+   const, and checks each directive in dir-map
+   against defaults in defs and options given
+   in opts. If there is no directive in dir-map
+   for handling the option, the default-directive is used."
+  [director default-directive dir-map defs const opts]
+  (let [{:as opts-map} opts
+        ;;We merge only the defaults that are in opts
+        def-map (intersecting-merge defs opts-map)
+        sym-map (key-map keyword->symbol def-map)
+        flat-def-map (apply concat sym-map)
+        instance-sym (gensym "constructor-instance-sym")
+        director* (partial director instance-sym)
+        opts-forms (for [[option argument] opts-map]
+                     (if (contains? dir-map option)
+                       (director
+                              instance-sym
+                              argument
+                              option
+                              (dir-map option))
+                       (director instance-sym
+                                 argument
+                                 option
+                                 default-directive)))]
+    `(let [~@flat-def-map
+           ~instance-sym ~const]
+       ~@opts-forms
+       ~instance-sym)))
 
-(def-directive-map default-directive-map default-directives-map
-                                         default-director)
+(defmacro def-directed-opts-constructor-body
+  "Returns the body of the macro specified in
+   def-directed-opts-constructor, which creates
+   a macro called name that takes a variable number
+   of keyword arguments, handled as per the director
+   and given directives."
+  [director name default-directive defaults constructor directives]
+  (let [true-defaults (key-map keyword defaults)]
+    `(let [dir-map# ~directives
+           defs#    ~true-defaults]
+       (defmacro ~name [~'& opts#]
+         `(def-directed-opts-constructor-body* ~~director
+                                               ~~default-directive
+                                               ~dir-map#
+                                               ~defs#
+                                               ~~constructor
+                                               ~opts#)))))
+
+
+(defmacro def-directed-opts-constructor
+  "Creates a macro called name that takes a
+   name, a default-directive for director,
+   pairs of keys with default values (with the values 
+   quoted as necessary), a constructor (once again quoted),
+   and pairs of directives. The directives are handled
+   according to the director."
+  [name director]
+  `(let [director# ~director]
+     (defmacro ~name [name# default-directive# defaults# constructor# directives#]
+       `(def-directed-opts-constructor-body ~director# 
+                                            ~name#
+                                            ~default-directive#
+                                            ~defaults#
+                                            ~constructor#
+                                            ~directives#))))
+
+(def-directed-opts-constructor def-opts-constructor 
+                               default-director)

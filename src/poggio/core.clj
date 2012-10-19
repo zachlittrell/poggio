@@ -1,10 +1,5 @@
 (ns poggio.core
-  (:use [jme-clj [geometry :only [geom]]]
-        [nifty-clj [builders :only [screen
-                                    layer
-                                    panel
-                                    text
-                                    button]]])
+  (:use [jme-clj [geometry :only [geom]]])
   (:require [jme-clj.input :as input])
   (:import (com.jme3.app SimpleApplication)
            (com.jme3.input KeyInput)
@@ -28,19 +23,20 @@
           (geom :shape (Sphere. 16 16 1)
                 :label (str "Sphere " x) 
                 :material mat
-                :rotation rot
-                :translation (let [res (Vector3f. loc)
-                                   forward (Vector3f. (* x 3) 0 20)]
-                               (.mult rot forward res)
-                               res))))))   
+                :local-rotation rot
+                :local-translation (let [res (Vector3f. loc)
+                                     forward (Vector3f. (* x 3) 0 20)]
+                                     (.mult rot forward res)
+                                     res)))))) 
 
 (defn make-app []
   (proxy [SimpleApplication] []
     (simpleInitApp []
       (doto (.getInputManager this)
         (input/on-key!* :action KeyInput/KEY_F12
-          [_ name value tpf]
-          (three-sphere-in-front this))))))
+          [_ name is-pressed? tpf]
+          (if is-pressed?
+            (three-sphere-in-front this)))))))
  
 
 (defn -main []

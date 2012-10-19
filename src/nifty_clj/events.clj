@@ -16,7 +16,7 @@
 
 (extend NiftyMethodInvoker
   Nifty-Method-Invoker
-  (:nifty-method-invoker identity))
+  {:nifty-method-invoker identity})
 
 (extend-type IFn
   Nifty-Method-Invoker

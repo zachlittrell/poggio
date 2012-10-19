@@ -7,14 +7,9 @@
            [com.jme3.scene.shape Sphere]))
 
 (def-opts-constructor geom
+  :setter
   {label "geom-generated geometry"
-   shape (Sphere. 16 16 1)}
-  (Geometry. label shape)
-  {:label       no-op
-   :shape       no-op
-   :material    (fn [^Geometry geom ^Material mat]
-                 (.setMaterial geom mat))
-   :rotation    (fn [^Geometry geom ^Vector3f rot]
-                  (.setLocalRotation geom rot))
-   :translation (fn [^Geometry geom ^Vector3f loc]
-                  (.setLocalTranslation geom loc))})
+   shape `(Sphere. 16 16 1)}
+  `(Geometry. ~'label ~'shape)
+  {:label :no-op
+   :shape :no-op})

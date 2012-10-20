@@ -7,14 +7,27 @@
               [keyword :only [keyword->symbol]]]))
 
 (def default-argument-modifiers
+  "The default modifiers on arguments given to the 
+   default director. Includes:
+   thread-in -- inserts argument as second argument
+                in the given form.
+   append-in -- Similar to thread-in, except inserts
+                argument at the end."
   {:thread-in (fn [instance option arg]
                   (list* (first arg) instance (next arg)))
    :append-in (fn [instance option arg]
                   (concat arg (list instance)))})
 
-(def default-instance-modifiers {})
+(def default-instance-modifiers 
+  "The default modifiers on instance symbols given
+   to the default director. Currently includes nothing."
+  {})
 
 (def default-fn-name-modifiers
+  "The default modifiers on the fn-name given to
+   the default director. Includes:
+   replace -- Replaces the fn-name according to 
+              the given pattern and replacement."
   {:replace (fn [name option [pattern replacement]]
                 (str/replace name pattern replacement))}) 
 
@@ -46,10 +59,10 @@
   "Returns a form that simply applies instance and argument to the function."
   ([instance argument name-keyword & args]
    (let [[fn-name instance argument] (apply default-modifiers-handlers 
-                                     name-keyword
-                                     instance
-                                     argument
-                                     args)]
+                                            name-keyword
+                                            instance
+                                            argument
+                                            args)]
      `(~fn-name ~instance ~argument))))
 
 (defn setter-directive-handler
@@ -69,10 +82,10 @@
    with the element"
   [instance argument name-keyword & args]
   (let [[fn-name instance argument] (apply default-modifiers-handlers
-                                    name-keyword
-                                    instance
-                                    argument
-                                    args)]
+                                           name-keyword
+                                           instance
+                                           argument
+                                           args)]
     `(doseq [variable# ~argument]
        (~fn-name ~instance variable#))))
 
@@ -82,17 +95,15 @@
    with the key and value."
   [instance argument name-keyword & args]
   (let [[fn-name instance argument] (apply default-modifiers-handlers
-                                    name-keyword
-                                    instance
-                                    argument
-                                    args)]
+                                           name-keyword
+                                           instance
+                                           argument
+                                           args)]
     `(doseq [[key# val#] ~argument]
        (~fn-name ~instance key# val#))))
        
 
 (def default-director-directives-handlers
-  ;;TODO remember to handle defaults better
-  ;;This default will not be adequate for nifty builders
   {:simple default-directive-handler
    :setter setter-directive-handler
    :no-op (constantly nil)
@@ -125,6 +136,7 @@
   (let [{:as opts-map} opts
         ;;We merge only the defaults that are in opts
         def-map (intersecting-merge defs opts-map)
+        opts-map (merge defs opts-map)
         sym-map (key-map keyword->symbol def-map)
         flat-def-map (apply concat sym-map)
         instance-sym (gensym "constructor-instance-sym")

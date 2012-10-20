@@ -164,16 +164,15 @@
    of keyword arguments, handled as per the director
    and given directives."
   [director name default-directive defaults constructor directives]
-  (let [true-defaults (key-map keyword defaults)]
-    `(let [dir-map# ~directives
-           defs#    ~true-defaults]
-       (defmacro ~name [~'& opts#]
-         `(def-directed-opts-constructor-body* ~~director
-                                               ~~default-directive
-                                               ~dir-map#
-                                               ~defs#
-                                               ~~constructor
-                                               ~opts#)))))
+  `(let [dir-map# ~directives
+         defs#    ~defaults]
+     (defmacro ~name [~'& opts#]
+       `(def-directed-opts-constructor-body* ~~director
+                                             ~~default-directive
+                                             ~dir-map#
+                                             ~defs#
+                                             ~~constructor
+                                             ~opts#))))
 
 
 (defmacro def-directed-opts-constructor

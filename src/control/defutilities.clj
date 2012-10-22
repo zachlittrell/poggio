@@ -1,4 +1,5 @@
 (ns control.defutilities
+  "Methods for helping construct def-* macros."
   (:require [clojure.string :as str])
   (:use [control.io :only [err-println]]
         [functions.utilities :only [no-op]]
@@ -30,28 +31,25 @@
               the given pattern and replacement."
   {:replace (fn [name option [pattern replacement]]
                 (str/replace name pattern replacement))}) 
-
 (defn default-modifiers-handlers 
-  "Returns a pair with the first element being
-   the symbol of the fn-name modified as specified
-   by args, prepended with ., and turned into
+  "Returns a pair with the first element being the symbol of the fn-name modified as specified by args, prepended with ., and turned into
    camel-case, and instance and argument modified as specified
    by args."
   [fn-name instance argument & args]
   (let [{:as args-map} args]
-    (loop [fn-name fn-name
+    (loop [fn-name (name fn-name)
            instance instance
            argument argument
            args (seq args-map)]
       (if-let [[[keyword arg] & more] args]
         (if-let [f (default-instance-modifiers keyword)]
-          (recur fn-name (f instance) argument more)
+          (recur fn-name (f instance keyword arg) argument more)
           (if-let [f (default-fn-name-modifiers keyword)]
-            (recur (f fn-name) instance argument more)
+            (recur (f fn-name keyword arg) instance argument more)
             (if-let [f (default-argument-modifiers keyword)]
-              (recur fn-name instance (f argument) more)
+              (recur fn-name instance (f argument keyword arg) more)
               (err-println "No such argument called:" keyword))))
-        [(symbol (str "." (dash->camel-case (name fn-name)))) 
+        [(symbol (str "." (dash->camel-case fn-name))) 
                  instance
                  argument]))))
 
@@ -143,15 +141,19 @@
         director* (partial director instance-sym)
         opts-forms (for [[option argument] opts-map]
                      (if (contains? dir-map option)
-                       (director
+                       (let [directive (dir-map option)]
+                         (apply director
+                                instance-sym
+                                argument
+                                option
+                                (first directive)
+                                (next directive)))
+                       (apply director 
                               instance-sym
                               argument
                               option
-                              (dir-map option))
-                       (director instance-sym
-                                 argument
-                                 option
-                                 default-directive)))]
+                              (first default-directive)
+                              (next default-directive))))]
     `(let [~@flat-def-map
            ~instance-sym ~const]
        ~@opts-forms

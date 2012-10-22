@@ -1,4 +1,5 @@
 (ns data.string
+  "Functions for manipulating strings."
   (:require [clojure.string :as str]))
 
 (defn upper-case-word [^String word]

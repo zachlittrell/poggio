@@ -1,4 +1,5 @@
-(ns control.io)
+(ns control.io
+  "Functions for performing IO")
 
 (defn err-println 
   "Prints line to *err*."

@@ -1,4 +1,5 @@
-(ns data.map)
+(ns data.map
+  "Functions for modifying Clojure maps.")
 
 (defn key-map
   "Returns a new map with key-fn applied to each key in m."

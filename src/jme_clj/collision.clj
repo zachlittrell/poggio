@@ -1,11 +1,13 @@
 (ns jme-clj.collision
-  (:import [com.jme3.collision CollisionResults]
-           [com.jme3.math Ray]))
+  "Methods for handling collisions in JME."
+  (:import [com.jme3.collision Collidable CollisionResults]
+           [com.jme3.math Ray]
+           [com.jme3.renderer Camera]))
 
 (defn closest-collision 
   "Returns the closest collision between collidable and other,
    or nil if there is none."
-  ([collidable other]
+  ([^Collidable collidable ^Collidable other]
     (let [results (CollisionResults.)]
       (.collideWith other collidable results)
       (when (> (.size results) 0)
@@ -14,7 +16,7 @@
 (defn closest-collision-from-camera
   "Returns the closest collision between collidable and camera,
    or nil if there is none."
-  ([camera collidable]
+  ([^Camera camera ^Collidable collidable]
     (closest-collision collidable (Ray. (.getLocation camera)
                                         (.getDirection camera)))))
  

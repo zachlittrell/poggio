@@ -11,7 +11,7 @@
 
        
 
-(defn three-sphere-in-front [this]
+(defn three-sphere-in-front [^SimpleApplication this]
    (let [mat (Material. (.getAssetManager this)
                          "Common/MatDefs/Misc/Unshaded.j3md")
          cam (.getCamera this)
@@ -39,6 +39,6 @@
             (three-sphere-in-front this)))))))
  
 
-(defn -main []
+(defn -main [& args]
   (doto (make-app)
         (.start)))

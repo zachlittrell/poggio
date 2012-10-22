@@ -1,4 +1,6 @@
 (ns data.enum
+  "Functions for converting enums to
+   other data types."
   (:use [data.string :only [split-camel-case]]
         [clojure.string :only [lower-case]]))
 

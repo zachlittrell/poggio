@@ -1,4 +1,5 @@
 (ns jme-clj.input
+  "Methods for handling input events in JME"
   (:use [clojure.core.match :only [match]]
         [jme-clj.collision :only [closest-collision-from-camera]])
   (:import [com.jme3.input InputManager]
@@ -18,9 +19,9 @@
       (.addListener listener
                     (doto (make-array String 1) (aset 0 key)))))) 
 
-(def ^{:doc "The options used by trigger events for selecting what InputListener
-             to use."}
-  listener-options 
+(def listener-options 
+  "The options used by trigger events for 
+   selecting what InputListener to use."
   {:action [`ActionListener 'onAction]
    :analog [`AnalogListener 'onAnalog]})
 

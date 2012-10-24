@@ -1,18 +1,7 @@
 (ns nifty-clj.builders
+  "Functions for creating nifty objects."
   (:use [functions.utilities :only [no-op]]
-        [control.defutilities :only [def-opts-constructor
-                                     defadder
-                                     keyword->defadder-form
-                                     keyword->adder-symbol
-                                     def-map-adder
-                                     defsetter
-                                     keyword->defsetter-form
-                                     predicate-keyword->setter-symbol
-                                     keyword->setter-symbol
-                                     def-directive-map
-                                     default-director
-                                     default-directive-map
-                                     default-directives-map]])
+        [control.defutilities :only [def-opts-constructor]])
   (:import [com.jme3.app Application] 
            [com.jme3.asset AssetManager]
            [com.jme3.audio AudioRenderer]
@@ -91,23 +80,21 @@
                                     view-port)]
      (.addProcessor view-port display)
      (let [display-nifty (.getNifty display)]
-       (if load-defaults?
+       (when load-defaults?
          (.loadStyleFile display-nifty "nifty-default-styles.xml")
          (.loadControlFile display-nifty "nifty-default-controls.xml"))
        display-nifty))))
       
 
 (def-opts-constructor screen
-  {id "screen-builder generated ScreenBuilder"}
-  (ScreenBuilder. id)
-  (default-directive-map
-    [:id                    :no-op]
-    [:controller            :setter]
-    [:default-focus-element :setter]
-    [:input-mapping         :setter]
-    [:layers                :adder]))
+  [:simple]
+  {:id "screen-builder generated ScreenBuilder"}
+  `(ScreenBuilder. ~'id)
+  {:id     [:no-op]
+   :layers [:do-seq
+              :replace [#"s$" ""]]})
 
-(def child-layout-keyword->child-layout
+(def keyword->child-layout
   {:absolute        ElementBuilder$ChildLayoutType/Absolute
    :absolute-inside ElementBuilder$ChildLayoutType/AbsoluteInside
    :center          ElementBuilder$ChildLayoutType/Center
@@ -115,195 +102,124 @@
    :overlay         ElementBuilder$ChildLayoutType/Overlay
    :vertical        ElementBuilder$ChildLayoutType/Vertical})
 
-(def align-keyword->align
+(def keyword->align
   {:center ElementBuilder$Align/Center
    :left   ElementBuilder$Align/Left
    :right  ElementBuilder$Align/Right})
 
-(def valign-keyword->valign
+(def keyword->valign
   {:bottom ElementBuilder$VAlign/Bottom
    :center ElementBuilder$VAlign/Center
    :top    ElementBuilder$VAlign/Top})
 
-(def keyword->def-align-setter-form
-  (partial keyword->defsetter-form
-           (partial list `align-keyword->align)))
-
-(def keyword->def-child-layout-setter-form
-  (partial keyword->defsetter-form
-           (partial list `child-layout-keyword->child-layout)))
-
-(def keyword->def-valign-setter-form
-  (partial keyword->defsetter-form
-           (partial list `valign-keyword->valign)))
-
-(def-directive-map element-builder-directives-map
-  (let [setter-map (:setter default-directives-map)]
-    (assoc default-directives-map
-           :align-setter 
-              (assoc setter-map
-                     :form keyword->def-align-setter-form)
-           :child-layout-setter
-              (assoc setter-map
-                     :form keyword->def-child-layout-setter-form)
-           :valign-setter
-              (assoc setter-map
-                     :form keyword->def-valign-setter-form)))
-    default-director)
-
 (def element-builder-handlers
-  (element-builder-directives-map 
-    [:align                           :align-setter]
-    [:background-color                :setter]
-    [:background-image                :setter]
-    [:child-layout                    :child-layout-setter]
-    [:child-clip?                     :predicate-setter]
-    [:color                           :setter]
-    [:controls                        :adder]
-    [:controller                      :defined-setter]
-    [:filename                        :setter]
-    [:focusable?                      :predicate-setter]
-    [:font                            :setter]
-    [:height                          :setter]
-    [:images                          :adder]
-    [:image-mode                      :setter]
-    [:input-mapping                   :defined-setter]
-    [:inset                           :setter]
-    [:interact-on-click               :setter]
-    [:interact-on-click-alternate-key :setter]
-    [:interact-on-click-mouse-move    :setter]
-    [:interact-on-click-repeat        :setter]
-    [:interact-on-mouse-over          :setter]
-    [:interact-on-release             :setter]
-    [:name                            :setter]
-    [:on-active-effect                :setter]
-    [:on-click-effect                 :setter]
-    [:on-custom-effect                :setter]
-    [:on-end-hover-effect             :setter]
-    [:on-end-screen-effect            :setter]
-    [:on-focus-effect                 :setter]
-    [:on-get-focus-effect             :setter]
-    [:on-hide-effect                  :setter]
-    [:on-hover-effect                 :setter]
-    [:on-lost-focus-effect            :setter]
-    [:on-show-effect                  :setter]
-    [:on-start-hover-effect           :setter]
-    [:on-start-screen-effect          :setter]
-    [:padding                         :setter]
-    [:padding-bottom                  :setter]
-    [:padding-left                    :setter]
-    [:padding-right                   :setter]
-    [:padding-top                     :setter]
-    [:panels                          :adder]
-    [:selection-color                 :setter]
-    [:style                           :setter]
-    [:text                            :setter]
-    [:text-halign                     :align-setter]
-    [:text-valign                     :valign-setter]
-    [:valign                          :valign-setter]
-    [:visible?                        :predicate-setter]
-    [:visible-to-mouse?               :predicate-setter]
-    [:width                           :setter]
-    [:x                               :setter]
-    [:y                               :setter]))
+  {:align             [:simple
+                         :thread-in `(keyword->align)]
+   :child-layout      [:simple
+                         :thread-in `(keyword->child-layout)]
+   :child-clip?       [:simple
+                         :replace [#"\?$" ""]]
+   :controls          [:do-seq
+                         :replace [#"s$" ""]]
+   :focusable?        [:simple
+                         :replace [#"\?$" ""]]
+   :images            [:do-seq
+                         :replace [#"s$" ""]]
+   :panels            [:do-seq
+                         :replace [#"s$" ""]]
+   :text-halign       [:simple
+                         :thread-in `(keyword->align)]
+   :text-valign       [:simple
+                         :thread-in `(keyword->valign)]
+   :valign            [:simple
+                         :thread-in `(keyword->valign)]
+   :visible?          [:simple
+                         :replace [#"\?$" ""]]
+   :visible-to-mouse? [:simple
+                         :replace [#"\?$" ""]]})
 
 (defmacro def-element-builder 
   "This macro creates a function similar to 
    def-opts-constructor, except it merges the handlers
    with element-builder-handlers."
   [name defaults constructor handlers]
-  `(def-opts-constructor ~name ~defaults ~constructor
-                         (merge element-builder-handlers ~handlers)))
+  `(def-opts-constructor ~name 
+      [:simple]
+      ~defaults
+      ~constructor
+      (merge element-builder-handlers ~handlers)))
 
 (def-element-builder layer
-  {id "layer-generated LayerBuilder"}
-  (LayerBuilder. id)
-  {:id no-op})
+  {:id "layer-generated LayerBuilder"}
+  `(LayerBuilder. ~'id)
+  {:id [:no-op]})
 
 (def-element-builder panel
-  {id "panel-generated PanelBuilder"}
-  (PanelBuilder. id)
-  {:id no-op})
+  {:id "panel-generated PanelBuilder"}
+  `(PanelBuilder. ~'id)
+  {:id [:no-op]})
 
 (def-element-builder image
-  {id "image-generated ImageBuilder"}
-  (ImageBuilder. id)
-  {:id no-op})
+  {:id "image-generated ImageBuilder"}
+  `(ImageBuilder. ~'id)
+  {:id [:no-op]})
 
-(defsetter set-wrap! :wrap?)
 (def-element-builder text
-  {id "text-generated TextBuilder"}
-  (TextBuilder. id)
-  {:id    no-op
-   :wrap? set-wrap!})
+  {:id "text-generated TextBuilder"}
+  `(TextBuilder. ~'id)
+  {:id    [:no-op]
+   :wrap? [:simple
+             :replace [#"\?$" ""]]})
 
 (def-element-builder button
-  {id    "button-generated ButtonBuilder"
-   label "Click here"}
-  (ButtonBuilder. id label)
-  {:id    no-op
-   :label no-op})
+  {:id    "button-generated ButtonBuilder"
+   :label "Click here"}
+  `(ButtonBuilder. ~'id ~'label)
+  {:id    [:no-op]
+   :label [:no-op]})
 
 (def-element-builder label
-  {id "label-generated LabelBuilder"
-   text "Label"}
-  (LabelBuilder. id)
-  {:id no-op})
+  {:id "label-generated LabelBuilder"
+   :text "Label"}
+  `(LabelBuilder. ~'id)
+  {:id [:no-op]})
 
-(defsetter set-checked! :checked?)
 (def-element-builder checkbox
-  {id "checkbox-generated CheckboxBuilder"}
-  (CheckboxBuilder. id)
-  {:id no-op
-   :checked? set-checked!})
+  {:id "checkbox-generated CheckboxBuilder"}
+  `(CheckboxBuilder. ~'id)
+  {:id [:no-op]
+   :checked? [:simple
+                :replace [#"\?$" ""]]})
 
 (def-element-builder scroll-panel
-  {id "scroll-panel-generated ScrollPanelBuilder"}
-  (ScrollPanelBuilder. id)
-  {:id no-op})
+  {:id "scroll-panel-generated ScrollPanelBuilder"}
+  `(ScrollPanelBuilder. ~'id)
+  {:id [:no-op]})
    
-(defsetter set-max-length! :max-length)
-(defsetter set-password-char! :password-char)
 (def-element-builder text-field
-  {id "text-field-generated TextFieldBuilder"}
-  (TextFieldBuilder. id)
-  {:id no-op
-   :max-length set-max-length!
-   :password-char set-password-char!})
-
-(def keyword->def-vararg-setter-form
-  (partial keyword->defsetter-form
-           (partial list `into-array `String)))
-
-(def-directive-map effects-directive-map
-  (let [setter-map (:setter default-directives-map)]
-    (assoc default-directives-map
-           :vararg-setter 
-              (assoc setter-map
-                     :form keyword->def-vararg-setter-form)))
-    default-director)
-
+  {:id "text-field-generated TextFieldBuilder"}
+  `(TextFieldBuilder. ~'id)
+  {:id [:no-op]})
 
 (def-opts-constructor effect
-  {effect-name "fade"}
-  (EffectBuilder. effect-name)
-  (effects-directive-map
-    [:alternate-disable        :setter]
-    [:alternate-enable         :setter]
-    [:custom-key               :setter]
-    [:effect-name              :no-op]
-    [:effect-parameters        :map-adder]
-    [:effect-value             :vararg-setter]
-    [:inherit?                 :predicate-setter]
-    [:length                   :setter]
-    [:never-stop-rendering?    :predicate-setter]
-    [:on-end-effect-callback   :setter]
-    [:one-shot?                :predicate-setter]
-    [:on-start-effect-callback :setter]
-    [:overlay?                 :predicate-setter]
-    [:post?                    :predicate-setter]
-    [:start-delay              :setter]
-    [:time-type                :setter]))
+  [:simple]
+  {:effect-name "fade"}
+  `(EffectBuilder. ~'effect-name)
+  {:effect-name [:no-op]
+   :effect-parameters [:map-do-seq
+                         :replace [#"s$" ""]]
+   :effect-value [:simple
+                    :append-in `(into-array String)]
+   :inherit?     [:simple
+                    :replace [#"\?$" ""]]
+   :never-stop-rendering? [:simple
+                             :replace [#"\?$" ""]]
+   :on-shot? [:simple
+                :replace [#"\?$" ""]]
+   :overlay? [:simple
+                :replace [#"\?$" ""]]
+   :post?    [:simple
+                :replace [#"\?$" ""]]})
 
 (def keyword->hover-falloff-constraint
   {:both       Falloff$HoverFalloffConstraint/both
@@ -315,29 +231,20 @@
   {:linear     Falloff$HoverFalloffType/linear
    :none       Falloff$HoverFalloffType/none})
 
-(defn set-hover-falloff-constraint! [effect-build keyword]
-  (.hoverFalloffConstraint effect-build 
-                           (keyword->hover-falloff-constraint keyword)))
-(defn set-hover-falloff-type! [effect-build keyword]
-  (.hoverFalloffConstraint effect-build
-                           (keyword->hover-falloff-type keyword)))
-
 (def-opts-constructor hover-effect
-  {effect-name "fade"}
-  (HoverEffectBuilder. effect-name)
-  (default-directive-map
-    [:alternate-disable        :defined-setter]
-    [:alternate-enable         :defined-setter]
-    [:custom-key               :defined-setter]
-    [:effect-name              :no-op]
-    [:effect-parameters        :defined-adder]
-    [:effect-value             :defined-setter]
-    [:hover-falloff-constraint :defined-setter]
-    [:hover-falloff-type       :defined-setter]
-    [:hover-height             :setter]
-    [:hover-parameters         :adder]
-    [:hover-width              :setter]
-    [:inherit?                 :defined-predicate-setter]
-    [:never-stop-rendering?    :defined-predicate-setter]
-    [:overlay?                 :defined-predicate-setter]
-    [:post?                    :defined-predicate-setter]))
+  [:simple]
+  {:effect-name "fade"}
+  `(HoverEffectBuilder. ~'effect-name)
+  {:effect-name [:no-op]
+   :effect-parameters [:map-do-seq
+                         :replace [#"s$" ""]]
+   :hover-parameters  [:map-do-seq
+                         :replace [#"s$" ""]]
+   :inherit?          [:simple
+                         :replace [#"\?$" ""]]
+   :never-stop-rendering? [:simple
+                             :replace [#"\?$" ""]]
+   :overlay?              [:simple
+                             :replace [#"\?$" ""]]
+   :post?                 [:simple
+                             :replace [#"\?$" ""]]})

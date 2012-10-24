@@ -4,7 +4,7 @@
   (:import [com.jme3.font BitmapFont BitmapText]))
 
 (def-opts-constructor bitmap-text
-  :setter
+  [:setter]
   {:font `(BitmapFont.)}
   `(BitmapText. ~'font)
-  {:font :no-op})
+  {:font [:no-op]})

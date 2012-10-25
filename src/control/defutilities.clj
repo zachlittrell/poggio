@@ -7,6 +7,81 @@
               [string :only [dash->camel-case]]
               [keyword :only [keyword->symbol]]]))
 
+
+(defmacro def-directed-opts-constructor-body*
+  "Returns the body of the macro specified in
+   def-directed-opts-constructor-body, which
+   creates an instance of the object made by
+   const, and checks each directive in dir-map
+   against defaults in defs and options given
+   in opts. If there is no directive in dir-map
+   for handling the option, the default-directive is used."
+  [director default-directive dir-map defs const opts]
+  (let [{:as opts-map} opts
+        ;;We merge only the defaults that are in opts
+        def-map (intersecting-merge defs opts-map)
+        opts-map (merge defs opts-map)
+        sym-map (key-map keyword->symbol def-map)
+        flat-def-map (apply concat sym-map)
+        instance-sym (gensym "constructor-instance-sym")
+        director* (partial director instance-sym)
+        opts-forms (for [[option argument] opts-map]
+                     (if (contains? dir-map option)
+                       (let [directive (dir-map option)]
+                         (apply director
+                                instance-sym
+                                argument
+                                option
+                                (first directive)
+                                (next directive)))
+                       (apply director 
+                              instance-sym
+                              argument
+                              option
+                              (first default-directive)
+                              (next default-directive))))]
+    `(let [~@flat-def-map
+           ~instance-sym ~const]
+       ~@opts-forms
+       ~instance-sym)))
+
+(defmacro def-directed-opts-constructor-body
+  "Returns the body of the macro specified in
+   def-directed-opts-constructor, which creates
+   a macro called name that takes a variable number
+   of keyword arguments, handled as per the director,
+   default directive, and given directives."
+  [director name default-directive defaults constructor directives]
+  `(let [dir-map# ~directives
+         defs#    ~defaults]
+     (defmacro ~name [~'& opts#]
+       `(def-directed-opts-constructor-body* ~~director
+                                             ~~default-directive
+                                             ~dir-map#
+                                             ~defs#
+                                             ~~constructor
+                                             ~opts#))))
+
+
+(defmacro def-directed-opts-constructor
+  "Creates a macro called name that takes a
+   name, a default-directive for director,
+   pairs of keys with default values (with the values 
+   quoted as necessary), a constructor (once again quoted),
+   and pairs of directives. The directives are handled
+   according to the director."
+  [name director]
+  `(let [director# ~director]
+     (defmacro ~name [name# default-directive# defaults# constructor# directives#]
+       `(def-directed-opts-constructor-body ~director# 
+                                            ~name#
+                                            ~default-directive#
+                                            ~defaults#
+                                            ~constructor#
+                                            ~directives#))))
+
+
+;;Setup for the specialized def-opts-constructor
 (def default-argument-modifiers
   "The default modifiers on arguments given to the 
    default director. Includes:
@@ -31,6 +106,7 @@
               the given pattern and replacement."
   {:replace (fn [option name [pattern replacement]]
                 (str/replace name pattern replacement))}) 
+
 (defn default-modifiers-handlers 
   "Returns a pair with the first element being the symbol of the fn-name modified as specified by args, prepended with ., and turned into
    camel-case, and instance and argument modified as specified
@@ -131,78 +207,6 @@
            argument
            name
            args)))
-
-(defmacro def-directed-opts-constructor-body*
-  "Returns the body of the macro specified in
-   def-directed-opts-constructor-body, which
-   creates an instance of the object made by
-   const, and checks each directive in dir-map
-   against defaults in defs and options given
-   in opts. If there is no directive in dir-map
-   for handling the option, the default-directive is used."
-  [director default-directive dir-map defs const opts]
-  (let [{:as opts-map} opts
-        ;;We merge only the defaults that are in opts
-        def-map (intersecting-merge defs opts-map)
-        opts-map (merge defs opts-map)
-        sym-map (key-map keyword->symbol def-map)
-        flat-def-map (apply concat sym-map)
-        instance-sym (gensym "constructor-instance-sym")
-        director* (partial director instance-sym)
-        opts-forms (for [[option argument] opts-map]
-                     (if (contains? dir-map option)
-                       (let [directive (dir-map option)]
-                         (apply director
-                                instance-sym
-                                argument
-                                option
-                                (first directive)
-                                (next directive)))
-                       (apply director 
-                              instance-sym
-                              argument
-                              option
-                              (first default-directive)
-                              (next default-directive))))]
-    `(let [~@flat-def-map
-           ~instance-sym ~const]
-       ~@opts-forms
-       ~instance-sym)))
-
-(defmacro def-directed-opts-constructor-body
-  "Returns the body of the macro specified in
-   def-directed-opts-constructor, which creates
-   a macro called name that takes a variable number
-   of keyword arguments, handled as per the director,
-   default directive, and given directives."
-  [director name default-directive defaults constructor directives]
-  `(let [dir-map# ~directives
-         defs#    ~defaults]
-     (defmacro ~name [~'& opts#]
-       `(def-directed-opts-constructor-body* ~~director
-                                             ~~default-directive
-                                             ~dir-map#
-                                             ~defs#
-                                             ~~constructor
-                                             ~opts#))))
-
-
-(defmacro def-directed-opts-constructor
-  "Creates a macro called name that takes a
-   name, a default-directive for director,
-   pairs of keys with default values (with the values 
-   quoted as necessary), a constructor (once again quoted),
-   and pairs of directives. The directives are handled
-   according to the director."
-  [name director]
-  `(let [director# ~director]
-     (defmacro ~name [name# default-directive# defaults# constructor# directives#]
-       `(def-directed-opts-constructor-body ~director# 
-                                            ~name#
-                                            ~default-directive#
-                                            ~defaults#
-                                            ~constructor#
-                                            ~directives#))))
 
 (def-directed-opts-constructor def-opts-constructor 
                                default-director)

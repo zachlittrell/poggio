@@ -14,9 +14,9 @@
                 in the given form.
    append-in -- Similar to thread-in, except inserts
                 argument at the end."
-  {:thread-in (fn [instance option arg]
+  {:thread-in (fn [option instance arg]
                   (list* (first arg) instance (next arg)))
-   :append-in (fn [instance option arg]
+   :append-in (fn [option instance arg]
                   (concat arg (list instance)))})
 
 (def default-instance-modifiers 
@@ -29,7 +29,7 @@
    the default director. Includes:
    replace -- Replaces the fn-name according to 
               the given pattern and replacement."
-  {:replace (fn [name option [pattern replacement]]
+  {:replace (fn [option name [pattern replacement]]
                 (str/replace name pattern replacement))}) 
 (defn default-modifiers-handlers 
   "Returns a pair with the first element being the symbol of the fn-name modified as specified by args, prepended with ., and turned into
@@ -43,11 +43,11 @@
            args (seq args-map)]
       (if-let [[[keyword arg] & more] args]
         (if-let [f (default-instance-modifiers keyword)]
-          (recur fn-name (f instance keyword arg) argument more)
+          (recur fn-name (f keyword instance arg) argument more)
           (if-let [f (default-fn-name-modifiers keyword)]
-            (recur (f fn-name keyword arg) instance argument more)
+            (recur (f keyword fn-name arg) instance argument more)
             (if-let [f (default-argument-modifiers keyword)]
-              (recur fn-name instance (f argument keyword arg) more)
+              (recur fn-name instance (f keyword argument arg) more)
               (err-println "No such argument called:" keyword))))
         [(symbol (str "." (dash->camel-case fn-name))) 
                  instance
@@ -102,6 +102,16 @@
        
 
 (def default-director-directives-handlers
+  "The directives that default-director knows how to handle.
+   These include:
+  
+   simple -- :option arg => (.option instance arg)
+   setter -- :option arg => (.setOption instance arg)
+   no-op  -- :option arg => nil
+   do-seq -- :option arg => (doseq [val arg]
+                              (.option instance val))
+   :map-do-seq -- :option arg => (doseq [[key val] arg]
+                                   (.option instance key val))"
   {:simple default-directive-handler
    :setter setter-directive-handler
    :no-op (constantly nil)
@@ -111,7 +121,7 @@
 (defn default-director
   "Returns a form that modifies the symbol instance
    with the given function name, possibly a directive
-   (if no directive is given, :default is used), and
+   (if no directive is given, :simple is used), and
    any additional args."
   ([instance argument name]
    (default-director instance argument name :simple))
@@ -163,8 +173,8 @@
   "Returns the body of the macro specified in
    def-directed-opts-constructor, which creates
    a macro called name that takes a variable number
-   of keyword arguments, handled as per the director
-   and given directives."
+   of keyword arguments, handled as per the director,
+   default directive, and given directives."
   [director name default-directive defaults constructor directives]
   `(let [dir-map# ~directives
          defs#    ~defaults]

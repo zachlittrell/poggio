@@ -3,7 +3,7 @@
   (:require [jme-clj.input :as input])
   (:import (com.jme3.app SimpleApplication)
            (com.jme3.input KeyInput)
-           (com.jme3.math ColorRGBA Vector3f)
+           (com.jme3.math ColorRGBA Vector3f Quaternion)
            (com.jme3.material Material)
            (com.jme3.scene Geometry)
            (com.jme3.scene.shape Sphere)
@@ -23,11 +23,10 @@
           (geom :shape (Sphere. 16 16 1)
                 :label (str "Sphere " x) 
                 :material mat
-                :local-rotation rot
-                :local-translation (let [res (Vector3f. loc)
-                                     forward (Vector3f. (* x 3) 0 20)]
-                                     (.mult rot forward res)
-                                     res)))))) 
+                :move (let [res (Vector3f.)
+                            forward (Vector3f. (* x 3) 0 20)]
+                        (.mult rot forward res)
+                        (.add loc res))))))) 
 
 (defn make-app []
   (proxy [SimpleApplication] []
@@ -42,3 +41,4 @@
 (defn -main [& args]
   (doto (make-app)
         (.start)))
+

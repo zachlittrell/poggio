@@ -1,6 +1,6 @@
 (ns jme-clj.geometry
   "Functions for creating Geometry objects."
-  (:use [functions.utilities :only [no-op]]
+  (:use [data.function :only [no-op]]
         [control.defutilities :only [def-opts-constructor]])
   (:import [com.jme3.material Material] 
            [com.jme3.math Vector3f]

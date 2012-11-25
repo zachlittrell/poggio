@@ -2,11 +2,11 @@
   "Methods for helping construct def-* macros."
   (:require [clojure.string :as str])
   (:use [control.io :only [err-println]]
-        [functions.utilities :only [no-op]]
-        [data [map :only [key-map intersecting-merge]]
+        [data [function :only [no-op]]
+              [map :only [key-map intersecting-merge]]
               [string :only [dash->camel-case]]
-              [keyword :only [keyword->symbol]]]))
-
+              [keyword :only [keyword->symbol]]]
+        [clojure.tools.macro :only [name-with-attributes]]))
 
 (defmacro def-directed-opts-constructor-body*
   "Returns the body of the macro specified in
@@ -24,7 +24,6 @@
         sym-map (key-map keyword->symbol def-map)
         flat-def-map (apply concat sym-map)
         instance-sym (gensym "constructor-instance-sym")
-        director* (partial director instance-sym)
         opts-forms (for [[option argument] opts-map]
                      (if (contains? dir-map option)
                        (let [directive (dir-map option)]
@@ -186,8 +185,8 @@
    no-op  -- :option arg => nil
    do-seq -- :option arg => (doseq [val arg]
                               (.option instance val))
-   :map-do-seq -- :option arg => (doseq [[key val] arg]
-                                   (.option instance key val))"
+   map-do-seq -- :option arg => (doseq [[key val] arg]
+                                  (.option instance key val))"
   {:simple default-directive-handler
    :setter setter-directive-handler
    :no-op (constantly nil)

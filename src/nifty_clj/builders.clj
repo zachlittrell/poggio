@@ -1,6 +1,6 @@
 (ns nifty-clj.builders
   "Functions for creating nifty objects."
-  (:use [functions.utilities :only [no-op]]
+  (:use [data.function :only [no-op]]
         [control.defutilities :only [def-opts-constructor]])
   (:import [com.jme3.app Application] 
            [com.jme3.asset AssetManager]

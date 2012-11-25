@@ -11,6 +11,10 @@
     (invoke [_] (do (f) true))
     (performInvoke [_] (f))))
 
+(defmacro nifty-method [& body]
+  `(ifn-nifty-method-invoker
+     (fn [_] ~@body)))
+
 (defprotocol Nifty-Method-Invoker
   (nifty-method-invoker [this]))
 
@@ -20,7 +24,7 @@
 
 (extend-type IFn
   Nifty-Method-Invoker
-  (nifty-method-invoker [f] (nifty-method-invoker f)))
+  (nifty-method-invoker [f] (ifn-nifty-method-invoker f)))
 
 (defn set-on-mouse-over! [element invoker]
   (.setOnMouseOver (.getElementInteraction element)
@@ -34,7 +38,7 @@
   [:on-click :on-click-mouse-move :on-release])
 
 (defmacro def-element-interaction-click-handler-setters
-  [click-name click-hander]
+  [click-name click-handler]
   (let [setters 
          (for [method element-interaction-click-methods]
            (let [method-str (name method)
@@ -46,7 +50,7 @@
                                              true)
                                          "Method"))]
              `(defn ~method-name [element# invoker#]
-                (~method-call (~click-handlers element#)
+                (~method-call (~click-handler element#)
                               (nifty-method-invoker invoker#)))))]
     `(do
        ~@setters)))

@@ -5,6 +5,7 @@
   :dev-dependencies [[lein-autodoc "0.9.0"]]
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [org.clojure/core.match "0.2.0-alpha9"]
+                 [org.clojure/tools.macro "0.1.1"]
                  [com.jme3/eventbus "3.0.0.20120512-SNAPSHOT"]
                  [com.jme3/j-ogg-oggd "3.0.0.20120512-SNAPSHOT"]
                  [com.jme3/j-ogg-vorbisd "3.0.0.20120512-SNAPSHOT"]

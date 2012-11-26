@@ -4,6 +4,7 @@
 *swp
 /lib
 /classes
+/target
 /native
 /.lein-failures
 /checkouts

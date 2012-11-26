@@ -8,6 +8,7 @@
            [com.jme3.scene.shape Sphere]))
 
 (def-spatial-constructor geom
+  [:setter]
   {:label "geom-generated geometry"
    :shape `(Sphere. 16 16 1)}
   `(Geometry. ~'label ~'shape)

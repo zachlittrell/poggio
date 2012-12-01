@@ -10,5 +10,6 @@
 /checkouts
 /.lein-deps-sum
 private*
+output
 /autodoc
 /native

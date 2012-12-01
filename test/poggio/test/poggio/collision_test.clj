@@ -28,6 +28,11 @@
                                :physics-location (Vector3f. 0 10 0)))
 
 (defn set-up-keys! [app]
+  (doto (.getInputManager app)
+    (input/on-key!* :action KeyInput/KEY_SPACE
+      [_ name is-pressed? tpf]
+        (if is-pressed?
+          (.jump player))))
   (doseq [[atom key] {left  KeyInput/KEY_A
                       right KeyInput/KEY_D
                       up    KeyInput/KEY_W

@@ -17,6 +17,3 @@
      ~defaults
      ~constructor
     (merge spatial-constructor-handlers ~handlers)))
-     
-
-

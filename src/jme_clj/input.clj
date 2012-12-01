@@ -2,7 +2,8 @@
   "Methods for handling input events in JME"
   (:use [clojure.core.match :only [match]]
         [jme-clj.collision :only [closest-collision-from-camera]])
-  (:import [com.jme3.input InputManager]
+  (:import [com.jme3.app SimpleApplication]
+           [com.jme3.input InputManager]
            [com.jme3.input.controls ActionListener
                                     AnalogListener
                                     InputListener
@@ -10,6 +11,17 @@
                                     MouseAxisTrigger
                                     MouseButtonTrigger
                                     Trigger]))
+
+(defprotocol InputManagerOwner
+  (input-manager [owner]))
+
+(extend-type SimpleApplication
+  InputManagerOwner
+  (input-manager [app] (.getInputManager app)))
+
+(extend InputManager
+  InputManagerOwner
+  {:input-manager identity})
 
 (defn add-listener!
   "Attaches the listener to the given triggers, using a specific key."

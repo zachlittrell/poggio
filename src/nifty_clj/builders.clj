@@ -1,7 +1,8 @@
 (ns nifty-clj.builders
   "Functions for creating nifty objects."
   (:use [data.function :only [no-op]]
-        [control.defutilities :only [def-opts-constructor]])
+        [control.defutilities :only [def-opts-constructor]]
+        [jme-clj assets audio input view-port])
   (:import [com.jme3.app Application] 
            [com.jme3.asset AssetManager]
            [com.jme3.audio AudioRenderer]
@@ -30,12 +31,6 @@
            [de.lessvoid.nifty.screen DefaultScreenController
                                      ScreenController]))
 
-(defprotocol NiftyJmeDisplayer
-  (asset-manager [this])
-  (input-manager [this])
-  (audio-renderer [this])
-  (view-port [this]))
-
 (extend-type Application
   NiftyJmeDisplayer
   (asset-manager [app] (.getAssetManager app))
@@ -46,7 +41,8 @@
 (defn nifty-jme-display
   "Returns a new NiftyJmeDisplay object using the given
    arguments. You can instead send an object that implements
-   the NiftyJmeDisplayer protocol to provide the arguments."
+   the AssetManagerOwner,InputManagerOwner,AudioRenderOwner, and
+   ViewPortOwner protocols to provide the arguments."
   ([displayer]
    (nifty-jme-display (asset-manager displayer)
                       (input-manager displayer)

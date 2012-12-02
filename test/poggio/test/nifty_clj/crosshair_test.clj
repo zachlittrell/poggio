@@ -3,16 +3,8 @@
   (:import [com.jme3.app SimpleApplication]))
 
 (def cross-hair-screen
-  (screen
-    :layer
-      (layer
-        :child-layout :center
-        :panel
-          (panel
-            :child-layout :center
-            :control
-              (label
-                :text "+")))))
+  (screen-around
+    (label :text "+")))
 
 (defn make-app []
   (proxy [SimpleApplication] []

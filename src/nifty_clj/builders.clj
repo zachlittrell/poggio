@@ -246,13 +246,22 @@
    :post?                 [:simple
                              :replace [#"\?$" ""]]})
 
-(defn screen-around [& controls]
-  "Returns a screen with one layer and one panel that contains these controls"
+
+(defn laid-out-screen-around [child-layout & controls]
+  "Returns a screen with one layer and one panel (which uses the given
+   child-layout) that contains the given controls."
   (screen
     :layer
       (layer
         :child-layout :center
         :panel
           (panel
-            :child-layout :center
+            :child-layout child-layout
             :controls controls))))
+        
+
+
+(defn screen-around [& controls]
+  "Returns (apply laid-out-screen-around :center controls)"
+  (apply laid-out-screen-around :center controls))
+

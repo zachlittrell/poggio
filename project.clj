@@ -2,7 +2,9 @@
   :main poggio.core
   :description "FIXME: write description"
   :repositories {"oss-sonatype" "https://oss.sonatype.org/content/repositories/snapshots/"}
-  :dev-dependencies [[lein-autodoc "0.9.0"]]
+  :profiles {:dev {:dependencies 
+                   [[lein-autodoc "0.9.0"]
+                   [com.jme3/jME3-testdata "3.0.0.20120512-SNAPSHOT"]]}}
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [org.clojure/core.match "0.2.0-alpha9"]
                  [org.clojure/tools.macro "0.1.1"]

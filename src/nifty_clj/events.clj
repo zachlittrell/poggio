@@ -15,15 +15,15 @@
   `(ifn-nifty-method-invoker
      (fn [_] ~@body)))
 
-(defprotocol Nifty-Method-Invoker
+(defprotocol NiftyMethodInvokerProvider
   (nifty-method-invoker [this]))
 
 (extend NiftyMethodInvoker
-  Nifty-Method-Invoker
+  NiftyMethodInvokerProvider
   {:nifty-method-invoker identity})
 
 (extend-type IFn
-  Nifty-Method-Invoker
+  NiftyMethodInvokerProvider
   (nifty-method-invoker [f] (ifn-nifty-method-invoker f)))
 
 (defn set-on-mouse-over! [element invoker]

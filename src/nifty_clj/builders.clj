@@ -10,7 +10,8 @@
            [com.jme3.niftygui NiftyJmeDisplay]
            [com.jme3.renderer ViewPort]
            [de.lessvoid.nifty Nifty NiftyMethodInvoker]
-           [de.lessvoid.nifty.builder EffectBuilder
+           [de.lessvoid.nifty.builder ControlBuilder
+                                      EffectBuilder
                                       ElementBuilder 
                                       ElementBuilder$Align
                                       ElementBuilder$ChildLayoutType
@@ -137,6 +138,13 @@
       ~defaults
       ~constructor
       (merge element-builder-handlers ~handlers)))
+
+(def-element-builder control
+  {:id "control-generated ControlBuilder"
+   :name "label"}
+  `(ControlBuilder. ~'id ~'name)
+  {:id [:no-op]
+   :name [:no-op]})
 
 (def-element-builder layer
   {:id "layer-generated LayerBuilder"}

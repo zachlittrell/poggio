@@ -31,13 +31,6 @@
            [de.lessvoid.nifty.screen DefaultScreenController
                                      ScreenController]))
 
-(extend-type Application
-  NiftyJmeDisplayer
-  (asset-manager [app] (.getAssetManager app))
-  (input-manager [app] (.getInputManager app))
-  (audio-renderer [app] (.getAudioRenderer app))
-  (view-port [app] (.getGuiViewPort app)))
-
 (defn nifty-jme-display
   "Returns a new NiftyJmeDisplay object using the given
    arguments. You can instead send an object that implements

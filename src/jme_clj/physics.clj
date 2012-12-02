@@ -4,15 +4,15 @@
            [com.jme3.bullet PhysicsSpace]
            [com.jme3.bullet BulletAppState]))
 
-(defprotocol PhysicsSpatial
-  (physics-space [spatial]))
+(defprotocol PhysicsSpaceProvider
+  (physics-space [provider]))
 
 (extend PhysicsSpace
-  PhysicsSpatial
+  PhysicsSpaceProvider
   {:physics-space identity})
 
 (extend-type SimpleApplication
-  PhysicsSpatial
+  PhysicsSpaceProvider
   (physics-space [app] (-> app
                            (.getStateManager)
                            (.getState BulletAppState)

@@ -1,6 +1,7 @@
 (ns jme-clj.collision
   "Methods for handling collisions in JME."
-  (:import [com.jme3.collision Collidable CollisionResults]
+  (:import [com.jme3.bullet.collision PhysicsCollisionListener]
+           [com.jme3.collision Collidable CollisionResults]
            [com.jme3.math Ray]
            [com.jme3.renderer Camera]))
 
@@ -20,4 +21,10 @@
     (closest-collision collidable (Ray. (.getLocation camera)
                                         (.getDirection camera)))))
  
-
+(defmacro on-collision! [physics-space bindings & body]
+  "Adds a PhysicsCollisionListener to the physics-space
+   which uses bindings for its parameters and body for the
+   collision function body."
+  `(.addCollisionListener physics-space
+      (reify PhysicsCollisionListener
+        (collision ~bindings ~@body))))

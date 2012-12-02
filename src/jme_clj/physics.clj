@@ -5,7 +5,7 @@
            [com.jme3.bullet BulletAppState]))
 
 (defprotocol PhysicsSpatial
-  (physics-space [node]))
+  (physics-space [spatial]))
 
 (extend PhysicsSpace
   PhysicsSpatial

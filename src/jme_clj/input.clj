@@ -12,15 +12,15 @@
                                     MouseButtonTrigger
                                     Trigger]))
 
-(defprotocol InputManagerOwner
+(defprotocol InputManagerProvider
   (input-manager [owner]))
 
 (extend-type SimpleApplication
-  InputManagerOwner
+  InputManagerProvider
   (input-manager [app] (.getInputManager app)))
 
 (extend InputManager
-  InputManagerOwner
+  InputManagerProvider
   {:input-manager identity})
 
 (defn add-listener!

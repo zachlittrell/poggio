@@ -2,13 +2,13 @@
   (:import [com.jme3.app SimpleApplication]
            [com.jme3.scene Node]))
 
-(defprotocol Nodule
+(defprotocol NodeProvider
   (node [nodule]))
 
 (extend-type SimpleApplication
-  Nodule
+  NodeProvider
   (node [app] (.getRootNode app)))
 
 (extend Node
-  Nodule
+  NodeProvider
   {:node identity})

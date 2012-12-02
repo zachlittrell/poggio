@@ -2,14 +2,14 @@
   (:import [com.jme3.app SimpleApplication]
            [com.jme3.renderer ViewPort]))
 
-(defprotocol ViewPortOwner
+(defprotocol ViewPortProvider
   (view-port [owner]))
 
 (extend-type SimpleApplication
-  ViewPortOwner
+  ViewPortProvider
   (view-port [app] (.getViewPort app)))
 
 (extend ViewPort
-  ViewPortOwner
+  ViewPortProvider
   {:view-port identity})
 

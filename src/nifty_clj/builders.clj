@@ -41,8 +41,8 @@
 (defn nifty-jme-display
   "Returns a new NiftyJmeDisplay object using the given
    arguments. You can instead send an object that implements
-   the AssetManagerOwner,InputManagerOwner,AudioRenderOwner, and
-   ViewPortOwner protocols to provide the arguments."
+   the AssetManagerProvider,InputManagerProvider,AudioRenderProvider, and
+   ViewPortProvider protocols to provide the arguments."
   ([displayer]
    (nifty-jme-display (asset-manager displayer)
                       (input-manager displayer)

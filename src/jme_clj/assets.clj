@@ -1,15 +1,16 @@
 (ns jme-clj.assets
+  "Functions for handling assets in JME."
   (:import [com.jme3.app SimpleApplication]
            [com.jme3.asset AssetManager]))
 
-(defprotocol AssetManagerOwner
-  (asset-manager [owner]))
+(defprotocol AssetManagerProvider
+  (asset-manager [provider]))
 
 (extend-type SimpleApplication
-  AssetManagerOwner
+  AssetManagerProvider
   (asset-manager [app] (.getAssetManager app)))
 
 (extend AssetManager
-  AssetManagerOwner
+  AssetManagerProvider
   {:asset-manager identity})
 

@@ -1,15 +1,16 @@
 (ns jme-clj.audio
+  "Functions for handling audio in JME."
   (:import [com.jme3.app SimpleApplication]
            [com.jme3.audio AudioRenderer]))
 
-(defprotocol AudioRendererOwner
+(defprotocol AudioRendererProvider
   (audio-renderer [owner]))
 
 (extend-type SimpleApplication
-  AudioRendererOwner
+  AudioRendererProvider
   (audio-renderer [app] (.getAudioRenderer app)))
 
 (extend AudioRenderer
-  AudioRendererOwner
+  AudioRendererProvider
   {:audio-renderer identity})
 

@@ -1,4 +1,5 @@
-(ns data.metadata)
+(ns data.metadata
+  "Functions for handling Clojure metadata")
 
 (defn merge-metadata [obj metadata]
   "Merges the current metadata on this object with

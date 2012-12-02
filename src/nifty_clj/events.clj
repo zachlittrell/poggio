@@ -1,4 +1,5 @@
 (ns nifty-clj.events
+  "Functions for handling events (in particular, interactions) in nifty-gui."
   (:use [data.string :only [dash->camel-case]])
   (:import [clojure.lang IFn]
            [de.lessvoid.nifty NiftyMethodInvoker]))

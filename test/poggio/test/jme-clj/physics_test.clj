@@ -1,4 +1,4 @@
-(ns poggio.test.poggio.physics-test
+(ns poggio.test.jme-clj.physics-test
   "An adaptation of JMonkeyEngine's Hello Physics tutorial
    to test poggio's physics capabilities"
   (:use [jme-clj bitmap-text geometry input material physics])

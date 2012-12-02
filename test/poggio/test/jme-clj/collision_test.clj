@@ -1,4 +1,4 @@
-(ns poggio.test.poggio.collision-test
+(ns poggio.test.jme-clj.collision-test
   "An adaptation of JMonkeyEngine's Hello Collision tutorial
    using poggio"
   (:use [jme-clj geometry light physics physics-control])
@@ -70,7 +70,9 @@
             cam-dir (-> cam 
                         (.getDirection)
                         (.clone)
-                        (.multLocal (float 0.6)))
+                        (.multLocal (float 0.4))
+                        (.setY 0)
+                        (.normalize))
             cam-left (-> cam
                          (.getLeft)
                          (.clone)

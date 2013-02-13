@@ -275,10 +275,17 @@
   "Returns (apply laid-out-screen-around :center controls)"
   (apply laid-out-screen-around :center controls))
 
-(defn build [nifty element & interactions]
-  (let [element (.build element nifty)
+(defn build [nifty element-builder & interactions]
+  "Returns the element built by element-builder using nifty.
+   Can also pass optionally pairs of keyword and a map of 
+   interaction-handlers, the iteraction-handlers mapping keywords 
+   for interactions (see nifty-clj.events) to 
+   NiftyMethodInvokerProviders, and the keyword being the id of the
+   element to apply the interactions to."
+  (let [element (.build element-builder nifty)
         {:as interaction-map} interactions]
-    (doseq [[id-key [interaction handler]] interaction-map]
+    (doseq [[id-key interactions] interaction-map
+            [interaction handler] interactions]
       (if-let [target (.findElementByName element (name id-key))]
         ((element-interactions interaction) target handler)))
     element))

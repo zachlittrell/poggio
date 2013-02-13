@@ -8,7 +8,7 @@
          (screen-around
            (button :label "Click me!"
                    :id "btn"))
-         :btn [:on-left-click #(println "Hey hey hey")]))
+         :btn {:on-left-click #(println "Hey hey hey")}))
 
 (defn make-app []
   (proxy [SimpleApplication] []

@@ -1,4 +1,4 @@
-(ns poggio.core
+(ns poggio.test.jme-clj.key-test
   (:use [jme-clj [geometry :only [geom]]])
   (:require [jme-clj.input :as input])
   (:import (com.jme3.app SimpleApplication)

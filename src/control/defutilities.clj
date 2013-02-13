@@ -148,6 +148,19 @@
          (keyword (str "set-" (name name-keyword)))
          args))
 
+(defn pure-directive-handler
+  "Returns a form that applies instance and argument to the function,
+   and assumes the function is a Clojure function."
+  ([instance argument name-keyword & args]
+   (let [[fn-name instance argument] (apply default-modifiers-handlers 
+                                            name-keyword
+                                            instance
+                                            argument
+                                            args)
+         fn-name (keyword (str/replace (name fn-name) #"^\." ""))]
+     `(~fn-name ~instance ~argument))))
+
+
 
 (defn do-seq-directive-handler
   "Returns a form that loops over every element
@@ -174,7 +187,26 @@
                                            args)]
     `(doseq [[key# val#] ~argument]
        (~fn-name ~instance key# val#))))
-       
+
+(defn instance-only-directive-handler
+   "Returns just the resulting symbol for the instance."
+  [instance argument name-keyword & args]
+  (let [[fn-name instance argument] (apply default-modifiers-handlers
+                                           name-keyword
+                                           instance
+                                           argument
+                                           args)]
+     instance))
+
+(defn arg-only-directive-handler
+   "Returns just the resulting symbol for the argument."
+  [instance argument name-keyword & args]
+  (let [[fn-name instance argument] (apply default-modifiers-handlers
+                                           name-keyword
+                                           instance
+                                           argument
+                                           args)]
+     argument))
 
 (def default-director-directives-handlers
   "The directives that default-director knows how to handle.
@@ -182,16 +214,22 @@
   
    simple -- :option arg => (.option instance arg)
    setter -- :option arg => (.setOption instance arg)
+   pure   -- :option arg => (option instance arg)
    no-op  -- :option arg => nil
    do-seq -- :option arg => (doseq [val arg]
                               (.option instance val))
    map-do-seq -- :option arg => (doseq [[key val] arg]
-                                  (.option instance key val))"
+                                  (.option instance key val))
+   arg-only  -- :option arg => arg
+   instance-only -- :option arg => instance"
   {:simple default-directive-handler
    :setter setter-directive-handler
+   :pure   pure-directive-handler
    :no-op (constantly nil)
    :do-seq do-seq-directive-handler
-   :map-do-seq map-do-seq-directive-handler})
+   :map-do-seq map-do-seq-directive-handler
+   :arg-only arg-only-directive-handler
+   :instance-only instance-only-directive-handler})
 
 (defn default-director
   "Returns a form that modifies the symbol instance

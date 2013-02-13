@@ -1,8 +1,13 @@
 (ns nifty-clj.builders
   "Functions for creating nifty objects."
-  (:use [data.function :only [no-op]]
+  (:use [data [function :only [no-op]]
+              [keyword  :only [keyword->symbol]]
+              [object   :only [proxy-around-object]]
+              [string   :only [dash->camel-case]]]
         [control.defutilities :only [def-opts-constructor]]
-        [jme-clj assets audio input view-port])
+        [control.io :only [err-println]]
+        [jme-clj assets audio input view-port]
+        [nifty-clj events])
   (:import [com.jme3.app Application] 
            [com.jme3.asset AssetManager]
            [com.jme3.audio AudioRenderer]
@@ -29,8 +34,10 @@
            [de.lessvoid.nifty.controls.label.builder LabelBuilder]
            [de.lessvoid.nifty.controls.scrollpanel.builder ScrollPanelBuilder]
            [de.lessvoid.nifty.controls.textfield.builder TextFieldBuilder]
+           [de.lessvoid.nifty.loaderv2.types ElementType]
            [de.lessvoid.nifty.screen DefaultScreenController
-                                     ScreenController]))
+                                     ScreenController]
+           [java.util.logging Level Logger]))
 
 (defn nifty-jme-display
   "Returns a new NiftyJmeDisplay object using the given
@@ -70,6 +77,8 @@
                                     view-port)]
      (.addProcessor view-port display)
      (let [display-nifty (.getNifty display)]
+       (.setLevel (Logger/getLogger "de.lessvoid.nifty") Level/SEVERE)
+       (.setLevel (Logger/getLogger "NiftyInputEventHandlingLog") Level/SEVERE)
        (when load-defaults?
          (.loadStyleFile display-nifty "nifty-default-styles.xml")
          (.loadControlFile display-nifty "nifty-default-controls.xml"))
@@ -103,7 +112,8 @@
    :top    ElementBuilder$VAlign/Top})
 
 (def element-builder-handlers
-  {:align             [:simple
+  {:_element-interactions [:no-op]
+   :align             [:simple
                          :thread-in `(keyword->align)]
    :child-layout      [:simple
                          :thread-in `(keyword->child-layout)]
@@ -126,44 +136,44 @@
    :visible?          [:simple
                          :replace [#"\?$" ""]]
    :visible-to-mouse? [:simple
-                         :replace [#"\?$" ""]]})
+                           :replace [#"\?$" ""]]})
 
 (defmacro def-element-builder 
   "This macro creates a function similar to 
    def-opts-constructor, except it merges the handlers
    with element-builder-handlers."
-  [name defaults constructor handlers]
-  `(def-opts-constructor ~name 
+  [name defaults element-class args handlers]
+   `(def-opts-constructor ~name 
       [:simple]
       ~defaults
-      ~constructor
+      `(new ~~element-class ~@'~args)
       (merge element-builder-handlers ~handlers)))
 
 (def-element-builder control
   {:id "control-generated ControlBuilder"
    :name "label"}
-  `(ControlBuilder. ~'id ~'name)
+  ControlBuilder [id name]
   {:id [:no-op]
    :name [:no-op]})
 
 (def-element-builder layer
   {:id "layer-generated LayerBuilder"}
-  `(LayerBuilder. ~'id)
+  LayerBuilder [id]
   {:id [:no-op]})
 
 (def-element-builder panel
   {:id "panel-generated PanelBuilder"}
-  `(PanelBuilder. ~'id)
+  PanelBuilder [id]
   {:id [:no-op]})
 
 (def-element-builder image
   {:id "image-generated ImageBuilder"}
-  `(ImageBuilder. ~'id)
+  ImageBuilder [id]
   {:id [:no-op]})
 
 (def-element-builder text
   {:id "text-generated TextBuilder"}
-  `(TextBuilder. ~'id)
+  TextBuilder [id]
   {:id    [:no-op]
    :wrap? [:simple
              :replace [#"\?$" ""]]})
@@ -171,31 +181,31 @@
 (def-element-builder button
   {:id    "button-generated ButtonBuilder"
    :label "Click here"}
-  `(ButtonBuilder. ~'id ~'label)
+  ButtonBuilder [id label]
   {:id    [:no-op]
    :label [:no-op]})
 
 (def-element-builder label
   {:id "label-generated LabelBuilder"
    :text "Label"}
-  `(LabelBuilder. ~'id)
+  LabelBuilder [id]
   {:id [:no-op]})
 
 (def-element-builder checkbox
   {:id "checkbox-generated CheckboxBuilder"}
-  `(CheckboxBuilder. ~'id)
+  CheckboxBuilder [id]
   {:id [:no-op]
    :checked? [:simple
                 :replace [#"\?$" ""]]})
 
 (def-element-builder scroll-panel
   {:id "scroll-panel-generated ScrollPanelBuilder"}
-  `(ScrollPanelBuilder. ~'id)
+  ScrollPanelBuilder [id]
   {:id [:no-op]})
    
 (def-element-builder text-field
   {:id "text-field-generated TextFieldBuilder"}
-  `(TextFieldBuilder. ~'id)
+  TextFieldBuilder [id]
   {:id [:no-op]})
 
 (def-opts-constructor effect
@@ -265,3 +275,10 @@
   "Returns (apply laid-out-screen-around :center controls)"
   (apply laid-out-screen-around :center controls))
 
+(defn build [nifty element & interactions]
+  (let [element (.build element nifty)
+        {:as interaction-map} interactions]
+    (doseq [[id-key [interaction handler]] interaction-map]
+      (if-let [target (.findElementByName element (name id-key))]
+        ((element-interactions interaction) target handler)))
+    element))

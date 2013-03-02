@@ -34,3 +34,9 @@
    :texture-key   [:no-op]
    :wrap          [:setter
                    :thread-in `(keyword->wrap-mode)]})
+
+(defn textured-material [asset-manager texture-key]
+  (material :asset-manager asset-manager
+            :def-name "Common/MatDefs/Misc/Unshaded.j3md"
+            :texture {"ColorMap" (texture :asset-manager asset-manager
+                                           :texture-key texture-key)}))

@@ -275,7 +275,7 @@
   "Returns (apply laid-out-screen-around :center controls)"
   (apply laid-out-screen-around :center controls))
 
-(defn build [nifty element-builder & interactions]
+(defn build [^Nifty nifty ^ElementBuilder element-builder & interactions]
   "Returns the element built by element-builder using nifty.
    Can also pass optionally pairs of keyword and a map of 
    interaction-handlers, the iteraction-handlers mapping keywords 

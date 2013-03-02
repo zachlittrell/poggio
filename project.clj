@@ -4,6 +4,7 @@
   :repositories {"oss-sonatype" "https://oss.sonatype.org/content/repositories/snapshots/"}
   :profiles {:dev {:dependencies 
                    [[lein-autodoc "0.9.0"]
+                    [seesaw "1.4.2"]
                    [com.jme3/jME3-testdata "3.0.0.20120512-SNAPSHOT"]]}}
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [org.clojure/core.match "0.2.0-alpha9"]

@@ -1,9 +1,9 @@
 (ns control.defutilities
   "Methods for helping construct def-* macros."
-  (:require [clojure.string :as str])
+  (:require [clojure.string :as str]
+            [data.map :as map])
   (:use [control.io :only [err-println]]
         [data [function :only [no-op]]
-              [map :only [key-map intersecting-merge]]
               [string :only [dash->camel-case]]
               [keyword :only [keyword->symbol]]]
         [clojure.tools.macro :only [name-with-attributes]]))
@@ -17,11 +17,11 @@
    in opts. If there is no directive in dir-map
    for handling the option, the default-directive is used."
   [director default-directive dir-map defs const opts]
-  (let [{:as opts-map} opts
+  (let [opts-map (map/seq->pairs opts)
         ;;We merge only the defaults that are in opts
-        def-map (intersecting-merge defs opts-map)
-        opts-map (merge defs opts-map)
-        sym-map (key-map keyword->symbol def-map)
+        def-map (map/intersecting-merge (seq defs) opts-map)
+        opts-map (map/merge (seq defs) opts-map)
+        sym-map (map/key-map def-map keyword->symbol)
         flat-def-map (apply concat sym-map)
         instance-sym (gensym "constructor-instance-sym")
         opts-forms (for [[option argument] opts-map]

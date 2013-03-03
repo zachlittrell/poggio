@@ -63,7 +63,7 @@
                                                                           column))]
                                         :when (identical? player
                                                           (config component :icon))]
-                                    [row column])))]
+                                    [column row])))]
                   p
                   "[0 0]")
                 (into #{}

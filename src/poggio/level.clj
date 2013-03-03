@@ -17,30 +17,34 @@
   (load-level [this app player]
     (let [[x z :as init] (:player-loc this)
           floor-rot (doto (Quaternion.)
-                      (.fromAngleNormalAxis (* 90 FastMath/DEG_TO_RAD)
+                      (.fromAngleNormalAxis (* -90 FastMath/DEG_TO_RAD)
                                             Vector3f/UNIT_X))
           ceiling-rot (doto (Quaternion.)
-                        (.fromAngleNormalAxis (* -90 FastMath/DEG_TO_RAD)
+                        (.fromAngleNormalAxis (* 90 FastMath/DEG_TO_RAD)
                                               Vector3f/UNIT_X))]
       ;(.warp player (Vector3f. (* x 4) -2 (* 4 z)))
       ;;Iteratively construct the floor
       (loop [places [init]
-             seen   (into #{} (:wall-bounds this))]
+             seen   (into #{} wall-bounds)]
         (when-let [[[x z :as p] & more] (seq places)]
           (if (not (seen p))
             (do 
               (attach! app
                        (geom :shape (Quad. 4 4)
                              :material wall-mat
-                             ;;:local-rotation floor-rot
-                             :move (Vector3f. (* x 4) -4 (* z 4))
+                             :local-translation (Vector3f. (- (* x 4) 2) 
+                                                           -4 
+                                                           (+ (* z 4) 2))
+                             :local-rotation floor-rot
                              :controls [(RigidBodyControl. 
                                           (PlaneCollisionShape.
                                             (Plane. Vector3f/UNIT_Y 0)))])
                         (geom :shape (Quad. 4 4)
                               :material wall-mat
+                              :local-translation (Vector3f. (- (* x 4) 2)
+                                                            0 
+                                                            (- (* z 4) 2))
                               :local-rotation ceiling-rot
-                              :move (Vector3f. (* x 4) 0 (* z 4))
                               :controls [(RigidBodyControl. 
                                            (PlaneCollisionShape.
                                              (Plane. Vector3f/UNIT_Y 0)))]))
@@ -51,7 +55,7 @@
                      (conj seen p)))
             (recur more (conj seen p))))))
     ;;Build the walls
-    (doseq [[x z] (:wall-bounds this)]
+    (doseq [[x z] wall-bounds]
       (attach! app
                (geom :shape (Box. 2 2 2)
                      :material wall-mat

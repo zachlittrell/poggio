@@ -17,7 +17,8 @@
 
 (def item-icons
   {:wall (image-pad [100 100]
-           (.drawRect 0 0 99 99))
+           (.drawRect 0 0 99 99)
+           (.drawLine 0 0 99 99))
    :player (image-pad [100 100]
              (.drawString  "☺" 49 49))})
 

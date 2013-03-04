@@ -1,4 +1,4 @@
-(ns poggio.test.poggio.level-test
+(ns tools.level-viewer.core
   (:import [com.jme3.app SimpleApplication]
            [com.jme3.bullet BulletAppState]
            [com.jme3.input KeyInput]
@@ -7,7 +7,8 @@
   (:require [jme-clj.input :as input])
   (:use [nifty-clj builders]
         [poggio level]
-        [jme-clj material physics physics-control]))
+        [jme-clj material physics physics-control]
+        [seesaw [core :only [input]]]))
 
 
 (def player  (character-control :step-height (float 0.025)
@@ -33,20 +34,16 @@
       (swap! atom (constantly is-pressed?)))))
 
 
-(defn set-up-room! [app]
+(defn set-up-room! [app level-fn]
   (.add (physics-space app) player)
-  (load-level (basic-level ;;[1 1] #{[3 2] [1 0] [3 3] [0 0] [2 3] [0 1] [0 2] [1 3] [0 3] [3 0] [3 1] [2 0]} 
-                         ;; [2 1] #{[4 3] [1 0] [3 3] [0 0] [2 3] [0 1] [0 2] [1 3] [0 3] [6 0] [5 0] [6 1] [4 0] [6 2] [3 0] [6 3] [5 3] [2 0]} 
- [4 3] #{[3 2] [5 4] [8 7] [1 0] [3 3] [4 4] [8 8] [0 0] [3 4] [7 8] [0 1] [4 6] [7 9] [0 2] [1 3] [4 7] [6 9] [0 3] [1 4] [5 9] [1 5] [4 9] [1 6] [3 9] [1 7] [2 9] [1 8] [1 9] [6 0] [5 0] [6 1] [9 4] [4 0] [6 2] [8 4] [9 5] [3 0] [6 3] [7 4] [9 6] [6 4] [9 7] [2 0]}
-
-
-                           (textured-material (.getAssetManager app)
-                                              "Textures/Terrain/BrickWall/BrickWall.jpg"))
+  (load-level (level-fn (.getAssetManager app))
+                           ;;(textured-material (.getAssetManager app)
+                           ;;                   "Textures/Terrain/BrickWall/BrickWall.jpg"))
               app
               player)
   (.setLocation (.getCamera app) (.getPhysicsLocation player)) )
 
-(defn make-app []
+(defn make-app [level-fn]
   (proxy [SimpleApplication][]
     (simpleUpdate[tpf]
       (let [cam (.getCamera this)
@@ -56,11 +53,11 @@
                         (.multLocal (float 0.4))
                         (.setY 0)
                         (.normalize)
-                        (.multLocal (float 0.1)))
+                        (.multLocal (float 0.3)))
             cam-left (-> cam
                          (.getLeft)
                          (.clone)
-                         (.multLocal (float 0.1)))]
+                         (.multLocal (float 0.3)))]
         (.set walk-dir 0 0 0)
         (doseq [[_ [is-pressed? addend multiplicand]] key-ops]
           (when @is-pressed? 
@@ -76,8 +73,11 @@
       (doto (.getInputManager this)
         (set-up-keys!))
       (doto this
-        (set-up-room!)))))
+        (set-up-room! level-fn)))))
 
 (defn -main [& args]
-  (doto (make-app)
-    (.start)))
+  (let [level (if (empty? args)
+                (eval (read-string (input "Enter level function")))
+                (eval (read-string (slurp (first args)))))]
+    (doto (make-app level)
+      (.start))))

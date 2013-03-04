@@ -46,7 +46,7 @@
         :editable? false))
 
 (def basic-level-code-template
-"(basic-level %s %s default-wall-template)")
+"(fn [asset-manager] (poggio.level/basic-level %s %s (jme-clj.material/textured-material asset-manager \"Textures/Terrain/BrickWall/BrickWall.jpg\")))")
 
 (defn build-button [map-panel output-panel]
   (action :name "Build"

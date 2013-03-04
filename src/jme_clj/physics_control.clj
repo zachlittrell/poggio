@@ -6,7 +6,7 @@
 
 (def-opts-constructor character-control
   [:setter]
-  {:shape `(CapsuleCollisionShape. 2.0 1 1)
+  {:shape `(CapsuleCollisionShape. 2 2 1)
    :step-height 0.05}
   `(CharacterControl. ~'shape ~'step-height)
   {:shape [:no-op]

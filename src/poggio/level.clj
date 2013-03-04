@@ -5,7 +5,7 @@
                                              PlaneCollisionShape
                                              SimplexCollisionShape]
            [com.jme3.material Material]
-           [com.jme3.math FastMath Plane Quaternion Vector2f Vector3f]
+           [com.jme3.math FastMath Plane Quaternion  Vector3f]
            [com.jme3.scene.shape Box Quad])
   (:use [jme-clj geometry
                  physics]))
@@ -24,9 +24,9 @@
           ceiling-rot (doto (Quaternion.)
                         (.fromAngleNormalAxis (* 90 FastMath/DEG_TO_RAD)
                                               Vector3f/UNIT_X))
-          quad (Quad. 4 4)
+          quad (Quad. 16 16)
           quad-collision (MeshCollisionShape. quad)]
-      (.warp player (Vector3f. (+ (* x 4) 0) -2 (+ (* 4 z) 0)))
+      (.warp player (Vector3f. (+ (* x 16) 0) -1.5 (+ (* 16 z) 0)))
       ;;Iteratively construct the floor
       (loop [places [init]
              seen   (into #{} wall-bounds)]
@@ -36,21 +36,21 @@
               (attach! app
                        (geom :shape quad
                              :material wall-mat
-                             :local-translation (Vector3f. (- (* x 4) 2) 
-                                                           -4 
-                                                           (+ (* z 4) 2))
+                             :local-translation (Vector3f. (- (* x 16) 8) 
+                                                           -16 
+                                                           (+ (* z 16) 8))
                              :local-rotation floor-rot
                              :controls [(RigidBodyControl. quad-collision
                                          0 )])
                         (geom :shape quad
                               :material wall-mat
-                              :local-translation (Vector3f. (- (* x 4) 2)
+                              :local-translation (Vector3f. (- (* x 16) 8)
                                                             0 
-                                                            (- (* z 4) 2))
+                                                            (- (* z 16) 8))
                               :local-rotation ceiling-rot
-                              :controls [(GhostControl.
+                              :controls [(RigidBodyControl.
                                            quad-collision
-                                           )]))
+                                           0)]))
               (recur (concat (for [[x+ z+] [[1 0] [0 1] [-1 0] 
                                             [0 -1] [1 1] [-1 -1]]]
                                [(+ x x+) (+ z z+)])
@@ -58,12 +58,12 @@
                      (conj seen p)))
             (recur more (conj seen p))))))
     ;;Build the walls
-    (let [collision-shape (BoxCollisionShape. (Vector3f. 2 2 2))]
+    (let [collision-shape (BoxCollisionShape. (Vector3f. 8 8 8))]
       (doseq [[x z] wall-bounds]
         (attach! app
-                 (geom :shape (Box. 2 2 2)
+                 (geom :shape (Box. 8 8 8)
                        :material wall-mat
-                       :move (Vector3f. (* x 4) -2 (* 4 z))
+                       :move (Vector3f. (* x 16) -8 (* 16 z))
                        :controls [(RigidBodyControl. collision-shape
                                                      0)]))))))
 

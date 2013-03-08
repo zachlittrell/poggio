@@ -27,8 +27,7 @@
         node (node physics-node)]
     (doseq [child children]
       (let-weave (vector? child)
-        [listener (second child)
-         child (first child)]
+        [[child listener] child]
         []
         [listener] :>> (.addCollisionListener 
                         physics-space

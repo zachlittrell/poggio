@@ -9,12 +9,14 @@
    end with no binding."
   (let [in-true-bindings? (set (map first (partition 2 true-bindings)))
         in-false-bindings? (set (map first (partition 2 false-bindings)))
+        not-delimiter? (partial not= :>>)
         body* (loop [body body
                      body* []]
                 (if (empty? body)
                   body*
-                  (let [[[before & _] [_ after & more :as right]] (split-with 
-                                                        (partial not= :>>)
+                  (let [[[before & _] 
+                         [_ after & more :as right]] (split-with 
+                                                        not-delimiter?
                                                         body)]
                     (if (empty? right)
                       (conj body* [[] (if (seq? body)

@@ -1,5 +1,6 @@
 (ns jme-clj.physics
-  (:use [jme-clj collision node])
+  (:use [control bindings]
+        [jme-clj collision node])
   (:import [com.jme3.app SimpleApplication]
            [com.jme3.bullet PhysicsSpace]
            [com.jme3.bullet BulletAppState]))
@@ -24,12 +25,13 @@
    with a spatial and a physics-collision listener."
   (let [physics-space (physics-space physics-node)
         node (node physics-node)]
-    (doseq [child-vec children]
-      (let [[child listener] (if (vector? child-vec) 
-                                    child-vec 
-                                    [child-vec])]
-        (when listener
-          (.addCollisionListener physics-space
-                                 (physics-collision-listener listener)))
+    (doseq [child children]
+      (let-weave (vector? child)
+        [listener (second child)
+         child (first child)]
+        []
+        [listener] :>> (.addCollisionListener 
+                        physics-space
+                        (physics-collision-listener listener))
         (.attachChild node child)
         (.add physics-space child)))))

@@ -1,7 +1,8 @@
 (ns poggio.test.jme-clj.physics-test
   "An adaptation of JMonkeyEngine's Hello Physics tutorial
    to test poggio's physics capabilities"
-  (:use [jme-clj bitmap-text geometry input material physics])
+  (:use  [data coll]
+         [jme-clj bitmap-text collision geometry input material physics])
   (:import [com.jme3.app SimpleApplication]
            [com.jme3.asset TextureKey]
            [com.jme3.bullet BulletAppState]
@@ -111,11 +112,14 @@
 (defn make-cannon-ball! [app ball-mat]
   (let [ball-phys (RigidBodyControl. (float 1))]
     (attach! app
-             (geom :label "CannonBall"
+             (>|_|
+                (geom :label "CannonBall"
                    :shape sphere
                    :material ball-mat
                    :local-translation (.getLocation (.getCamera app))
-                   :controls [ball-phys]))
+                   :controls [ball-phys])
+                (object-collision-listener [this obj1 obj2 e]
+                  (println "I COLLIDED!:" obj1 obj2))))
     (.setLinearVelocity ball-phys (.mult (.getDirection (.getCamera app))
                                          (float 25)))))
 

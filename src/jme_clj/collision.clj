@@ -17,9 +17,44 @@
 (defn closest-collision-from-camera
   "Returns the closest collision between collidable and camera,
    or nil if there is none."
-  ([^Camera camera ^Collidable collidable]
-    (closest-collision collidable (Ray. (.getLocation camera)
-                                        (.getDirection camera)))))
+  ([^Camera camera ^Collidable collidable] (closest-collision collidable (Ray. (.getLocation camera) (.getDirection camera)))))
+
+(defprotocol PhysicsCollisionListenerProvider
+  (physics-collision-listener [this]))
+
+(extend-protocol PhysicsCollisionListenerProvider
+  PhysicsCollisionListener
+  (physics-collision-listener [this] this)
+  clojure.lang.IFn
+  (physics-collision-listener [f]
+    (reify PhysicsCollisionListener
+      (collision [_ e]
+        (f e)))))
+
+(defmacro object-collision-listener [obj [this obj1 obj2 e] & body]
+  "Returns a PhysicsCollisionListener which only executes body when
+   one of the collided nodes are obj. obj1 is obj and obj2 is the node
+   that was collided with. e is the CollisionEvent."
+  `(let [obj# ~obj]
+     (reify PhysicsCollisionListener
+       (collision [~this ~e]
+          (when-let [[~obj1 ~obj2] (condp identical? obj#
+                                       (.getNodeA ~e) [(.getNodeA ~e)
+                                                         (.getNodeB ~e)]
+                                       (.getNodeB ~e) [(.getNodeB ~e)
+                                                        (.getNodeA ~e)]
+                                       nil)]
+            ~@body)))))
+
+(defmacro objects-collision-listener [obj1 obj2 [this obj1* obj2* e] & body]
+  "Returns a PhysicsCollisionListener which only executes body when
+   obj1 collides with obj2. obj1* and obj2* are mapped accordingly. 
+   e is the CollisionEvent."
+  `(let [obj2# ~obj2]
+     (object-collision-listener ~obj1 [~this ~obj1* ~obj2* ~e]
+       (if (identical? obj2# ~obj2*)
+         ~@body))))
+
  
 (defmacro on-collision! [physics-space bindings & body]
   "Adds a PhysicsCollisionListener to the physics-space

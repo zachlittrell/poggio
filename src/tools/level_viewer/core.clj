@@ -75,6 +75,10 @@
       (doto this
         (set-up-room! level-fn)))))
 
+(defn view-level [level]
+  (cond (string? level) (recur (eval (read-string level)))
+        (ifn? level) (send (agent (make-app level)) #(.start %))))
+
 (defn -main [& args]
   (let [level (if (empty? args)
                 (eval (read-string (input "Enter level function")))

@@ -1,7 +1,8 @@
 (ns tools.level-editor.core
   (:import [java.awt Color]
            [java.awt.image BufferedImage])
-  (:use [seesaw core]))
+  (:use [seesaw core]
+        [tools.level-viewer [core :only [view-level]]]))
 
 (def max-x 13)
 (def max-y 13)
@@ -48,36 +49,45 @@
 (def basic-level-code-template
 "(fn [asset-manager] (poggio.level/basic-level %s %s (jme-clj.material/textured-material asset-manager \"Textures/Terrain/BrickWall/BrickWall.jpg\")))")
 
+(defn code [map-panel]
+  (format basic-level-code-template
+     (if-let [[p & _]
+              (let [player (:player item-icons)]
+                  (seq (for [row (range 0 max-x)
+                             column (range 0 max-y)
+                             :let [component (.getComponent map-panel
+                                                            (+ (* row
+                                                                  max-y)
+                                                               column))]
+                             :when (identical? player
+                                               (config component :icon))]
+                         [column row])))]
+       p
+       "[0 0]")
+     (into #{}
+       (let [wall (:wall item-icons)]
+         (println wall)
+         (for [row (range 0 max-x)
+               column (range 0 max-y)
+               :let [component (.getComponent map-panel
+                                              (+ (* row max-y)
+                                                 column))]
+               :when (identical? wall
+                                 (config component :icon))]
+              [column row])))))
+
+(defn view-button [map-panel]
+  (action :name "View"
+          :handler
+          (fn [_]
+            (view-level (code map-panel)))))
+
 (defn build-button [map-panel output-panel]
   (action :name "Build"
           :handler 
           (fn [_]
             (config! output-panel :text
-              (format basic-level-code-template
-                (if-let [[p & _]
-                         (let [player (:player item-icons)]
-                             (seq (for [row (range 0 max-x)
-                                        column (range 0 max-y)
-                                        :let [component (.getComponent map-panel
-                                                                       (+ (* row
-                                                                             max-y)
-                                                                          column))]
-                                        :when (identical? player
-                                                          (config component :icon))]
-                                    [column row])))]
-                  p
-                  "[0 0]")
-                (into #{}
-                  (let [wall (:wall item-icons)]
-                    (println wall)
-                    (for [row (range 0 max-x)
-                          column (range 0 max-y)
-                          :let [component (.getComponent map-panel
-                                                         (+ (* row max-y)
-                                                            column))]
-                          :when (identical? wall
-                                            (config component :icon))]
-                         [column row]))))))))
+                     (code map-panel)))))
 
 
 
@@ -85,14 +95,19 @@
   (let [item-box (item-panel)
         map-panel  (map-panel item-box)
         output-panel (output-panel map-panel)
-        build-button (build-button map-panel output-panel)]
+        build-button (build-button map-panel output-panel)
+        view-button (view-button map-panel)]
   (frame :title "Poggio Level Editor"
          :on-close :exit
          :size [500 :by 500]
          :content (border-panel :west (scrollable item-box)
-                                :center (scrollable map-panel)
-                                :north build-button
-                                :south output-panel))))
+                                :center (top-bottom-split 
+                                          (scrollable map-panel)
+                                          output-panel 
+                                          :divider-location 0.5)
+                                :north (flow-panel 
+                                         :items [build-button
+                                                  view-button])))))
 
 (defn -main [& args]
   (-> (make-gui)

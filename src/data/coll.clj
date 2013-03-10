@@ -13,11 +13,27 @@
   `(let [~obj* ~obj]
      [~obj* ~@forms*])))
 
-(defmacro |_|< [obj & forms]
+(defmacro >>|_| [obj & forms]
   "Returns a vector starting with obj, followed by the result of
    computing each form with obj appended."
   (let [obj* (gensym "obj")
         forms* (for [form forms] (concat form [obj*]))]
     `(let [~obj* ~obj]
        [~obj* ~@forms*])))
+
+(defmacro |_|< [obj & forms]
+  "Returns a vector starting with obj, preceded by the result of
+   computing each form with obj inserted after the first item."
+  (let [obj* (gensym "obj")
+        forms* (for [[head & form*] forms] (list* head obj* form*))]
+  `(let [~obj* ~obj]
+     [~@forms* ~obj*])))
+
+(defmacro |_|<< [obj & forms]
+  "Returns a vector starting with obj, preceded by the result of
+   computing each form with obj appended."
+  (let [obj* (gensym "obj")
+        forms* (for [form forms] (concat form [obj*]))]
+    `(let [~obj* ~obj]
+       [~@forms* ~obj*])))
 

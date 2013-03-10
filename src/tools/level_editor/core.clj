@@ -14,14 +14,15 @@
        ~@body)
      (icon img#)))
 
-(def default-image (BufferedImage. 100 100 BufferedImage/TYPE_INT_ARGB))
+(def default-image (icon (BufferedImage. 100 100 BufferedImage/TYPE_INT_ARGB)))
 
 (def item-icons
   {:wall (image-pad [100 100]
            (.drawRect 0 0 99 99)
            (.drawLine 0 0 99 99))
    :player (image-pad [100 100]
-             (.drawString  "☺" 49 49))})
+             (.drawString  "☺" 49 49))
+   :black  default-image})
 
 (defn item-panel []
   (let [l-box (listbox :model (vals item-icons))]
@@ -103,7 +104,7 @@
          :content (border-panel :west (scrollable item-box)
                                 :center (top-bottom-split 
                                           (scrollable map-panel)
-                                          output-panel 
+                                          (scrollable output-panel)
                                           :divider-location 0.5)
                                 :north (flow-panel 
                                          :items [build-button

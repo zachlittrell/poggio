@@ -1,37 +1,37 @@
 (ns tools.level-editor.core
   (:import [java.awt Color]
-           [java.awt.image BufferedImage])
+           [java.awt.image BufferedImage]
+           [javax.swing ImageIcon])
   (:use [seesaw core]
+        [seesawx core]
         [tools.level-viewer [core :only [view-level]]]))
 
 (def max-x 13)
 (def max-y 13)
 
-(defmacro image-pad [[width height] & body]
-  `(let [img# (BufferedImage. ~width ~height BufferedImage/TYPE_INT_ARGB)]
-     (doto (.createGraphics img#)
-       (.setColor Color/BLACK)
-       ~@body)
-     (icon img#)))
-
-(def default-image (icon (BufferedImage. 100 100 BufferedImage/TYPE_INT_ARGB)))
+(def default-image (image-pad [100 100] {}))
 
 (def item-icons
-  {:wall (image-pad [100 100]
+  {:wall (image-pad [100 100] {}
            (.drawRect 0 0 99 99)
            (.drawLine 0 0 99 99))
-   :player (image-pad [100 100]
+   :player (image-pad [100 100] {:icon-meta (fn [] 
+                                               (println "HEY")
+                                               {})}
              (.drawString  "☺" 49 49))
-   :black  default-image})
+   :blank  default-image})
 
 (defn item-panel []
-  (let [l-box (listbox :model (vals item-icons))]
-    l-box))
+ (listbox :model (vals item-icons)))
 
 
 (defn update-selected! [item-box e]
   (config! (.getComponent e)
-      :icon (selection item-box)))
+      :icon (let [icon (selection item-box)
+                  icon-meta (:icon-meta icon)]
+              (if icon-meta
+                (image-icon* (.getImage icon) (icon-meta))
+                (image-icon* (.getImage icon) {})))))
 
 (defn map-panel [item-box]
   (let [items (for [n (range (* max-x max-y))]
@@ -52,30 +52,17 @@
 
 (defn code [map-panel]
   (format basic-level-code-template
-     (if-let [[p & _]
-              (let [player (:player item-icons)]
-                  (seq (for [row (range 0 max-x)
-                             column (range 0 max-y)
-                             :let [component (.getComponent map-panel
-                                                            (+ (* row
-                                                                  max-y)
-                                                               column))]
-                             :when (identical? player
-                                               (config component :icon))]
-                         [column row])))]
-       p
-       "[0 0]")
+    (let [player (.getImage (:player item-icons))]
+     (if-let [[row column _] (some-in-grid-panel 
+                               #(identical? player (.getImage (config % :icon)))
+                               map-panel)]
+       [column row]
+       (throw (Exception. "Need to position player."))))
      (into #{}
-       (let [wall (:wall item-icons)]
-         (println wall)
-         (for [row (range 0 max-x)
-               column (range 0 max-y)
-               :let [component (.getComponent map-panel
-                                              (+ (* row max-y)
-                                                 column))]
-               :when (identical? wall
-                                 (config component :icon))]
-              [column row])))))
+       (let [wall (.getImage (:wall item-icons))]
+         (for-grid-panel [[row column component] map-panel
+                          :when (identical? wall (.getImage (config component :icon)))]
+            [column row])))))
 
 (defn view-button [map-panel]
   (action :name "View"

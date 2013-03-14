@@ -1,9 +1,9 @@
 (ns seesawx.core
-  (:import [java.awt Color]
+  (:import [java.awt BasicStroke Color]
            [java.awt.image BufferedImage]
            [javax.swing ImageIcon JComponent])
   (:use [data.map :only [value-map]]
-        [seesaw core value]))
+        [seesaw behave core value]))
 
 (defmacro for-grid-panel [[[row column component] panel & opts] & body]
   "A for-loop that loops through each child of the grid panel, 
@@ -46,13 +46,41 @@
 
 
 (defn wheel [& options]
-  (let [angle (atom 90)]
+  "Returns a wheel component with a directed arrow whose value is the angle
+   the arrow points to."
+  (let [angle (atom (/ Math/PI 2.0))]
+    (doto
     (proxy [JComponent seesaw.value.Value][]
+      (container?* [] false)
+      (value* [] @angle)
+      (value!* [this v] (swap! angle (constantly v)))
       (paintComponent [g]
-        (.drawOval g 0 0 (.getWidth this) (.getHeight this))))))
-        
-        
+        (.drawRect g 0 0 (dec (.getWidth this)) (dec (.getHeight this)))
+        (let [diameter (- (min (.getWidth this)
+                                 (.getHeight this)) 6)
+              radius (/ diameter 2)
+              center (+ 3 radius)]
+        (.setStroke g (BasicStroke. 3 BasicStroke/CAP_ROUND
+                                      BasicStroke/JOIN_BEVEL))
+        (.rotate g (- @angle) center center)
+        (.drawOval g 3 3 diameter diameter)
+        (.drawLine g center center
+                     diameter (+ 3 radius)))))
+      (when-mouse-dragged :drag (fn [e [dx dy]]
+                                  (let [this (.getSource e)
+                                        diameter (- (min (.getWidth this)
+                                                         (.getHeight this))
+                                                    6)
+                                        radius (/ diameter 2)
+                                        center (+ 3 radius)]
+                                  (swap! angle 
+                                         (constantly (- (Math/atan2 
+                                                          (- (.getY e)
+                                                              center)
+                                                          (- (.getX e)
+                                                              center))))))
 
+                                  (.repaint (.getSource e)))))))
 
 (def keyword->widget
   {:direction wheel})

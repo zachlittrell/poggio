@@ -16,7 +16,7 @@
            (.drawRect 0 0 99 99)
            (.drawLine 0 0 99 99))
    :player (image-pad [100 100] {:icon-meta (fn [] 
-                                               (println "HEY")
+                                              (get-values "Dir" :direction)
                                                {})}
              (.drawString  "☺" 49 49))
    :blank  default-image})

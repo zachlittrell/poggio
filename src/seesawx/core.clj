@@ -1,5 +1,5 @@
 (ns seesawx.core
-  (:import [java.awt BasicStroke Color]
+  (:import [java.awt BasicStroke Color Graphics RenderingHints]
            [java.awt.image BufferedImage]
            [javax.swing ImageIcon JComponent])
   (:use [data.map :only [value-map]]
@@ -45,45 +45,52 @@
           (image-icon* img# ~image-meta)))
 
 
+
+(defn- wheel-drag [angle-atom e [dx dy]]
+  (let [this (.getSource e)
+        width (.getWidth this)
+        height (.getHeight this)
+        center-x (+ 3 (/ (- width 6) 2))
+        center-y (+ 3 (/ (- height 6) 2))]
+  (swap! angle-atom
+         (constantly (- (Math/atan2 
+                          (- (.getY e)
+                              center-y)
+                          (- (.getX e)
+                              center-x))))))
+  (.repaint (.getSource e)))
+
 (defn wheel [& options]
   "Returns a wheel component with a directed arrow whose value is the angle
    the arrow points to."
   (let [angle (atom (/ Math/PI 2.0))]
     (doto
     (proxy [JComponent seesaw.value.Value][]
-      (container?* [] false)
-      (value* [] @angle)
-      (value!* [this v] (swap! angle (constantly v)))
-      (paintComponent [g]
-        (.drawRect g 0 0 (dec (.getWidth this)) (dec (.getHeight this)))
-        (let [diameter (- (min (.getWidth this)
-                                 (.getHeight this)) 6)
+      (container_QMARK__STAR_ [] false)
+      (value_STAR_ [] @angle)
+      (value!* [v] (swap! angle (constantly v)))
+      (paintComponent [^Graphics g]
+        (let [width (.getWidth this)
+              height (.getHeight this)
+              diameter (- (min width height) 6)
               radius (/ diameter 2)
-              center (+ 3 radius)]
-        (.setStroke g (BasicStroke. 3 BasicStroke/CAP_ROUND
-                                      BasicStroke/JOIN_BEVEL))
-        (.rotate g (- @angle) center center)
-        (.drawOval g 3 3 diameter diameter)
-        (.drawLine g center center
-                     diameter (+ 3 radius)))))
-      (when-mouse-dragged :drag (fn [e [dx dy]]
-                                  (let [this (.getSource e)
-                                        diameter (- (min (.getWidth this)
-                                                         (.getHeight this))
-                                                    6)
-                                        radius (/ diameter 2)
-                                        center (+ 3 radius)]
-                                  (swap! angle 
-                                         (constantly (- (Math/atan2 
-                                                          (- (.getY e)
-                                                              center)
-                                                          (- (.getX e)
-                                                              center))))))
-
-                                  (.repaint (.getSource e)))))))
+              center-x (+ 3 (/ (- width 6) 2))
+              center-y (+ 3 (/ (- height 6) 2))]
+          (.setRenderingHint g RenderingHints/KEY_ANTIALIASING
+                                RenderingHints/VALUE_ANTIALIAS_ON)
+          (.setStroke g (BasicStroke. 3 BasicStroke/CAP_ROUND
+                                        BasicStroke/JOIN_BEVEL))
+          (.drawOval g (- center-x radius) (- center-y radius)
+                       diameter diameter)
+          (.rotate g (- @angle) center-x center-y)
+          (.drawLine g center-x center-y
+                       (+ center-x radius)  center-y))))
+      (when-mouse-dragged :start #(wheel-drag angle % [0 0])
+                          :drag (partial wheel-drag angle)))))
 
 (def keyword->widget
-  {:direction wheel})
+  {:direction wheel
+   })
 
 (defn get-values [& questions]
   "Creates a dialog which creates widgets for each pair in questions,
@@ -97,6 +104,6 @@
     (show! (dialog :option-type :ok-cancel
                    :content panel
                    :size [300 :by 300]
-                   :success-fn (fn [_] (value panel))))))
+                   :success-fn (fn [_] (println (value panel)) (value panel))))))
 
 

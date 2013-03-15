@@ -98,10 +98,9 @@
    where a pair consists of a string for a label and a keyword for the 
    type of value desired, and returns a map of the final values, or nil
    if the user cancels."
-  (let [questions (partition 3 questions)
-        panel (grid-panel :columns 2
+  (let [panel (grid-panel :columns 1
                           :items (flatten 
-                                   (for [[label id widget-type] questions]
+                                   (for [[id widget-type label] questions]
                                     [label ((keyword->widget widget-type)
                                              :id id)])))]
     (show! (dialog :option-type :ok-cancel

@@ -40,8 +40,8 @@
                            ;;(textured-material (.getAssetManager app)
                            ;;                   "Textures/Terrain/BrickWall/BrickWall.jpg"))
               app
-              player)
-  (.setLocation (.getCamera app) (.getPhysicsLocation player)) )
+              player
+              (.getCamera app)))
 
 (defn make-app [level-fn]
   (proxy [SimpleApplication][]

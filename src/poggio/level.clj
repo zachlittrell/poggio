@@ -11,13 +11,13 @@
                  physics]))
 
 (defprotocol Level
-  (load-level [this node player]))
+  (load-level [this node player camera]))
 
 (defrecord BasicLevel
-  [player-loc wall-bounds wall-mat]
+  [player-attr wall-bounds wall-mat]
   Level
-  (load-level [this app player]
-    (let [[x z :as init] player-loc
+  (load-level [this app player camera]
+    (let [[x z :as init] (:location player-attr)
           floor-rot (doto (Quaternion.)
                       (.fromAngleNormalAxis (* -90 FastMath/DEG_TO_RAD)
                                             Vector3f/UNIT_X))
@@ -27,6 +27,11 @@
           quad (Quad. 16 16)
           quad-collision (MeshCollisionShape. quad)]
       (.warp player (Vector3f. (+ (* x 16) 0) -1.5 (+ (* 16 z) 0)))
+      (.setLocation camera (.getPhysicsLocation player))
+      (.setRotation camera (.fromAngleNormalAxis (Quaternion.)
+                                            (+ (:direction player-attr)
+                                               FastMath/HALF_PI)
+                                            Vector3f/UNIT_Y))
       ;;Iteratively construct the floor
       (loop [places [init]
              seen   (into #{} wall-bounds)]

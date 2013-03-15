@@ -15,9 +15,8 @@
   {:wall (image-pad [100 100] {}
            (.drawRect 0 0 99 99)
            (.drawLine 0 0 99 99))
-   :player (image-pad [100 100] {:icon-meta (fn [] 
-                                              (get-values "Dir" :direction)
-                                               {})}
+   :player (image-pad [100 100] 
+                      {:icon-meta [[:direction :direction "Enter Direction"]]}
              (.drawString  "☺" 49 49))
    :blank  default-image})
 
@@ -30,7 +29,7 @@
       :icon (let [icon (selection item-box)
                   icon-meta (:icon-meta icon)]
               (if icon-meta
-                (image-icon* (.getImage icon) (icon-meta))
+                (image-icon* (.getImage icon) (apply get-values icon-meta))
                 (image-icon* (.getImage icon) {})))))
 
 (defn map-panel [item-box]
@@ -53,10 +52,11 @@
 (defn code [map-panel]
   (format basic-level-code-template
     (let [player (.getImage (:player item-icons))]
-     (if-let [[row column _] (some-in-grid-panel 
+     (if-let [[row column c] (some-in-grid-panel 
                                #(identical? player (.getImage (config % :icon)))
                                map-panel)]
-       [column row]
+       {:location [column row]
+        :direction (:direction (config c :icon))}
        (throw (Exception. "Need to position player."))))
      (into #{}
        (let [wall (.getImage (:wall item-icons))]

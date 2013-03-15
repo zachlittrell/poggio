@@ -2,7 +2,8 @@
   "Methods for helping construct def-* macros."
   (:require [clojure.string :as str]
             [data.map :as map])
-  (:use [control.io :only [err-println]]
+  (:use [control.bindings :only [let-weave]]
+        [control.io :only [err-println]]
         [data [function :only [no-op]]
               [string :only [dash->camel-case]]
               [keyword :only [keyword->symbol]]]

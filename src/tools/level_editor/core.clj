@@ -16,7 +16,9 @@
            (.drawRect 0 0 99 99)
            (.drawLine 0 0 99 99))
    :player (image-pad [100 100] 
-                      {:icon-meta [[:direction :direction "Enter Direction"]]}
+                      {:icon-meta [{:id      :direction 
+                                    :type    :direction 
+                                    :label   "Enter Direction"}]}
              (.drawString  "☺" 49 49))
    :blank  default-image})
 

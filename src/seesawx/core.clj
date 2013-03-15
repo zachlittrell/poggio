@@ -100,8 +100,8 @@
    if the user cancels."
   (let [panel (grid-panel :columns 1
                           :items (flatten 
-                                   (for [[id widget-type label] questions]
-                                    [label ((keyword->widget widget-type)
+                                   (for [{:keys [id type label]} questions]
+                                    [label ((keyword->widget type)
                                              :id id)])))]
     (show! (dialog :option-type :ok-cancel
                    :content panel

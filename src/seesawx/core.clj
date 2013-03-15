@@ -3,7 +3,7 @@
            [java.awt.image BufferedImage]
            [javax.swing ImageIcon JComponent])
   (:use [data.map :only [value-map]]
-        [seesaw behave core value]))
+        [seesaw behave core [selector :only [id-of!]]]))
 
 (defmacro for-grid-panel [[[row column component] panel & opts] & body]
   "A for-loop that loops through each child of the grid panel, 
@@ -63,7 +63,8 @@
 (defn wheel [& options]
   "Returns a wheel component with a directed arrow whose value is the angle
    the arrow points to."
-  (let [angle (atom (/ Math/PI 2.0))]
+  (let [angle (atom (/ Math/PI 2.0))
+        {:keys [id]} options]
     (doto
     (proxy [JComponent seesaw.value.Value][]
       (container_QMARK__STAR_ [] false)
@@ -85,25 +86,27 @@
           (.rotate g (- @angle) center-x center-y)
           (.drawLine g center-x center-y
                        (+ center-x radius)  center-y))))
+        (id-of! , id)
       (when-mouse-dragged :start #(wheel-drag angle % [0 0])
                           :drag (partial wheel-drag angle)))))
 
 (def keyword->widget
-  {:direction wheel
-   })
+  {:direction wheel})
 
 (defn get-values [& questions]
   "Creates a dialog which creates widgets for each pair in questions,
    where a pair consists of a string for a label and a keyword for the 
    type of value desired, and returns a map of the final values, or nil
    if the user cancels."
-  (let [questions (partition 2 questions)
+  (let [questions (partition 3 questions)
         panel (grid-panel :columns 2
-                          :items (flatten (value-map questions 
-                                                     (comp #(%) keyword->widget))))]
+                          :items (flatten 
+                                   (for [[label id widget-type] questions]
+                                    [label ((keyword->widget widget-type)
+                                             :id id)])))]
     (show! (dialog :option-type :ok-cancel
                    :content panel
                    :size [300 :by 300]
-                   :success-fn (fn [_] (println (value panel)) (value panel))))))
+                   :success-fn (fn [_] (value panel))))))
 
 

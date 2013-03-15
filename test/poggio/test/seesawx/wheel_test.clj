@@ -3,4 +3,6 @@
         [seesawx core]))
 
 (defn -main [& args]
-  (get-values "Dir" :direction))
+  (get-values "Direction" :direction :direction))
+
+

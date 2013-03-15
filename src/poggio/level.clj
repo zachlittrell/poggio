@@ -56,8 +56,7 @@
                               :controls [(RigidBodyControl.
                                            quad-collision
                                            0)]))
-              (recur (concat (for [[x+ z+] [[1 0] [0 1] [-1 0] 
-                                            [0 -1] [1 1] [-1 -1]]]
+              (recur (concat (for [[x+ z+] [[1 0] [0 1] [-1 0] [0 -1]]]
                                [(+ x x+) (+ z z+)])
                                more)
                      (conj seen p)))

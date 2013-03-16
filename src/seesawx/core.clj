@@ -1,9 +1,10 @@
 (ns seesawx.core
   (:import [java.awt BasicStroke Color Graphics RenderingHints]
            [java.awt.image BufferedImage]
-           [javax.swing ImageIcon JComponent])
+           [javax.swing ImageIcon JColorChooser JComponent])
+  (:require [seesaw.bind :as bind])
   (:use [data.map :only [value-map]]
-        [seesaw behave core [selector :only [id-of!]]]))
+        [seesaw behave chooser core [selector :only [id-of!]]]))
 
 (defmacro for-grid-panel [[[row column component] panel & opts] & body]
   "A for-loop that loops through each child of the grid panel, 
@@ -90,8 +91,27 @@
       (when-mouse-dragged :start #(wheel-drag angle % [0 0])
                           :drag (partial wheel-drag angle)))))
 
+(defn simple-color-chooser [& options]
+  "Returns a simple color chooser whose value is a map with
+   keys for r, g, and b"
+  (let [{:keys [id color]
+         :or
+         {color Color/WHITE}} options
+        red (spinner :model (spinner-model (.getRed color) :from 0 :to 255))
+        green (spinner :model (spinner-model (.getGreen color) :from 0 :to 255))
+        blue (spinner :model (spinner-model (.getBlue color) :from 0 :to 255))
+        color-panel (flow-panel :background color)]
+    (bind/bind
+      (bind/funnel red green blue)
+      (bind/transform (fn [[r g b]] (Color. r g b)))
+      (bind/property color-panel :background))
+    (border-panel :center color-panel
+                  :east (grid-panel :columns 2
+                                    :items ["Red" red "Green" green "Blue" blue]))))
+
 (def keyword->widget
-  {:direction wheel})
+  {:direction wheel
+   :color     simple-color-chooser})
 
 (defn get-values [& questions]
   "Creates a dialog which creates widgets for each pair in questions,
@@ -104,7 +124,7 @@
                                     [label ((keyword->widget type)
                                              :id id)])))]
     (show! (dialog :option-type :ok-cancel
-                   :content panel
+                   :content (scrollable panel)
                    :size [300 :by 300]
                    :success-fn (fn [_] (value panel))))))
 

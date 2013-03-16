@@ -16,11 +16,15 @@
            (.drawRect 0 0 99 99)
            (.drawLine 0 0 99 99))
    :player (image-pad [100 100] 
-                      {:icon-meta [{:id      :direction 
+                      {:questions [{:id      :direction 
                                     :type    :direction 
                                     :label   "Enter Direction"}]}
              (.drawString  "☺" 49 49))
    :blank  default-image})
+
+(defn template->item-icon [template]
+  (let [{:keys [build-template questions img] template}]
+    (image-icon* img {:questions questions :build build-template})))
 
 (defn item-panel []
  (listbox :model (vals item-icons)))
@@ -29,9 +33,9 @@
 (defn update-selected! [item-box e]
   (config! (.getComponent e)
       :icon (let [icon (selection item-box)
-                  icon-meta (:icon-meta icon)]
-              (if icon-meta
-                (image-icon* (.getImage icon) (apply get-values icon-meta))
+                  questions (:questions icon)]
+              (if questions
+                (image-icon* (.getImage icon) (apply get-values questions))
                 (image-icon* (.getImage icon) {})))))
 
 (defn map-panel [item-box]
@@ -64,7 +68,14 @@
        (let [wall (.getImage (:wall item-icons))]
          (for-grid-panel [[row column component] map-panel
                           :when (identical? wall (.getImage (config component :icon)))]
-            [column row])))))
+            [column row])))
+      (into []
+        (for-grid-panel [[row column component] map-panel
+                         :let [icon (config component :icon)
+                               build (:build icon)
+                               questions (:questions icon)]
+                         :when build]
+          (build (apply get-values questions))))))
 
 (defn view-button [map-panel]
   (action :name "View"

@@ -37,11 +37,9 @@
 (defn set-up-room! [app level-fn]
   (.add (physics-space app) player)
   (load-level (level-fn (.getAssetManager app))
-                           ;;(textured-material (.getAssetManager app)
-                           ;;                   "Textures/Terrain/BrickWall/BrickWall.jpg"))
               app
-              player
-              (.getCamera app)))
+              [(.getCamera app) player]
+              [(.getCamera app)]))
 
 (defn make-app [level-fn]
   (proxy [SimpleApplication][]

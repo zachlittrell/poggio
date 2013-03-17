@@ -8,15 +8,16 @@
            [com.jme3.math FastMath Plane Quaternion  Vector3f]
            [com.jme3.scene.shape Box Quad])
   (:use [jme-clj geometry
-                 physics]))
+                 physics
+                 transform]))
 
 (defprotocol Level
-  (load-level [this node player camera]))
+  (load-level [this node warpables rotatables]))
 
 (defrecord BasicLevel
   [player-attr wall-bounds wall-mat]
   Level
-  (load-level [this app player camera]
+  (load-level [this app warpables rotatables]
     (let [[x z :as init] (:location player-attr)
           floor-rot (doto (Quaternion.)
                       (.fromAngleNormalAxis (* -90 FastMath/DEG_TO_RAD)
@@ -26,12 +27,13 @@
                                               Vector3f/UNIT_X))
           quad (Quad. 16 16)
           quad-collision (MeshCollisionShape. quad)]
-      (.warp player (Vector3f. (+ (* x 16) 0) -1.5 (+ (* 16 z) 0)))
-      (.setLocation camera (.getPhysicsLocation player))
-      (.setRotation camera (.fromAngleNormalAxis (Quaternion.)
-                                            (+ (:direction player-attr)
-                                               FastMath/HALF_PI)
-                                            Vector3f/UNIT_Y))
+      (let [loc (Vector3f. (+ (* x 16) 0) -1.5 (+ (* 16 z) 0))
+            dir (.fromAngleNormalAxis (Quaternion.)
+                                      (+ (:direction player-attr)
+                                         FastMath/HALF_PI)
+                                      (Vector3f/UNIT_Y))]
+        (doseq [warpable warpables] (warp warpable loc))
+        (doseq [rotatable rotatables] (rotate rotatable dir)))
       ;;Iteratively construct the floor
       (loop [places [init]
              seen   (into #{} wall-bounds)]

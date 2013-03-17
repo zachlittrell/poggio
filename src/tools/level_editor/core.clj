@@ -23,7 +23,7 @@
    :blank  default-image})
 
 (defn template->item-icon [template]
-  (let [{:keys [build-template questions img] template}]
+  (let [{:keys [build-template questions img]} template]
     (image-icon* img {:questions questions :build build-template})))
 
 (defn item-panel []

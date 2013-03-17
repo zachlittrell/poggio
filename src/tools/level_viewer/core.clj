@@ -34,14 +34,14 @@
       (swap! atom (constantly is-pressed?)))))
 
 
-(defn set-up-room! [app level-fn]
+(defn set-up-room! [app level]
   (.add (physics-space app) player)
-  (load-level (level-fn (.getAssetManager app))
+  (load-level (basic-level level)
               app
               [(.getCamera app) player]
               [(.getCamera app)]))
 
-(defn make-app [level-fn]
+(defn make-app [level]
   (proxy [SimpleApplication][]
     (simpleUpdate[tpf]
       (let [cam (.getCamera this)
@@ -71,15 +71,15 @@
       (doto (.getInputManager this)
         (set-up-keys!))
       (doto this
-        (set-up-room! level-fn)))))
+        (set-up-room! level)))))
 
 (defn view-level [level]
   (cond (string? level) (recur (eval (read-string level)))
-        (ifn? level) (send (agent (make-app level)) #(.start %))))
+        (map? level) (send (agent (make-app level)) #(.start %))))
 
 (defn -main [& args]
   (let [level (if (empty? args)
-                (eval (read-string (input "Enter level function")))
+                (eval (read-string (input "Enter level map")))
                 (eval (read-string (slurp (first args)))))]
     (doto (make-app level)
       (.start))))

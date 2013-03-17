@@ -52,30 +52,37 @@
   (text :multi-line? true
         :editable? false))
 
-(def basic-level-code-template
-"(fn [asset-manager] (poggio.level/basic-level %s %s (jme-clj.material/textured-material asset-manager \"Textures/Terrain/BrickWall/BrickWall.jpg\")))")
-
 (defn code [map-panel]
-  (format basic-level-code-template
-    (let [player (.getImage (:player item-icons))]
-     (if-let [[row column c] (some-in-grid-panel 
-                               #(identical? player (.getImage (config % :icon)))
-                               map-panel)]
-       {:location [column row]
-        :direction (:direction (config c :icon))}
-       (throw (Exception. "Need to position player."))))
-     (into #{}
-       (let [wall (.getImage (:wall item-icons))]
-         (for-grid-panel [[row column component] map-panel
-                          :when (identical? wall (.getImage (config component :icon)))]
-            [column row])))
-      (into []
-        (for-grid-panel [[row column component] map-panel
-                         :let [icon (config component :icon)
-                               build (:build icon)
-                               questions (:questions icon)]
-                         :when build]
-          (build (apply get-values questions))))))
+  (let [player    (.getImage (:player item-icons))
+        [loc dir] (if-let [[row column c] 
+                           (some-in-grid-panel 
+                             #(identical? player 
+                                          (.getImage (config % :icon)))
+                             map-panel)]
+                    [[column row]
+                     (:direction (config c :icon))]
+                 (throw (Exception. "Need to position player.")))
+
+        walls    (into #{} 
+                   (let [wall (.getImage (:wall item-icons))]
+                     (for-grid-panel [[row column component] map-panel
+                                      :when (identical? 
+                                              wall 
+                                                (.getImage (config component :icon)))]
+                      [column row])))
+      widgets   (into []
+                      (for-grid-panel [[row column component] map-panel
+                                       :let [icon (config component :icon)
+                                             build (:build icon)
+                                             questions (:questions icon)]
+                                       :when build]
+                 (build (apply get-values questions))))]
+    {:loc loc
+     :dir dir
+     :walls walls
+     :wall-mat "Textures/Terrain/BrickWall/BrickWall.jpg"
+     :widgets widgets}))
+     
 
 (defn view-button [map-panel]
   (action :name "View"
@@ -88,7 +95,7 @@
           :handler 
           (fn [_]
             (config! output-panel :text
-                     (code map-panel)))))
+                     (str (code map-panel))))))
 
 
 

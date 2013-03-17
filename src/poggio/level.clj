@@ -7,7 +7,9 @@
            [com.jme3.material Material]
            [com.jme3.math FastMath Plane Quaternion  Vector3f]
            [com.jme3.scene.shape Box Quad])
-  (:use [jme-clj geometry
+  (:use [jme-clj assets
+                 geometry
+                 material
                  physics
                  transform]))
 
@@ -15,10 +17,11 @@
   (load-level [this node warpables rotatables]))
 
 (defrecord BasicLevel
-  [player-attr wall-bounds wall-mat]
+  [loc dir wall-bounds wall-mat]
   Level
   (load-level [this app warpables rotatables]
-    (let [[x z :as init] (:location player-attr)
+    (let [[x z :as init] loc
+          wall-mat (textured-material (asset-manager app) wall-mat)
           floor-rot (doto (Quaternion.)
                       (.fromAngleNormalAxis (* -90 FastMath/DEG_TO_RAD)
                                             Vector3f/UNIT_X))
@@ -29,7 +32,7 @@
           quad-collision (MeshCollisionShape. quad)]
       (let [loc (Vector3f. (+ (* x 16) 0) -1.5 (+ (* 16 z) 0))
             dir (.fromAngleNormalAxis (Quaternion.)
-                                      (+ (:direction player-attr)
+                                      (+ dir
                                          FastMath/HALF_PI)
                                       (Vector3f/UNIT_Y))]
         (doseq [warpable warpables] (warp warpable loc))
@@ -62,16 +65,20 @@
                                [(+ x x+) (+ z z+)])
                                more)
                      (conj seen p)))
-            (recur more (conj seen p))))))
-    ;;Build the walls
-    (let [collision-shape (BoxCollisionShape. (Vector3f. 8 8 8))]
-      (doseq [[x z] wall-bounds]
-        (attach! app
-                 (geom :shape (Box. 8 8 8)
-                       :material wall-mat
-                       :move (Vector3f. (* x 16) -8 (* 16 z))
-                       :controls [(RigidBodyControl. collision-shape
-                                                     0)]))))))
+            (recur more (conj seen p)))))
+      ;;Build the walls
+      (let [collision-shape (BoxCollisionShape. (Vector3f. 8 8 8))]
+        (doseq [[x z] wall-bounds]
+          (attach! app
+                   (geom :shape (Box. 8 8 8)
+                         :material wall-mat
+                         :move (Vector3f. (* x 16) -8 (* 16 z))
+                         :controls [(RigidBodyControl. collision-shape
+                                                       0)])))))))
 
-(defn basic-level [player-loc wall-bounds wall-mat]
-  (BasicLevel. player-loc wall-bounds wall-mat))
+(defn basic-level 
+  ([m]
+   (let [{:keys [loc dir walls wall-mat]} m]
+     (basic-level loc dir walls wall-mat)))
+  ([loc dir wall-bounds wall-mat]
+   (BasicLevel. loc dir wall-bounds wall-mat)))

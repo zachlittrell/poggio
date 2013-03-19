@@ -4,30 +4,36 @@
            [javax.swing ImageIcon])
   (:use [seesaw core]
         [seesawx core]
+        [tools.level-editor templates]
         [tools.level-viewer [core :only [view-level]]]))
 
 (def max-x 13)
 (def max-y 13)
 
-(def default-image (image-pad [100 100] {}))
+(def default-image (image-icon-pad [100 100] {}))
 
-(def item-icons
-  {:wall (image-pad [100 100] {}
+(def default-item-icons
+  {:wall (image-icon-pad [100 100] {}
            (.drawRect 0 0 99 99)
            (.drawLine 0 0 99 99))
-   :player (image-pad [100 100] 
+   :player (image-icon-pad [100 100] 
                       {:questions [{:id      :direction 
                                     :type    :direction 
                                     :label   "Enter Direction"}]}
              (.drawString  "☺" 49 49))
    :blank  default-image})
 
+(def widget-templates
+  [function-cannon-template])
+
+
 (defn template->item-icon [template]
-  (let [{:keys [build-template questions img]} template]
-    (image-icon* img {:questions questions :build build-template})))
+  (let [{:keys [build questions image]} template]
+    (image-icon* image {:questions questions :build build})))
 
 (defn item-panel []
- (listbox :model (vals item-icons)))
+ (listbox :model (concat (vals default-item-icons)
+                         (map template->item-icon widget-templates))))
 
 
 (defn update-selected! [item-box e]
@@ -53,7 +59,7 @@
         :editable? false))
 
 (defn code [map-panel]
-  (let [player    (.getImage (:player item-icons))
+  (let [player    (.getImage (:player default-item-icons))
         [loc dir] (if-let [[row column c] 
                            (some-in-grid-panel 
                              #(identical? player 
@@ -64,7 +70,7 @@
                  (throw (Exception. "Need to position player.")))
 
         walls    (into #{} 
-                   (let [wall (.getImage (:wall item-icons))]
+                   (let [wall (.getImage (:wall default-item-icons))]
                      (for-grid-panel [[row column component] map-panel
                                       :when (identical? 
                                               wall 

@@ -1,8 +1,9 @@
 (ns tools.level-editor.templates
   (:import [com.jme3.bullet.util CollisionShapeFactory]
-           [com.jme3.math Vector3f])
+           [com.jme3.bullet.control RigidBodyControl]
+           [com.jme3.math ColorRGBA Vector3f])
   (:use [data quaternion]
-        [jme-clj geometry model]
+        [jme-clj geometry material model physics-control]
         [seesawx core]))
 
 (def function-cannon-template
@@ -17,15 +18,12 @@
                {:id :direction :type :direction :label "Direction"}]
    :build     (fn [[x z] {:keys [id direction]}]
                 `(fn [asset-manager#] 
-                   (let [model# (model :asset-manager asset-manager#
-                                       :name "cannon.scene")]
-                   (geom :shape model#
-                         :label ~id
-                         :local-translation (Vector3f. ~x -2 ~z)
-                         :local-rotation (angle->quaternion ~direction :y)
-                         :controls [(RigidBodyControl.
-                                      (CollisionShapeFactory/createMeshShape
-                                        model#) 0)]))))})
+                   (model :asset-manager asset-manager#
+                          :model-name "Models/Laser/Laser.scene"
+                          :name ~id
+                          :local-translation (Vector3f. (* ~x 16) -16 (* ~z 16))
+                          :local-rotation (angle->quaternion ~direction :y)
+                          :controls [(RigidBodyControl. 0.0)])))})
              
 
                    

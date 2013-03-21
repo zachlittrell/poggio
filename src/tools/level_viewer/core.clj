@@ -3,11 +3,11 @@
            [com.jme3.bullet BulletAppState]
            [com.jme3.input KeyInput]
            [com.jme3.material Material]
-           [com.jme3.math Vector3f])
+           [com.jme3.math ColorRGBA Vector3f])
   (:require [jme-clj.input :as input])
   (:use [nifty-clj builders]
         [poggio level]
-        [jme-clj material physics physics-control]
+        [jme-clj light material physics physics-control]
         [seesaw [core :only [input]]]))
 
 
@@ -35,6 +35,8 @@
 
 
 (defn set-up-room! [app level]
+  (doto (.getRootNode app)
+    (.addLight (ambient-light :color (.mult ColorRGBA/White 1.3))))
   (.add (physics-space app) player)
   (load-level (basic-level level)
               app

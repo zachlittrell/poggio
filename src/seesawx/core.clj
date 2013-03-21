@@ -35,14 +35,19 @@
   (proxy [ImageIcon clojure.lang.ILookup] [img]
     (valAt [key] (image-meta key))))
 
-(defmacro image-pad [[width height] image-meta & body]
-  "Returns an image-icon* with width and height and the given image-meta,
+(defmacro image-pad [[width height] & body]
+  "Returns an image with width and height
    and applies body to the graphics of the image."
   `(let [img# (BufferedImage. ~width ~height BufferedImage/TYPE_INT_ARGB)]
           (doto (.createGraphics img#)
                    (.setColor Color/BLACK)
                    ~@body)
-          (image-icon* img# ~image-meta)))
+          img#))
+
+(defmacro image-icon-pad [[width height] image-meta & body]
+  "Returns an image-icon* with width and height and the given image-meta,
+   and applies body to the graphics of the image."
+  `(image-icon* (image-pad [~width ~height] ~@body) ~image-meta))
 
 
 
@@ -101,6 +106,7 @@
 
 (def keyword->widget
   {:direction wheel
+   :string    text
    :color     color-selection-button})
 
 (defn get-values [& questions]

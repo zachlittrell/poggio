@@ -2,7 +2,9 @@
   (:import [java.awt Color]
            [java.awt.image BufferedImage]
            [javax.swing ImageIcon])
-  (:use [seesaw core]
+  (:use [clojure pprint]
+        [data string]
+        [seesaw core]
         [seesawx core]
         [tools.level-editor templates]
         [tools.level-viewer [core :only [view-level]]]))
@@ -39,10 +41,13 @@
 (defn update-selected! [item-box e]
   (config! (.getComponent e)
       :icon (let [icon (selection item-box)
-                  questions (:questions icon)]
-              (if questions
-                (image-icon* (.getImage icon) (apply get-values questions))
-                (image-icon* (.getImage icon) {})))))
+                  questions (:questions icon)
+                  build     (:build icon)]
+              (image-icon* (.getImage icon)
+                           {:build build
+                            :answers (if questions 
+                                       (apply get-values questions)
+                                       nil)}))))
 
 (defn map-panel [item-box]
   (let [items (for [n (range (* max-x max-y))]
@@ -66,7 +71,7 @@
                                           (.getImage (config % :icon)))
                              map-panel)]
                     [[column row]
-                     (:direction (config c :icon))]
+                    (:direction (:answers (config c :icon)))]
                  (throw (Exception. "Need to position player.")))
 
         walls    (into #{} 
@@ -80,9 +85,9 @@
                       (for-grid-panel [[row column component] map-panel
                                        :let [icon (config component :icon)
                                              build (:build icon)
-                                             questions (:questions icon)]
+                                             answers (:answers icon)]
                                        :when build]
-                 (build (apply get-values questions))))]
+                 (build [column row] answers)))]
     {:loc loc
      :dir dir
      :walls walls
@@ -94,14 +99,14 @@
   (action :name "View"
           :handler
           (fn [_]
-            (view-level (code map-panel)))))
+            (view-level (eval (code map-panel))))))
 
 (defn build-button [map-panel output-panel]
   (action :name "Build"
           :handler 
           (fn [_]
             (config! output-panel :text
-                     (str (code map-panel))))))
+                     (object->pretty-printed-string (code map-panel))))))
 
 
 

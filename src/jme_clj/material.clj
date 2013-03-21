@@ -1,4 +1,5 @@
 (ns jme-clj.material
+  (:require [jme-clj.assets :as assets])
   (:use [control.defutilities :only [def-opts-constructor]]
         [data enum])
   (:import [com.jme3.asset TextureKey]
@@ -8,10 +9,12 @@
 (def-opts-constructor material
   [:setter]
   {:asset-manager nil
-   :def-name      ""}
-  `(Material. ~'asset-manager ~'def-name)
+   :def-name      "Common/MatDefs/Misc/Unshaded.j3md"}
+  `(Material. (assets/asset-manager ~'asset-manager) ~'def-name)
   {:asset-manager [:no-op]
    :def-name      [:no-op]
+   :color         [:map-do-seq
+                   :replace [#"^(.*)$" "set-color"]]
    :texture       [:map-do-seq
                    :replace [#"^(.*)$" "set-texture"]]})
 
@@ -29,7 +32,7 @@
   [:setter]
   {:asset-manager nil
    :texture-key   nil}
-  `(.loadTexture ~'asset-manager ~'texture-key)
+  `(.loadTexture (assets/asset-manager ~'asset-manager) ~'texture-key)
   {:asset-manager [:no-op]
    :texture-key   [:no-op]
    :wrap          [:setter

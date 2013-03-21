@@ -7,7 +7,8 @@
            [com.jme3.material Material]
            [com.jme3.math FastMath Plane Quaternion  Vector3f]
            [com.jme3.scene.shape Box Quad])
-  (:use [jme-clj assets
+  (:use [data quaternion]
+        [jme-clj assets
                  geometry
                  material
                  physics
@@ -17,24 +18,17 @@
   (load-level [this node warpables rotatables]))
 
 (defrecord BasicLevel
-  [loc dir wall-bounds wall-mat]
+  [loc dir wall-bounds wall-mat widgets]
   Level
   (load-level [this app warpables rotatables]
     (let [[x z :as init] loc
           wall-mat (textured-material (asset-manager app) wall-mat)
-          floor-rot (doto (Quaternion.)
-                      (.fromAngleNormalAxis (* -90 FastMath/DEG_TO_RAD)
-                                            Vector3f/UNIT_X))
-          ceiling-rot (doto (Quaternion.)
-                        (.fromAngleNormalAxis (* 90 FastMath/DEG_TO_RAD)
-                                              Vector3f/UNIT_X))
+          floor-rot  (angle->quaternion FastMath/PI :x)
+          ceiling-rot (angle->quaternion 0 :x)
           quad (Quad. 16 16)
           quad-collision (MeshCollisionShape. quad)]
       (let [loc (Vector3f. (+ (* x 16) 0) -1.5 (+ (* 16 z) 0))
-            dir (.fromAngleNormalAxis (Quaternion.)
-                                      (+ dir
-                                         FastMath/HALF_PI)
-                                      (Vector3f/UNIT_Y))]
+            dir (angle->quaternion dir :y)]
         (doseq [warpable warpables] (warp warpable loc))
         (doseq [rotatable rotatables] (rotate rotatable dir)))
       ;;Iteratively construct the floor
@@ -74,11 +68,13 @@
                          :material wall-mat
                          :move (Vector3f. (* x 16) -8 (* 16 z))
                          :controls [(RigidBodyControl. collision-shape
-                                                       0)])))))))
+                                                       0)]))))
+      ;;Build widgets
+      (apply attach! app (for [widget widgets] (widget app))))))
 
 (defn basic-level 
   ([m]
-   (let [{:keys [loc dir walls wall-mat]} m]
-     (basic-level loc dir walls wall-mat)))
-  ([loc dir wall-bounds wall-mat]
-   (BasicLevel. loc dir wall-bounds wall-mat)))
+   (let [{:keys [loc dir walls wall-mat widgets]} m]
+     (basic-level loc dir walls wall-mat widgets)))
+  ([loc dir wall-bounds wall-mat widgets]
+   (BasicLevel. loc dir wall-bounds wall-mat widgets)))

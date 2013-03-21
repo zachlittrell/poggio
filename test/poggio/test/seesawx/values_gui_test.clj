@@ -21,4 +21,8 @@
                        :model [:red
                                :blue
                                :orange
-                               :purple]]}))
+                               :purple]]}
+              {:label "List of places you've been"
+               :id    :places
+               :type  [:list 
+                       :type :string]}))

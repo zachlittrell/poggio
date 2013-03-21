@@ -4,7 +4,9 @@
            [javax.swing ImageIcon JColorChooser JComponent])
   (:use [control.bindings :only [let-weave]]
         [data.map :only [value-map]]
-        [seesaw behave core [selector :only [id-of!]] swingx value]))
+        [seesaw behave core [selector :only [id-of!]] layout swingx value]))
+
+(declare keyword->widget)
 
 (defmacro for-grid-panel [[[row column component] panel & opts] & body]
   "A for-loop that loops through each child of the grid panel, 
@@ -105,12 +107,50 @@
                     :blue (.getBlue c)}))
   (value!* [this v] (selection! this v)))
 
+(defn listx [& opts]
+  "Creates a widget that allows the user to build up a list.
+   Accepts a type option, which can be one of the widget keywords
+   used by get-values (the :string type is used if omitted)."
+  (let [{:keys [type id]
+         :or
+         {type :string}} opts
+        widget (keyword->widget type)
+        grid  (proxy [javax.swing.JPanel seesaw.value.Value] []
+                (container_QMARK__STAR_ [] false)
+                (value_STAR_ [] (for-grid-panel [[r c component] this
+                                                 :when (zero? c)]
+                                  (value component))))
+        revalidate! (fn [] (.setRows (.getLayout grid) 
+                                     (/ (.getComponentCount grid) 2))
+                           (.setSize grid (.getPreferredSize grid))
+                           (.validate grid)
+                           (.repaint grid))
+        remove (fn [w]
+                 (action :name "Remove"
+                         :handler (fn [e]
+                                    (remove! grid w 
+                                             (.getSource e))
+                                    (revalidate!))))]
+    (id-of! grid id)
+    (.setLayout grid (grid-layout 0 2))
+    (border-panel :center (scrollable grid)
+                  :size [30 :by 200]
+                  :north (action :name "Add"
+                                 :handler
+                                 (fn [e]
+                                   (let [w (widget)]
+                                     (add! grid
+                                           w
+                                           (remove w))
+                                     (revalidate!)))))))
+
 (def keyword->widget
   {:direction wheel
-   :string    (comp scrollable text)
+   :string    text
    :boolean   checkbox
    :color     color-selection-button
-   :choice    combobox})
+   :choice    combobox
+   :list      listx})
 
 (defn get-values [& questions]
   "Creates a dialog which creates widgets for each pair in questions,
@@ -124,13 +164,12 @@
                                      (let-weave (coll? type)
                                         [[type & opts] type]
                                         [opts nil]
-                                     (println id type opts)
                                      (apply (keyword->widget type)
                                             :id id
                                             opts))])))]
     (show! (dialog :option-type :ok-cancel
                    :content (scrollable panel)
-                   :size [300 :by 300]
+                   :size [400 :by 400]
                    :success-fn (fn [_] (value panel))))))
 
 

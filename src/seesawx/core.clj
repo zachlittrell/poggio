@@ -106,7 +106,8 @@
 
 (def keyword->widget
   {:direction wheel
-   :string    text
+   :string    (comp scrollable text)
+   :boolean   checkbox
    :color     color-selection-button})
 
 (defn get-values [& questions]
@@ -114,7 +115,7 @@
    where a pair consists of a string for a label and a keyword for the 
    type of value desired, and returns a map of the final values, or nil
    if the user cancels."
-  (let [panel (grid-panel :columns 1
+  (let [panel (grid-panel :columns 2
                           :items (flatten 
                                    (for [{:keys [id type label]} questions]
                                     [label ((keyword->widget type)

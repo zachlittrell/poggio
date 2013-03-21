@@ -8,6 +8,10 @@
                :type  :direction}
               {:label "My Color"
                :id    :my-color
-               :type  :color}))
-
-
+               :type  :color}
+              {:label "My ID"
+               :id    :my-id
+               :type  :string}
+              {:label "Organ Donor?"
+               :id    :organ-donor?
+               :type  :boolean}))

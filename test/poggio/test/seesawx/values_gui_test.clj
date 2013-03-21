@@ -14,4 +14,11 @@
                :type  :string}
               {:label "Organ Donor?"
                :id    :organ-donor?
-               :type  :boolean}))
+               :type  :boolean}
+              {:label "Favorite Color"
+               :id    :favorite-color
+               :type  [:choice
+                       :model [:red
+                               :blue
+                               :orange
+                               :purple]]}))

@@ -2,7 +2,8 @@
   (:import [java.awt BasicStroke Color Graphics RenderingHints]
            [java.awt.image BufferedImage]
            [javax.swing ImageIcon JColorChooser JComponent])
-  (:use [data.map :only [value-map]]
+  (:use [control.bindings :only [let-weave]]
+        [data.map :only [value-map]]
         [seesaw behave core [selector :only [id-of!]] swingx value]))
 
 (defmacro for-grid-panel [[[row column component] panel & opts] & body]
@@ -108,7 +109,8 @@
   {:direction wheel
    :string    (comp scrollable text)
    :boolean   checkbox
-   :color     color-selection-button})
+   :color     color-selection-button
+   :choice    combobox})
 
 (defn get-values [& questions]
   "Creates a dialog which creates widgets for each pair in questions,
@@ -118,8 +120,14 @@
   (let [panel (grid-panel :columns 2
                           :items (flatten 
                                    (for [{:keys [id type label]} questions]
-                                    [label ((keyword->widget type)
-                                             :id id)])))]
+                                    [label 
+                                     (let-weave (coll? type)
+                                        [[type & opts] type]
+                                        [opts nil]
+                                     (println id type opts)
+                                     (apply (keyword->widget type)
+                                            :id id
+                                            opts))])))]
     (show! (dialog :option-type :ok-cancel
                    :content (scrollable panel)
                    :size [300 :by 300]

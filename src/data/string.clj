@@ -1,6 +1,8 @@
 (ns data.string
   "Functions for manipulating strings."
-  (:require [clojure.string :as str]))
+  (:import [java.io StringWriter])
+  (:require [clojure.string :as str]
+            [clojure.pprint :as pretty]))
 
 (defn upper-case-word [^String word]
   "Returns the word with the first letter
@@ -40,3 +42,9 @@
    certain cases like HTMLEditorKit properly."
   [s]
   (str/split s #"(?<!^)(?=[A-Z])")) 
+
+(defn object->pretty-printed-string [o]
+  "Returns the object pretty-printed onto a string."
+  (let [writer (StringWriter.)]
+    (pretty/pprint o writer)
+    (.toString writer)))

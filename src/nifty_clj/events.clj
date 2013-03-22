@@ -2,9 +2,16 @@
   "Functions for handling events (in particular, interactions) in nifty-gui."
   (:use [data.string :only [dash->camel-case]])
   (:import [clojure.lang IFn]
-           [de.lessvoid.nifty NiftyMethodInvoker]))
+           [de.lessvoid.nifty NiftyMethodInvoker]
+           [de.lessvoid.nifty.controls Droppable
+                                       AbstractController 
+                                       DefaultController 
+                                       DroppableDropFilter]
+           [de.lessvoid.nifty.screen DefaultScreenController
+                                     NullScreenController]
+           [org.bushe.swing.event EventTopicSubscriber]))
 
-(defn ifn-nifty-method-invoker
+(defn ifn->nifty-method-invoker
   "Returns a Nifty Method Invoker that calls function f on
    invocation."
   [f]
@@ -13,7 +20,7 @@
     (performInvoke [_] (f))))
 
 (defmacro nifty-method [& body]
-  `(ifn-nifty-method-invoker
+  `(ifn->nifty-method-invoker
      (fn [_] ~@body)))
 
 (defprotocol NiftyMethodInvokerProvider
@@ -25,7 +32,7 @@
 
 (extend-type IFn
   NiftyMethodInvokerProvider
-  (nifty-method-invoker [f] (ifn-nifty-method-invoker f)))
+  (nifty-method-invoker [f] (ifn->nifty-method-invoker f)))
 
 (defn set-on-mouse-over! [element invoker]
   (.setOnMouseOver (.getElementInteraction element)
@@ -60,6 +67,19 @@
 (def-element-interaction-click-handler-setters right .getSecondary)
 (def-element-interaction-click-handler-setters middle .getTertiary)
 
+(defprotocol DroppableDropFilterProvider
+  (droppable-drop-filter [p]))
+(extend-protocol DroppableDropFilterProvider
+  DroppableDropFilter
+  (droppable-drop-filter [d] d)
+  IFn
+  (droppable-drop-filter [f] (proxy [NullScreenController DroppableDropFilter] []
+                               (accept [source draggable target]
+                                  (f source draggable target)))))
+
+(defn add-filter! [droppable filter]
+  (.addFilter droppable (droppable-drop-filter filter)))
+
 (def element-interactions 
   {:on-mouse-over  set-on-mouse-over!
    :on-mouse-wheel set-on-mouse-wheel!
@@ -73,4 +93,35 @@
    :on-middle-click-mouse-move set-middle-on-click-mouse-move!
    :on-middle-release     set-middle-on-release!})
 
+(def keyword->nifty-control-class
+  {:droppable Droppable})
+
+(def nifty-control-interactions
+  {:on-drop add-filter!})
+
+(defprotocol EventTopicSubscriberProvider
+  (event-topic-subscriber [e]))
+
+(extend-protocol EventTopicSubscriberProvider
+  EventTopicSubscriber
+  (event-topic-subscriber [e] e)
+  clojure.lang.IFn
+  (event-topic-subscriber [f] (reify EventTopicSubscriber
+                                (onEvent [_ topic data] (f topic data)))))
+
+(def keyword->nifty-event
+  {:drag de.lessvoid.nifty.controls.DraggableDragStartedEvent
+   :drop de.lessvoid.nifty.controls.DroppableDroppedEvent})
+
+(defn subscribe! 
+  ([nifty id class subscriber]
+   (subscribe! nifty (.getCurrentScreen nifty) class subscriber))
+  ([nifty screen id class subscriber]
+   (.subscribe nifty screen id (if (keyword? class)
+                                 (keyword->nifty-event class)
+                                 class)
+               (event-topic-subscriber subscriber))))
+
+(defn unsubscribe! [nifty id obj]
+  (.unsubscribe nifty id obj))
 

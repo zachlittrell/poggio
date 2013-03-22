@@ -4,6 +4,7 @@
               [keyword  :only [keyword->symbol]]
               [object   :only [proxy-around-object]]
               [string   :only [dash->camel-case]]]
+        [control.bindings :only [let-weave]]
         [control.defutilities :only [def-opts-constructor]]
         [control.io :only [err-println]]
         [jme-clj assets audio input view-port]
@@ -31,6 +32,8 @@
                                       Falloff$HoverFalloffType]
            [de.lessvoid.nifty.controls.button.builder ButtonBuilder]
            [de.lessvoid.nifty.controls.checkbox.builder CheckboxBuilder]
+           [de.lessvoid.nifty.controls.dragndrop.builder DraggableBuilder
+                                                         DroppableBuilder]
            [de.lessvoid.nifty.controls.label.builder LabelBuilder]
            [de.lessvoid.nifty.controls.scrollpanel.builder ScrollPanelBuilder]
            [de.lessvoid.nifty.controls.textfield.builder TextFieldBuilder]
@@ -208,6 +211,17 @@
   TextFieldBuilder [id]
   {:id [:no-op]})
 
+(def-element-builder draggable
+  {:id "draggable-generated DraggableBuilder"}
+  DraggableBuilder [id]
+  {:id [:no-op]})
+
+(def-element-builder droppable
+  {:id "draggable-generated DroppableBuilder"}
+  DroppableBuilder [id]
+  {:id [:no-op]})
+
+
 (def-opts-constructor effect
   [:simple]
   {:effect-name "fade"}
@@ -269,16 +283,28 @@
             :child-layout child-layout
             :controls controls))))
         
-
-
 (defn screen-around [& controls]
   "Returns (apply laid-out-screen-around :center controls)"
   (apply laid-out-screen-around :center controls))
 
+(defn laid-out-screen-around-panels [child-layout & panels]
+  "Returns a screen with one layer, which uses the given
+   child layout, containing panels."
+  (screen
+    :layer 
+      (layer
+        :child-layout child-layout
+        :panels panels)))
+
+(defn screen-around-panels [& panels]
+  "Returns (apply laid-out-screen-around-panels :center panels)"
+  (apply laid-out-screen-around-panels :center panels))
+
+
 (defn build [^Nifty nifty ^ElementBuilder element-builder & interactions]
   "Returns the element built by element-builder using nifty.
-   Can also pass optionally pairs of keyword and a map of 
-   interaction-handlers, the iteraction-handlers mapping keywords 
+   Can also pass optionally pairs of ids and a map of 
+   interaction-handlers, the interaction-handlers mapping keywords 
    for interactions (see nifty-clj.events) to 
    NiftyMethodInvokerProviders, and the keyword being the id of the
    element to apply the interactions to."
@@ -286,6 +312,13 @@
         {:as interaction-map} interactions]
     (doseq [[id-key interactions] interaction-map
             [interaction handler] interactions]
-      (if-let [target (.findElementByName element (name id-key))]
-        ((element-interactions interaction) target handler)))
+      (let-weave (coll? id-key)
+         [[id-key control-class] id-key
+          target (.findNiftyControl element (name id-key) 
+                                    (keyword->nifty-control-class control-class))
+          interaction->fn nifty-control-interactions]
+         [target (.findElementByName element (name id-key))
+          interaction->fn element-interactions]
+        (when target
+          ((interaction->fn interaction) target handler))))
     element))

@@ -15,15 +15,23 @@
            (.drawLine 40 30 50 40)
                      )
    :questions [{:id :id        :type :string    :label "ID"}
-               {:id :direction :type :direction :label "Direction"}]
+               {:id :direction :type :direction :label "Direction"}
+               {:id :params    :type :list      :label "Parameter Names"}]
    :build     (fn [[x z] {:keys [id direction]}]
-                `(fn [asset-manager#] 
-                   (model :asset-manager asset-manager#
-                          :model-name "Models/Laser/Laser.scene"
-                          :name ~id
-                          :local-translation (Vector3f. (* ~x 16) -16 (* ~z 16))
-                          :local-rotation (angle->quaternion ~direction :y)
-                          :controls [(RigidBodyControl. 0.0)])))})
+                `(fn [app#] 
+                   (let [cannon (model :asset-manager app#
+                                       :model-name "Models/Laser/Laser.scene"
+                                       :name ~id
+                                       :local-translation (Vector3f. (* ~x 16)
+                                                                     -16 
+                                                                     (* ~z 16))
+                                       :local-rotation (angle->quaternion 
+                                                         ~direction :y)
+                                       :controls [(RigidBodyControl. 0.0)])]
+
+
+
+                     cannon)))})
              
 
                    

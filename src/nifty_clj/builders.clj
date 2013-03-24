@@ -30,6 +30,7 @@
                                       TextBuilder]
            [de.lessvoid.nifty.effects Falloff$HoverFalloffConstraint
                                       Falloff$HoverFalloffType]
+           [de.lessvoid.nifty.elements Element]
            [de.lessvoid.nifty.controls.button.builder ButtonBuilder]
            [de.lessvoid.nifty.controls.checkbox.builder CheckboxBuilder]
            [de.lessvoid.nifty.controls.dragndrop.builder DraggableBuilder
@@ -38,7 +39,8 @@
            [de.lessvoid.nifty.controls.scrollpanel.builder ScrollPanelBuilder]
            [de.lessvoid.nifty.controls.textfield.builder TextFieldBuilder]
            [de.lessvoid.nifty.loaderv2.types ElementType]
-           [de.lessvoid.nifty.screen DefaultScreenController
+           [de.lessvoid.nifty.screen Screen
+                                     DefaultScreenController
                                      ScreenController]
            [java.util.logging Level Logger]))
 
@@ -235,7 +237,7 @@
                     :replace [#"\?$" ""]]
    :never-stop-rendering? [:simple
                              :replace [#"\?$" ""]]
-   :on-shot? [:simple
+   :one-shot? [:simple
                 :replace [#"\?$" ""]]
    :overlay? [:simple
                 :replace [#"\?$" ""]]
@@ -300,16 +302,16 @@
   "Returns (apply laid-out-screen-around-panels :center panels)"
   (apply laid-out-screen-around-panels :center panels))
 
-
-(defn build [^Nifty nifty ^ElementBuilder element-builder & interactions]
-  "Returns the element built by element-builder using nifty.
+(defn apply-interactions [element & interactions]
+  "Returns the element given.
    Can also pass optionally pairs of ids and a map of 
-   interaction-handlers, the interaction-handlers mapping keywords 
+   interaction-handlers. If the id is a vector of an id
+   and NiftyControl class keyword, interactions from nifty-control,
+   the interaction-handlers mapping keywords 
    for interactions (see nifty-clj.events) to 
    NiftyMethodInvokerProviders, and the keyword being the id of the
    element to apply the interactions to."
-  (let [element (.build element-builder nifty)
-        {:as interaction-map} interactions]
+  (let [{:as interaction-map} interactions]
     (doseq [[id-key interactions] interaction-map
             [interaction handler] interactions]
       (let-weave (coll? id-key)
@@ -322,3 +324,17 @@
         (when target
           ((interaction->fn interaction) target handler))))
     element))
+
+(defn build-screen [^Nifty nifty ^ScreenBuilder screen-builder & interactions]
+  "Returns the result of applying apply-interactions to the screen built 
+   from screen-builder"
+  (apply apply-interactions (.build screen-builder nifty) interactions))
+
+(defn build-with-screen [^Nifty nifty ^Screen screen ^Element parent ^ElementBuilder element-builder  & interactions]
+  "Returns the result of applying apply-interactions to the element built
+   from element-builder."
+  (apply apply-interactions (.build element-builder nifty screen parent) interactions))
+
+(defn build [^Nifty nifty ^Element parent ^ElementBuilder element-builder & interactions]
+  "Returns (apply build-with-screen nifty (.getCurrentScreen nifty) parent element-builder interactions)."
+  (apply build-with-screen nifty (.getCurrentScreen nifty) parent element-builder interactions))

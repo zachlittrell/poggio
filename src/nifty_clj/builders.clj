@@ -27,6 +27,7 @@
                                       ImageBuilder
                                       LayerBuilder
                                       PanelBuilder
+                                      PopupBuilder
                                       TextBuilder]
            [de.lessvoid.nifty.effects Falloff$HoverFalloffConstraint
                                       Falloff$HoverFalloffType]
@@ -223,6 +224,11 @@
   DroppableBuilder [id]
   {:id [:no-op]})
 
+
+(def-element-builder popup
+  {:id ""}
+  PopupBuilder [id]
+  {:id [:no-op]})
 
 (def-opts-constructor effect
   [:simple]

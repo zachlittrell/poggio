@@ -48,3 +48,8 @@
   (let [writer (StringWriter.)]
     (pretty/pprint o writer)
     (.toString writer)))
+
+(defn genstr [prefix]
+  "Returns a randomly generated string, using the counter
+   from gensym."
+  (str prefix (clojure.lang.RT/nextID)))

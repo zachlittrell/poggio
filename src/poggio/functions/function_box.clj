@@ -1,6 +1,6 @@
-(ns poggio.function-box
+(ns poggio.functions.function-box
   (:use [nifty-clj [builders :exclude [text]] elements events]
-        [poggio functions]))
+        [poggio.functions core]))
 
 (def border-effect (effect :effect-name "border"
                            :effect-parameters {"color" "#694489"

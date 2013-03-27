@@ -5,12 +5,18 @@
            [com.jme3.math Ray]
            [com.jme3.renderer Camera]))
 
+(defn collisions  [^Collidable collidable ^Collidable other]
+  "Returns the collisions between collidable and other"
+  [^Collidable collidable ^Collidable other]
+  (let [results (CollisionResults.)]
+    (.collideWith collidable other results)
+    results))
+
 (defn closest-collision 
   "Returns the closest collision between collidable and other,
    or nil if there is none."
   ([^Collidable collidable ^Collidable other]
-    (let [results (CollisionResults.)]
-      (.collideWith other collidable results)
+    (let [results (collisions collidable other)]
       (when (> (.size results) 0)
         (.getClosestCollision results)))))
 

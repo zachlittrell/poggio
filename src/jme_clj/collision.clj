@@ -2,7 +2,7 @@
   "Methods for handling collisions in JME."
   (:import [com.jme3.bullet.collision PhysicsCollisionListener]
            [com.jme3.collision Collidable CollisionResults]
-           [com.jme3.math Ray]
+           [com.jme3.math Ray Vector2f]
            [com.jme3.renderer Camera]))
 
 (defn collisions  [^Collidable collidable ^Collidable other]
@@ -23,7 +23,27 @@
 (defn closest-collision-from-camera
   "Returns the closest collision between collidable and camera,
    or nil if there is none."
-  ([^Camera camera ^Collidable collidable] (closest-collision collidable (Ray. (.getLocation camera) (.getDirection camera)))))
+  ([^Camera camera ^Collidable collidable] 
+   (closest-collision collidable (Ray. (.getLocation camera) 
+                                       (.getDirection camera)))))
+
+(defn closest-collision-from-point 
+  "Returns the closest collision between collidable and a point,
+   or nil if there is none. Uses camera to calculate coordinates."
+  [^Camera cam ^Vector2f point ^Collidable collidable]
+  (let [point3d (-> (.getWorldCoordinates cam (Vector2f. (.x point)
+                                                         (.y point))
+                                              (float 0)))]
+  (closest-collision collidable 
+                     (Ray. point3d
+                           (-> (.getWorldCoordinates cam
+                                                     (Vector2f. (.x point)
+                                                                (.y point))
+                                                     (float 1))
+                               (.subtractLocal point3d)
+                               (.normalizeLocal))))))
+                                                     
+
 
 (defprotocol PhysicsCollisionListenerProvider
   (physics-collision-listener [this]))

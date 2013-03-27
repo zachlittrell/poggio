@@ -1,6 +1,6 @@
-(ns poggio.test.poggio.function-box-test
+(ns poggio.test.poggio.functions.gui-function-test
   (:use [nifty-clj [builders :exclude [text]] elements events]
-        [poggio.functions core function-box])
+        [poggio.functions core gui])
   (:import [com.jme3.app SimpleApplication]
            [java.util.logging Level Logger]))
 

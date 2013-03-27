@@ -6,7 +6,11 @@
                         "color"
                         ["r" "g" "b"]))
 
-(def red* (fn->pog-fn #(.getRed %) "red" ["c"]))
-(def green* (fn->pog-fn #(.getGreen %) "green" ["c"]))
-(def blue* (fn->pog-fn #(.getBlue %) "blue" ["c"]))
+(def red-value* (fn->pog-fn #(.getRed %) "red-value" ["c"]))
+(def green-value* (fn->pog-fn #(.getGreen %) "green-value" ["c"]))
+(def blue-value* (fn->pog-fn #(.getBlue %) "blue-value" ["c"]))
+
+(def red* (seq->pog-fn "red" [] (list color* 255 0 0)))
+(def green* (seq->pog-fn "green" [] (list color* 0 255 0)))
+(def blue* (seq->pog-fn "blue" [] (list color* 0 0 255)))
 

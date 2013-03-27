@@ -33,4 +33,4 @@
                         physics-space
                         (physics-collision-listener listener))
         (.attachChild node child)
-        (.add physics-space child)))))
+        (.addAll physics-space child)))))

@@ -30,8 +30,9 @@
 
 
 (defn template->item-icon [template]
-  (let [{:keys [build questions image]} template]
-    (image-icon* image {:questions questions :build build})))
+  (let [{:keys [build questions image prelude]} template]
+    (image-icon* image {:questions questions :build build
+                        :prelude prelude})))
 
 (defn item-panel []
  (listbox :model (concat (vals default-item-icons)
@@ -42,9 +43,11 @@
   (config! (.getComponent e)
       :icon (let [icon (selection item-box)
                   questions (:questions icon)
-                  build     (:build icon)]
+                  build     (:build icon)
+                  prelude   (:prelude icon)]
               (image-icon* (.getImage icon)
                            {:build build
+                            :prelude prelude
                             :answers (if questions 
                                        (apply get-values questions)
                                        nil)}))))
@@ -87,12 +90,19 @@
                                              build (:build icon)
                                              answers (:answers icon)]
                                        :when build]
-                 (build [column row] answers)))]
-    {:loc loc
-     :dir dir
-     :walls walls
-     :wall-mat "Textures/Terrain/BrickWall/BrickWall.jpg"
-     :widgets widgets}))
+                 (build [column row] answers)))
+      prelude (for-grid-panel [[row column component] map-panel
+                               :let [icon (config component :icon)
+                                     prelude (:prelude icon)]
+                               :when prelude]
+                prelude)]
+    (list 'do
+          (list* 'do prelude)
+          {:loc loc
+           :dir dir
+           :walls walls
+           :wall-mat "Textures/Terrain/BrickWall/BrickWall.jpg"
+           :widgets widgets})))
      
 
 (defn view-button [map-panel]

@@ -1,4 +1,4 @@
-(ns poggio.functions.function-box
+(ns poggio.functions.gui
   (:use [nifty-clj [builders :exclude [text]] elements events]
         [poggio.functions core]))
 

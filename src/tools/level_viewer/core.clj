@@ -82,6 +82,6 @@
 (defn -main [& args]
   (let [level (if (empty? args)
                 (eval (read-string (input "Enter level map")))
-                (eval (read-string (slurp (first args)))))]
+                (load-string (slurp (first args))))]
     (doto (make-app level)
       (.start))))

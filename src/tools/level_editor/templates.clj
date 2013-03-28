@@ -22,7 +22,8 @@
                 :controls [(RigidBodyControl. 0.0)]
                 :pog-fn (fn->pog-fn (partial shoot-globule!
                                      app
-                                     (.add loc 5 5 0)
+                                     (.add loc 
+                                           (.mult dir (Vector3f. 0 4 2.1)))
                                      dir
                                      (float 25)
                                      (value red*))

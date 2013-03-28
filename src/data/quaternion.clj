@@ -10,3 +10,7 @@
                           :x Vector3f/UNIT_X
                           :y Vector3f/UNIT_Y
                           :z Vector3f/UNIT_Z)))
+
+(defn quaternion->direction-vector [quaternion]
+  "Returns the direction of the quaternion."
+  (.getRotationColumn quaternion 2))

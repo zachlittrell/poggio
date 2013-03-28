@@ -4,6 +4,8 @@
         [poggio.functions core]))
 
 (defn pog-fn->node [name pog-fn]
+  "Returns a Node that implements PogFn protocol, and delegates
+   its implementation to pog-fn."
   (proxy [Node poggio.functions.core.PogFn] [name]
      (parameters [] (parameters pog-fn))
      (invoke [args] (invoke pog-fn args))))
@@ -18,3 +20,10 @@
    :pog-fn [:no-op]
    :children [:do-seq
               :replace [#"^(.*)$","attach-child"]]})
+
+(defn pog-fn-node-from [spatial]
+  (if (extends? PogFn (class spatial))
+    spatial
+    (when-let [parent (.getParent spatial)]
+      (recur parent))))
+

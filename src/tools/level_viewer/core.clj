@@ -1,13 +1,14 @@
 (ns tools.level-viewer.core
   (:import [com.jme3.app SimpleApplication]
            [com.jme3.bullet BulletAppState]
-           [com.jme3.input KeyInput]
+           [com.jme3.input KeyInput MouseInput]
            [com.jme3.material Material]
            [com.jme3.math ColorRGBA Vector3f])
   (:require [jme-clj.input :as input])
   (:use [nifty-clj builders]
         [poggio level]
-        [jme-clj light material physics physics-control]
+        [poggio.functions core scenegraph]
+        [jme-clj collision light material physics physics-control]
         [seesaw [core :only [input]]]))
 
 
@@ -23,7 +24,7 @@
    KeyInput/KEY_A [(atom false) :cam-left]
    KeyInput/KEY_D [(atom false) :cam-left :negate]})
 
-(defn set-up-keys! [input-manager]
+(defn set-up-keys! [input-manager camera clickable]
   (input/on-key!* input-manager :action KeyInput/KEY_SPACE
       [_ name is-pressed? tpf]
         (when is-pressed?
@@ -31,7 +32,17 @@
   (doseq [[key [atom  _]] key-ops]
     (input/on-key!* input-manager :action key
       [_ name is-pressed? tpf]
-      (swap! atom (constantly is-pressed?)))))
+      (swap! atom (constantly is-pressed?))))
+  (input/on-mouse-button!* input-manager :action MouseInput/BUTTON_LEFT
+      [_ name is-pressed? tpf]
+      (when is-pressed?
+        (when-let [collision (closest-collision-from-point camera 
+                                                           (.getCursorPosition
+                                                             input-manager)
+                                                           clickable)]
+          (when-let [pog-fn (pog-fn-node-from (.getGeometry collision))]
+            (invoke pog-fn [])
+        )))))
 
 
 (defn set-up-room! [app level]
@@ -71,7 +82,9 @@
       (doto (.getStateManager this)
         (.attach (BulletAppState.)))
       (doto (.getInputManager this)
-        (set-up-keys!))
+        (set-up-keys! (.getCamera this) (.getRootNode this)))
+      (doto (.getFlyByCamera this)
+        (.setDragToRotate true))
       (doto this
         (set-up-room! level)))))
 

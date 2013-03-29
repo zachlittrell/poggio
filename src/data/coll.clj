@@ -1,5 +1,6 @@
 (ns data.coll
-  (:require [clojure.zip :as zip]))
+  (:require [clojure.math.combinatorics :as combo]
+            [clojure.zip :as zip]))
 
 (defn distinct-by [f coll]
   "Returns coll with only distinct elements, where two elements are 
@@ -37,6 +38,35 @@
         forms* (for [form forms] (concat form [obj*]))]
     `(let [~obj* ~obj]
        [~@forms* ~obj*])))
+
+(defn zip [& colls]
+  "Returns a list with each coll, in order, 'zipped' into vectors with
+   the corresponding members sharing a vector."
+  (apply map vector colls))
+
+(defn zip-with [f & colls]
+  "Returns the result of applying f to 
+  the corresponding members in each coll."
+  (apply map f colls))
+
+(defn perm-match [preds coll] 
+  "Returns the first permutation of coll such that applying
+   each corresponding predicate in preds with an element in 
+   the permutation returns true, or nil if no such permutation
+   exists."
+  (some #(when (every? identity (for [[pred x] (zip preds %)]
+                                  (pred x)))
+           %)
+          (combo/permutations coll)))
+
+(defn perm-some [preds coll]
+  "Like perm-match, except returns the result of applying the predicates to
+   the matching permutation."
+  (some #(let [perm* (for [[pred x] (zip preds %)] (pred x))]
+           (when (every? identity perm*)
+             perm*))
+        (combo/permutations coll)))
+
 
 (defn seq-walk [leaf branch seq]
   "Returns the result of applying leaf to all leaf elements,

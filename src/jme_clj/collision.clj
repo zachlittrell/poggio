@@ -1,5 +1,8 @@
 (ns jme-clj.collision
   "Methods for handling collisions in JME."
+  (:require [jme-clj.physics-providers :as physics])
+  (:use [data coll]
+        [jme-clj physics-providers])
   (:import [com.jme3.bullet.collision PhysicsCollisionListener]
            [com.jme3.collision Collidable CollisionResults]
            [com.jme3.math Ray Vector2f]
@@ -45,47 +48,28 @@
                                                      
 
 
-(defprotocol PhysicsCollisionListenerProvider
-  (physics-collision-listener [this]))
-
-(extend-protocol PhysicsCollisionListenerProvider
-  PhysicsCollisionListener
-  (physics-collision-listener [this] this)
-  clojure.lang.IFn
-  (physics-collision-listener [f]
-    (reify PhysicsCollisionListener
-      (collision [_ e]
-        (f e)))))
-
-(defmacro object-collision-listener [obj [this obj1 obj2 e] & body]
-  "Returns a PhysicsCollisionListener which only executes body when
-   one of the collided nodes are obj. obj1 is obj and obj2 is the node
-   that was collided with. e is the CollisionEvent."
-  `(let [obj# ~obj]
+(defmacro pred-collision-listener [preds [this obj1 obj2 e] & body]
+  "Returns a Physics CollisionListener which only executes body when
+   the colliding objects match preds in some permutation."
+  `(let [preds# ~preds]
      (reify PhysicsCollisionListener
-       (collision [~this ~e]
-          (when-let [[~obj1 ~obj2] (condp identical? obj#
-                                       (.getNodeA ~e) [(.getNodeA ~e)
-                                                         (.getNodeB ~e)]
-                                       (.getNodeB ~e) [(.getNodeB ~e)
-                                                        (.getNodeA ~e)]
-                                       nil)]
+       (collision[~this ~e]
+          (when-let [[~obj1 ~obj2] (perm-some preds# [(.getNodeA ~e)
+                                                      (.getNodeB ~e)])]
             ~@body)))))
 
-(defmacro objects-collision-listener [obj1 obj2 [this obj1* obj2* e] & body]
-  "Returns a PhysicsCollisionListener which only executes body when
-   obj1 collides with obj2. obj1* and obj2* are mapped accordingly. 
-   e is the CollisionEvent."
-  `(let [obj2# ~obj2]
-     (object-collision-listener ~obj1 [~this ~obj1* ~obj2* ~e]
-       (if (identical? obj2# ~obj2*)
-         ~@body))))
-
- 
 (defmacro on-collision! [physics-space bindings & body]
   "Adds a PhysicsCollisionListener to the physics-space
    which uses bindings for its parameters and body for the
    collision function body."
-  `(.addCollisionListener physics-space
+  `(.addCollisionListener (physics/physics-space ~physics-space)
       (reify PhysicsCollisionListener
         (collision ~bindings ~@body))))
+
+(defmacro on-pred-collision! [physics-space preds [this obj1 obj2 e :as bindings]  & body]
+  "Adds a predicated PhysicsCollisionListener to the physics-space.
+   See pred-collision-listener for details."
+  `(.addCollisionListener (physics/physics-space ~physics-space)
+      (pred-collision-listener ~preds ~bindings ~@body)))
+
+

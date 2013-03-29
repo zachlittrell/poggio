@@ -4,11 +4,12 @@
            [com.jme3.math ColorRGBA Vector3f])
   (:use [data quaternion]
         [jme-clj geometry material model physics-control]
+        [nifty-clj popup]
         [poggio.functions core scenegraph color]
         [seesawx core]
         [tools.level-editor actions]))
 
-(defn build-function-cannon [x z id direction velocity app]
+(defn build-function-cannon [x z id direction velocity mass app]
  (let [loc (Vector3f. (* x 16) -16 (* z 16))
        dir (angle->quaternion direction :y)
        cannon (model :asset-manager app
@@ -26,6 +27,7 @@
                                            (.mult dir (Vector3f. 0 4 2.1)))
                                      dir
                                      (float velocity)
+                                     (float mass)
                                      (value red*))
                                      "" 
                                      [])
@@ -41,12 +43,13 @@
                      )
    :questions [{:id :id        :type :string    :label "ID"}
                {:id :direction :type :direction :label "Direction"}
-               {:id :velocity  :type :decimal   :label "Velocity"}]
+               {:id :velocity  :type :decimal   :label "Velocity"}
+               {:id :mass      :type :decimal   :label "Mass"}]
    :prelude `(use '~'tools.level-editor.templates)
-   :build     (fn [[x z] {:keys [id direction velocity]}]
+   :build     (fn [[x z] {:keys [id direction velocity mass]}]
                 `(do
                    (fn [app#] 
-                   (build-function-cannon ~x ~z ~id ~direction ~velocity app#))))})
+                   (build-function-cannon ~x ~z ~id ~direction ~velocity ~mass app#))))})
 
 (defn build-globule-receiver [x y z id direction app]
  (let [loc (Vector3f. (* x 16) (+ -16 y) (* z 16))
@@ -61,7 +64,8 @@
                 :local-translation loc
                 :local-rotation dir
                 :controls [(RigidBodyControl. 0.0)]
-                :pog-fn (fn->pog-fn (constantly nil) "" [])
+                :pog-fn (fn->pog-fn  #(println (str "I got hits by "
+                                                   (value %) "!")) "" ["ball"])
                 :children [hoop])))
 
 

@@ -7,6 +7,15 @@
   (parameters [f] "Returns a sequence of parameter names.")
   (invoke [f args] "Returns the result of applying args to f."))
 
+(defn is-pog-fn?
+  "Returns true if the object is a PogFn. Can optionally
+   specify what arity the PogFn ought to be."
+  ([obj]
+   (extends? PogFn (class obj)))
+  ([obj arity]
+   (and (is-pog-fn? obj)
+        (== arity (count (parameters obj))))))
+
 (defn pog-fn [parameters invoke-fn]
   "Returns a PogFn that returns parameters and directly
    passes the arguments of invoke to invoke-fn."
@@ -37,8 +46,7 @@
 (defn value [v]
   "Returns (invoke v []) if v is a nullary PogFn,
    otherwise just v."
-  (if (and (extends? PogFn (class v))
-           (empty? (parameters v)))
+  (if (is-pog-fn? v 0)
     (invoke v [])
     v))
 
@@ -99,5 +107,3 @@
 (defn comp* [f1 f2]
   "Composes two PogFunctions."
   (seq->pog-fn "compose" ["f" "g" "x"] (list "f" (list "g" "x"))))
-
-

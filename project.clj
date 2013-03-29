@@ -8,6 +8,7 @@
   :resource-paths ["assets"]
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [org.clojure/core.match "0.2.0-alpha9"]
+                 [org.clojure/math.combinatorics "0.0.3"]
                  [org.clojure/tools.macro "0.1.1"]
                  [com.jme3/eventbus "3.0.0.20121220-SNAPSHOT"]
                  [com.jme3/j-ogg-oggd "3.0.0.20121220-SNAPSHOT"]

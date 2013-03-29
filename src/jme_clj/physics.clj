@@ -1,23 +1,6 @@
 (ns jme-clj.physics
   (:use [control bindings]
-        [jme-clj collision node])
-  (:import [com.jme3.app SimpleApplication]
-           [com.jme3.bullet PhysicsSpace]
-           [com.jme3.bullet BulletAppState]))
-
-(defprotocol PhysicsSpaceProvider
-  (physics-space [provider]))
-
-(extend PhysicsSpace
-  PhysicsSpaceProvider
-  {:physics-space identity})
-
-(extend-type SimpleApplication
-  PhysicsSpaceProvider
-  (physics-space [app] (-> app
-                           (.getStateManager)
-                           (.getState BulletAppState)
-                           (.getPhysicsSpace))))
+        [jme-clj node physics-providers]))
 
 (defn attach! [physics-node & children]
   "Attaches the children to the node and physics-space provided by 
@@ -30,7 +13,7 @@
         [[child listener] child]
         []
         [listener] :>> (.addCollisionListener 
-                        physics-space
+                         physics-space
                         (physics-collision-listener listener))
         (.attachChild node child)
         (.addAll physics-space child)))))

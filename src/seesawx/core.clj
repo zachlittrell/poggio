@@ -153,8 +153,9 @@
    :choice    combobox
    :list      listx
    :integer   spinner
-   :decimal   (partial spinner :model (spinner-model 0.0 
-                                                     :by 0.1))})
+   :decimal   (fn [& args]
+                (apply spinner :model (spinner-model 0.0 :by 0.1)
+                         args))})
 
 (defn get-values [& questions]
   "Creates a dialog which creates widgets for each pair in questions,

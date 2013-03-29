@@ -5,10 +5,12 @@
            [com.jme3.material Material]
            [com.jme3.math ColorRGBA Vector3f])
   (:require [jme-clj.input :as input])
-  (:use [nifty-clj builders]
+  (:use [data coll]
+        [nifty-clj builders]
         [poggio level]
         [poggio.functions core scenegraph]
-        [jme-clj collision light material physics physics-control]
+        [jme-clj collision light material physics physics-providers 
+         physics-control]
         [seesaw [core :only [input]]]))
 
 
@@ -23,6 +25,13 @@
    KeyInput/KEY_S [(atom false) :cam-dir :negate]
    KeyInput/KEY_A [(atom false) :cam-left]
    KeyInput/KEY_D [(atom false) :cam-left :negate]})
+
+(defn set-up-collisions! [app]
+  (on-pred-collision! app [#(pog-fn-node-from % 1)
+                           #(pog-fn-node-from % 0)]
+      [this f input e]
+      (invoke f [input])))
+
 
 (defn set-up-keys! [input-manager camera clickable]
   (input/on-key!* input-manager :action KeyInput/KEY_SPACE
@@ -41,7 +50,8 @@
                                                              input-manager)
                                                            clickable)]
           (when-let [pog-fn (pog-fn-node-from (.getGeometry collision))]
-            (invoke pog-fn [])
+            (when (empty? (parameters pog-fn))
+              (invoke pog-fn []))
         )))))
 
 
@@ -86,7 +96,8 @@
       (doto (.getFlyByCamera this)
         (.setDragToRotate true))
       (doto this
-        (set-up-room! level)))))
+        (set-up-room! level)
+        (set-up-collisions!)))))
 
 (defn view-level [level]
   (cond (string? level) (recur (eval (read-string level)))

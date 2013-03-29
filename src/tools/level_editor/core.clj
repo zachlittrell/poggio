@@ -3,7 +3,7 @@
            [java.awt.image BufferedImage]
            [javax.swing ImageIcon])
   (:use [clojure pprint]
-        [data string]
+        [data meta string]
         [seesaw core]
         [seesawx core]
         [tools.level-editor templates]
@@ -26,13 +26,13 @@
    :blank  default-image})
 
 (def widget-templates
-  [function-cannon-template])
+  [function-cannon-template
+   globule-receiver-template])
 
 
 (defn template->item-icon [template]
-  (let [{:keys [build questions image prelude]} template]
-    (image-icon* image {:questions questions :build build
-                        :prelude prelude})))
+  (let [{:keys [image]} template]
+    (image-icon* image template)))
 
 (defn item-panel []
  (listbox :model (concat (vals default-item-icons)
@@ -42,16 +42,12 @@
 (defn update-selected! [item-box e]
   (config! (.getComponent e)
       :icon (let [icon (selection item-box)
-                  questions (:questions icon)
-                  build     (:build icon)
-                  prelude   (:prelude icon)]
+                  m (meta* icon)
+                  questions (:questions m)]
               (image-icon* (.getImage icon)
-                           {:build build
-                            :prelude prelude
-                            :answers (if questions 
-                                       (apply get-values questions)
-                                       nil)}))))
-
+                           (assoc m :answers (if questions
+                                               (apply get-values questions)
+                                               nil))))))
 (defn map-panel [item-box]
   (let [items (for [n (range (* max-x max-y))]
                 (label 
@@ -74,7 +70,7 @@
                                           (.getImage (config % :icon)))
                              map-panel)]
                     [[column row]
-                    (:direction (:answers (config c :icon)))]
+                    (:direction (:answers (meta* (config c :icon))))]
                  (throw (Exception. "Need to position player.")))
 
         walls    (into #{} 
@@ -87,13 +83,15 @@
       widgets   (into []
                       (for-grid-panel [[row column component] map-panel
                                        :let [icon (config component :icon)
-                                             build (:build icon)
-                                             answers (:answers icon)]
+                                             m (meta* icon)
+                                             build (:build m)
+                                             answers (:answers m)]
                                        :when build]
                  (build [column row] answers)))
       prelude (for-grid-panel [[row column component] map-panel
                                :let [icon (config component :icon)
-                                     prelude (:prelude icon)]
+                                     m (meta* icon)
+                                     prelude (:prelude m)]
                                :when prelude]
                 prelude)]
     (list 'do

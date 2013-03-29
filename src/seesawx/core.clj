@@ -150,7 +150,10 @@
    :boolean   checkbox
    :color     color-selection-button
    :choice    combobox
-   :list      listx})
+   :list      listx
+   :integer   spinner
+   :decimal   (partial spinner :model (spinner-model 0.0 
+                                                     :by 0.1))})
 
 (defn get-values [& questions]
   "Creates a dialog which creates widgets for each pair in questions,

@@ -4,7 +4,6 @@
   :repositories {"oss-sonatype" "https://oss.sonatype.org/content/repositories/snapshots/"}
   :profiles {:dev {:dependencies 
                    [[lein-autodoc "0.9.0"]
-                    [seesaw "1.4.2"]
                    [com.jme3/jME3-testdata "3.0.0.20121220-SNAPSHOT"]]}}
   :resource-paths ["assets"]
   :dependencies [[org.clojure/clojure "1.4.0"]
@@ -33,4 +32,5 @@
                  [com.jme3/nifty "3.0.0.20121220-SNAPSHOT"]
                  [com.jme3/stack-alloc "3.0.0.20121220-SNAPSHOT"]
                  [com.jme3/vecmath "3.0.0.20121220-SNAPSHOT"]
-                 [com.jme3/xmlpull-xpp3 "3.0.0.20121220-SNAPSHOT"]])
+                 [com.jme3/xmlpull-xpp3 "3.0.0.20121220-SNAPSHOT"]
+                 [seesaw "1.4.2"]])

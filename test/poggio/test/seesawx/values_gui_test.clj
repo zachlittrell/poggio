@@ -25,4 +25,7 @@
               {:label "List of places you've been"
                :id    :places
                :type  [:list 
-                       :type :string]}))
+                       :type :string]}
+              {:label "Age?"
+               :id    :age
+               :type  :integer}))

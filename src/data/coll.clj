@@ -2,6 +2,16 @@
   (:require [clojure.math.combinatorics :as combo]
             [clojure.zip :as zip]))
 
+(defprotocol Adjoinable
+  "Protocol for objects which can be 'adjoin'.
+   Similar to IPersistentCollection with less requirements."
+  (adjoin [adjoinable obj]))
+
+(extend-protocol Adjoinable
+  clojure.lang.IPersistentCollection
+  (adjoin [coll obj] (cons coll obj)))
+
+
 (defn distinct-by [f coll]
   "Returns coll with only distinct elements, where two elements are 
    equal if they have the same output from f."
@@ -66,6 +76,10 @@
            (when (every? identity perm*)
              perm*))
         (combo/permutations coll)))
+
+(defn random [coll]
+  "Returns a random element of coll."
+  (nth coll (rand-int (count coll))))
 
 
 (defn seq-walk [leaf branch seq]

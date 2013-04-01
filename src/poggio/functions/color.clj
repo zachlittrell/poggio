@@ -10,7 +10,7 @@
 (def green-value* (fn->pog-fn #(.getGreen %) "green-value" ["c"]))
 (def blue-value* (fn->pog-fn #(.getBlue %) "blue-value" ["c"]))
 
-(def red* (seq->pog-fn "red" [] (list color* 255 0 0)))
-(def green* (seq->pog-fn "green" [] (list color* 0 255 0)))
-(def blue* (seq->pog-fn "blue" [] (list color* 0 0 255)))
+(def red* (seq->pog-fn "red" [] (list color* 1 0 0)))
+(def green* (seq->pog-fn "green" [] (list color* 0 1 0)))
+(def blue* (seq->pog-fn "blue" [] (list color* 0 0 1)))
 

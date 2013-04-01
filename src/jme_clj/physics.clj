@@ -1,4 +1,5 @@
 (ns jme-clj.physics
+  (:import [com.jme3.bullet.control PhysicsControl])
   (:use [control bindings]
         [jme-clj node physics-providers]))
 
@@ -17,3 +18,10 @@
                         (physics-collision-listener listener))
         (.attachChild node child)
         (.addAll physics-space child)))))
+
+(defn detach! [& spatials]
+  "Detaches the children from both the scenegraph and the physics-space."
+  (doseq [spatial spatials]
+    (let [phys-control (.getControl spatial PhysicsControl)]
+      (.setEnabled phys-control false))
+    (.removeFromParent spatial)))

@@ -3,7 +3,7 @@
            [java.awt.image BufferedImage]
            [javax.swing ImageIcon])
   (:use [clojure pprint]
-        [data meta string]
+        [data string]
         [seesaw core]
         [seesawx core]
         [tools.level-editor templates]
@@ -27,7 +27,8 @@
 
 (def widget-templates
   [function-cannon-template
-   globule-receiver-template])
+   globule-receiver-template
+   glass-door-template])
 
 
 (defn template->item-icon [template]
@@ -42,7 +43,7 @@
 (defn update-selected! [item-box e]
   (config! (.getComponent e)
       :icon (let [icon (selection item-box)
-                  m (meta* icon)
+                  m (meta icon)
                   questions (:questions m)]
               (image-icon* (.getImage icon)
                            (assoc m :answers (if questions
@@ -70,7 +71,7 @@
                                           (.getImage (config % :icon)))
                              map-panel)]
                     [[column row]
-                    (:direction (:answers (meta* (config c :icon))))]
+                    (:direction (:answers (meta (config c :icon))))]
                  (throw (Exception. "Need to position player.")))
 
         walls    (into #{} 
@@ -83,14 +84,14 @@
       widgets   (into []
                       (for-grid-panel [[row column component] map-panel
                                        :let [icon (config component :icon)
-                                             m (meta* icon)
+                                             m (meta icon)
                                              build (:build m)
                                              answers (:answers m)]
                                        :when build]
                  (build [column row] answers)))
       prelude (for-grid-panel [[row column component] map-panel
                                :let [icon (config component :icon)
-                                     m (meta* icon)
+                                     m (meta icon)
                                      prelude (:prelude m)]
                                :when prelude]
                 prelude)]

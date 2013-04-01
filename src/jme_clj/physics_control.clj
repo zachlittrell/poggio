@@ -2,7 +2,7 @@
   "Functions for creating and handling PhysicsControls"
   (:use [control.defutilities :only [def-opts-constructor]])
   (:import [com.jme3.bullet.collision.shapes CapsuleCollisionShape]
-           [com.jme3.bullet.control CharacterControl RigidBodyControl]
+           [com.jme3.bullet.control CharacterControl RigidBodyControl PhysicsControl] 
            [com.jme3.bullet.util CollisionShapeFactory]))
 
 (def-opts-constructor character-control
@@ -24,3 +24,10 @@
 (defn static-spatial-control [spatial]
   (rigid-body-control :shape (CollisionShapeFactory/createMeshShape spatial)
                       :mass 0))
+
+(defn physics-control [spatial]
+  (.getControl spatial PhysicsControl))
+
+(defn disable-physics-control! [spatial]
+  (when-let [phys-control (physics-control spatial)]
+    (.setEnabled phys-control false)))

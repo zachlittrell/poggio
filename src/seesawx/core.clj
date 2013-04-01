@@ -4,7 +4,6 @@
            [javax.swing ImageIcon JColorChooser JComponent])
   (:use [control.bindings :only [let-weave]]
         [data.map :only [value-map]]
-        [data.meta]
         [seesaw behave core [selector :only [id-of!]] layout swingx value]))
 
 (declare keyword->widget)
@@ -36,8 +35,8 @@
 (defn image-icon* [img image-meta]
   "Returns an ImageIcon using image that can also be treated
    like a map, whose keys and values are determined by image-meta."
-  (proxy [ImageIcon data.meta.MetaObj] [img]
-    (meta_STAR_ [] image-meta)))
+  (proxy [ImageIcon clojure.lang.IMeta] [img]
+    (meta [] image-meta)))
 
 (defmacro image-pad [[width height] & body]
   "Returns an image with width and height

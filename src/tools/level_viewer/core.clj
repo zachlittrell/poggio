@@ -30,7 +30,8 @@
   (on-pred-collision! app [#(pog-fn-node-from % 1)
                            #(pog-fn-node-from % 0)]
       [this f input e]
-      (invoke f [input])))
+      (when (and (.getParent f) (.getParent input))
+        (invoke f [input]))))
 
 
 (defn set-up-keys! [input-manager camera clickable]

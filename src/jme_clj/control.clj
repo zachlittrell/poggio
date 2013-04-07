@@ -9,8 +9,8 @@
     (reify Control
       (cloneForSpatial [this spatial])
       (render [this rm vp])
-      (setSpatial [this spatial]
-        (swap! spatial identity spatial))
+      (setSpatial [this spatial*]
+        (swap! spatial (constantly spatial*)))
       (update [this tpf]
         (let [now (swap! time-elapsed + tpf)]
           (when (>= now alarm-time)

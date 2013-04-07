@@ -6,18 +6,20 @@
 (defn attach! [physics-node & children]
   "Attaches the children to the node and physics-space provided by 
    physics-node. children can be either a spatial or a vector
-   with a spatial and a physics-collision listener."
+   with a spatial and keyword-arguments. Currently only supported
+   argument is :kinematic?."
   (let [physics-space (physics-space physics-node)
         node (node physics-node)]
     (doseq [child children]
       (let-weave (vector? child)
-        [[child listener] child]
-        []
-        [listener] :>> (.addCollisionListener 
-                         physics-space
-                        (physics-collision-listener listener))
-        (.attachChild node child)
-        (.addAll physics-space child)))))
+        [[child & args] child]
+        [child child] :>>
+          (do (.attachChild node child)
+              (.addAll physics-space child))
+        [args] :>> (let [{:as args-map} args]
+                     (when (contains? args-map :kinematic?)
+                       (.setKinematic (.getControl child PhysicsControl)
+                                      (:kinematic? args-map))))))))
 
 (defn detach! [& spatials]
   "Detaches the children from both the scenegraph and the physics-space."

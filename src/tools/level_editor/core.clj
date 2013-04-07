@@ -6,7 +6,8 @@
         [data string]
         [seesaw core]
         [seesawx core]
-        [tools.level-editor templates]
+        [tools.level-editor.widgets function-cannon globule-receiver
+                                      glass-door]
         [tools.level-viewer [core :only [view-level]]]))
 
 (def max-x 13)

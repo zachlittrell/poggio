@@ -1,5 +1,6 @@
 (ns jme-clj.node
   "Functions for handling Nodes in JME"
+  (:use [jme-clj spatial])
   (:import [com.jme3.app SimpleApplication]
            [com.jme3.scene Node]))
 
@@ -13,3 +14,11 @@
 (extend Node
   NodeProvider
   {:node identity})
+
+(def-spatial-constructor node*
+  [:setter]
+  {:name ""}
+  `(Node. ~'name)
+  {:name [:no-op]
+   :children [:do-seq
+              :replace [#"^(.*)$","attach-child"]]})

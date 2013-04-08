@@ -10,8 +10,8 @@
         [poggio.functions core scenegraph color]
         [seesawx core]))
 ;
-(defn door-alarm [time speed state door-node initial-location]
-  (alarm-control time
+(defn door-timer [time speed state door-node initial-location]
+  (timer-control time
       (fn []
         (let [state* @state]
             (swap! state 
@@ -35,9 +35,9 @@
     (if (= (:state state*) :opened)
       (do
         (.removeControl door-node (:close-timer state*))
-        (let [alarm (door-alarm time speed state door-node initial-location)]
-          (swap! state (constantly {:state :opened :close-timer alarm}))
-          (.addControl door-node alarm)))
+        (let [timer (door-timer time speed state door-node initial-location)]
+          (swap! state (constantly {:state :opened :close-timer timer}))
+          (.addControl door-node timer)))
     (when (not= (:state state*) :opening)
       (if (= (:state state*) :closing)
         ;;If the door is closing, stop the closing process
@@ -54,14 +54,14 @@
                         (motion-path-listener
                           (fn [motion-control index]
                             (when (== index 1)
-                              (let [alarm (door-alarm time speed
+                              (let [timer (door-timer time speed
                                                       state door-node 
                                                       initial-location)]
                                 (swap! state (constantly {:state :opened
                                                           :opener motion-control
-                                                          :close-timer alarm}))
+                                                          :close-timer timer}))
                               (.addControl door-node 
-                                alarm)))))))
+                                timer)))))))
         (swap! state (constantly {:state :opening
                                   :opener (follow-path! door-node speed path)})))))))
 
@@ -80,14 +80,12 @@
         dir (angle->quaternion direction :y)
         control (RigidBodyControl. 1.0)
         state (atom {:state :closed})
-        door (geom :shape (Box. 8 8 1)
+        door (geom :shape (Box. 8 8 0.25)
                    :controls [control]
                    :material (material :asset-manager app
                                        :texture {"ColorMap"
                                                  (texture :asset-manager app
                                                           :texture-key "Textures/water1.png")}))]
-;                                       :color {"Color" 
-;                                               (ColorRGBA. 0.85 1 0.94 0.5)}))]
     [(pog-fn-node :children [(transparent! door)]
                  :name id
                  :pog-fn (fn->pog-fn (fn [open?]
@@ -117,8 +115,8 @@
                                      :model [:up :down :left :right :forward
                                              :backward]]
                               :label "Movement"}
-               {:id :speed :type :integer :label "Speed"}
-               {:id :time :type :integer :label "Time"}]
+               {:id :speed :type :decimal :label "Speed"}
+               {:id :time :type :decimal :label "Time"}]
    :prelude `(use '~'tools.level-editor.widgets.glass-door)
    :build (fn [[x z] {:keys [id direction distance movement speed time]}]
            `(do

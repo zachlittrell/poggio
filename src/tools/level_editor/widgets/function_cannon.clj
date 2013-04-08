@@ -4,7 +4,7 @@
            [com.jme3.math ColorRGBA Vector3f]
            [com.jme3.scene.shape Box Sphere])
   (:use [data coll color ring-buffer quaternion]
-        [jme-clj animate geometry material model physics physics-control selector]
+        [jme-clj animate control geometry material model physics physics-control selector]
         [nifty-clj popup]
         [poggio.functions core scenegraph color]
         [seesawx core]))
@@ -32,10 +32,25 @@
 
 (def colors (atom (flatten (repeat [(value blue*) (value red*) (value green*)]))))
 
+(defn cannon-timer [app state nozzle-loc dir velocity mass balls]
+  (let [*balls* (atom balls)]
+    (timer-control 0.5 true
+      (fn []
+        (if-let [[ball & more-balls] (seq @*balls*)]
+          (do
+            (shoot-globule! app nozzle-loc dir velocity mass ball)
+            (swap! *balls* (constantly more-balls)))
+          (do
+           (swap! state (constantly {:state :inactive}))
+            false)
+            )))))
+
+
 (defn build-function-cannon [x z id direction velocity mass app]
  (let [loc (Vector3f. (* x 16) -16 (* z 16))
        dir (angle->quaternion direction :y)
        control (RigidBodyControl. 0.0)
+       *state* (atom {:state :inactive})
        cannon (model :asset-manager app
                 :controls [control]
                     :model-name "Models/Laser/Laser.scene")]
@@ -43,17 +58,26 @@
                 :local-translation loc
                 :local-rotation dir
                 :controls [control]
-                :pog-fn (fn->pog-fn (fn []
-                                      (shoot-globule!
-                                        app
-                                        (.add loc 
-                                              (.mult dir (Vector3f. 0 4 2.1)))
-                                        dir
-                                        (float velocity)
-                                        (float mass)
-                                        (first (swap! colors rest))))
-                                     "" 
-                                     [])
+                :pog-fn (fn->pog-fn 
+                          (fn [balls]
+                            (let [state* @*state*
+                                  balls (value balls)]
+                              (when (coll? balls)
+                                (when (= (:state state*) :active)
+                                  (.removeControl cannon (:timer state*)))
+                                (let [timer (cannon-timer app *state*
+                                                           (.add loc 
+                                                             (.mult dir 
+                                                                    (Vector3f. 0 4 2.1)))
+                                                          dir
+                                                          (float velocity)
+                                                          (float mass)
+                                                          balls)]
+                                (.addControl cannon timer)
+                                (swap! *state* (constantly {:state :active
+                                                          :timer timer}))))))
+                                      ""
+                                     ["balls"])
                 :children [cannon])))
  
 (def function-cannon-template

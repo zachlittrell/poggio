@@ -4,7 +4,7 @@
 (def add* (fn->pog-fn +' "add" ["n1" "n2"]))
 (def subtract* (fn->pog-fn -' "subtract" ["n1" "n2"]))
 (def multiply* (fn->pog-fn *' "multiply" ["n1" "n2"]))
-(def divide* (fn->pog-fn /' "divide" ["n1" "n2"]))
+(def divide* (fn->pog-fn / "divide" ["n1" "n2"]))
 
 (def inc* (seq->pog-fn "inc" ["n"]
               (list add* "n" (constantly* 1))))

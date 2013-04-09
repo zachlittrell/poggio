@@ -81,14 +81,14 @@
                                     input-manager
                                     audio-renderer
                                     view-port)]
-     (.addProcessor view-port display)
      (let [display-nifty (.getNifty display)]
+     (.addProcessor view-port display)
        (.setLevel (Logger/getLogger "de.lessvoid.nifty") Level/SEVERE)
        (.setLevel (Logger/getLogger "NiftyInputEventHandlingLog") Level/SEVERE)
        (when load-defaults?
          (.loadStyleFile display-nifty "nifty-default-styles.xml")
          (.loadControlFile display-nifty "nifty-default-controls.xml"))
-       display-nifty))))
+       [display display-nifty]))))
       
 
 (def-opts-constructor screen

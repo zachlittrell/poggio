@@ -8,7 +8,7 @@
   (:use [data coll]
         [nifty-clj builders]
         [poggio level]
-        [poggio.functions core scenegraph]
+        [poggio.functions core color list gui scenegraph]
         [jme-clj collision light material physics physics-providers 
          physics-control]
         [seesaw [core :only [input]]]))
@@ -34,7 +34,7 @@
         (invoke f [input]))))
 
 
-(defn set-up-keys! [input-manager camera clickable]
+(defn set-up-keys! [nifty function-screen *fn-map* input-manager camera clickable]
   (input/on-key!* input-manager :action KeyInput/KEY_SPACE
       [_ name is-pressed? tpf]
         (when is-pressed?
@@ -51,8 +51,8 @@
                                                              input-manager)
                                                            clickable)]
           (when-let [pog-fn (pog-fn-node-from (.getGeometry collision))]
-            (when (empty? (parameters pog-fn))
-              (invoke pog-fn []))
+            (when (== 1 (count (parameters pog-fn)))
+              (set-current-function! nifty function-screen pog-fn *fn-map*))
         )))))
 
 
@@ -90,15 +90,37 @@
         (.setWalkDirection player walk-dir)
         (.setLocation cam (.getPhysicsLocation player))))
     (simpleInitApp []
-      (doto (.getStateManager this)
+     (doto (.getGuiNode this)
+          (.detachAllChildren))
+    (let [[display nifty] (nifty this true)
+          [*fn-map* function-screen] (function-screen nifty
+                                       ["red" red*]
+                                       ["green" green*]
+                                       ["blue" blue*]
+                                       ["()" empty-list*]
+                                       ["cons" cons*]
+                                       ["triple" triple*]
+                                       ["repeat" repeat*]
+                                       ["concat" concat*]
+                                       ["flatten" flatten*])]
+        (.addScreen nifty "function-screen" function-screen)
+        (.gotoScreen nifty "function-screen")
+
+ 
+            (doto (.getStateManager this)
         (.attach (BulletAppState.)))
-      (doto (.getInputManager this)
-        (set-up-keys! (.getCamera this) (.getRootNode this)))
-      (doto (.getFlyByCamera this)
+        (set-up-keys! nifty function-screen *fn-map* 
+                      (.getInputManager this)
+                      (.getCamera this) (.getRootNode this))
+            (doto (.getFlyByCamera this)
         (.setDragToRotate true))
       (doto this
         (set-up-room! level)
-        (set-up-collisions!)))))
+        (set-up-collisions!))
+
+                     
+                   
+                   ))))
 
 (defn view-level [level]
   (cond (string? level) (recur (eval (read-string level)))

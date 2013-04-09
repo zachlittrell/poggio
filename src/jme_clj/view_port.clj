@@ -7,7 +7,7 @@
 
 (extend-type SimpleApplication
   ViewPortProvider
-  (view-port [app] (.getViewPort app)))
+  (view-port [app] (.getGuiViewPort app)))
 
 (extend ViewPort
   ViewPortProvider

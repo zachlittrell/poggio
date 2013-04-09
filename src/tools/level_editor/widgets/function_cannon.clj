@@ -30,15 +30,14 @@
                         (.mult (quaternion->direction-vector dir)
                                vel))))
 
-(def colors (atom (flatten (repeat [(value blue*) (value red*) (value green*)]))))
-
 (defn cannon-timer [app state nozzle-loc dir velocity mass balls]
   (let [*balls* (atom balls)]
     (timer-control 0.5 true
       (fn []
         (if-let [[ball & more-balls] (seq @*balls*)]
           (do
-            (shoot-globule! app nozzle-loc dir velocity mass ball)
+            (if (instance? ColorRGBA ball)
+              (shoot-globule! app nozzle-loc dir velocity mass ball))
             (swap! *balls* (constantly more-balls)))
           (do
            (swap! state (constantly {:state :inactive}))

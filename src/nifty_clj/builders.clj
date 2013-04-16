@@ -2,7 +2,6 @@
   "Functions for creating nifty objects."
   (:use [data [function :only [no-op]]
               [keyword  :only [keyword->symbol]]
-              [object   :only [proxy-around-object]]
               [string   :only [dash->camel-case]]]
         [control.bindings :only [let-weave]]
         [control.defutilities :only [def-opts-constructor]]

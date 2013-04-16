@@ -45,7 +45,7 @@
 ;;                (list reduce* concat* "xs" empty-list*)))
 
 (def map* (seq->pog-fn "map" ["f" "xs"]
-            (list if* (list equals* "xs" empty-list*)
+            (list if* (list empty?* "xs")
                   empty-list*
                   (list cons* (list "f" (list head* "xs"))
                               (list "map" "f" (list tail* "xs"))))))

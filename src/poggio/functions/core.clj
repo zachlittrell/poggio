@@ -1,11 +1,26 @@
 (ns poggio.functions.core
   (:use [control bindings]
-        [data coll]))
+        [data coll object]))
 
 (defprotocol PogFn
   "Protocol for functions in Poggio."
-  (parameters [f] "Returns a sequence of parameter names.")
+  (parameters [f] "Returns a sequence of parameters.
+                   Parameters must implement the PogFnParameter 
+                   protocol.")
   (invoke [f args] "Returns the result of applying args to f."))
+
+(defprotocol PogFnParameter
+  "Protocol for parameters of a PogFn."
+  (name* [param] "Returns the name of the parameter" )
+  (type* [param] "Returns the type of the parameter."))
+
+(extend-protocol PogFnParameter
+  java.lang.String
+  (name* [s] s)
+  (type* [s] :value)
+  clojure.lang.ILookup
+  (name* [param] (:name param))
+  (type* [param] (:type param)))
 
 (defn is-pog-fn?
   "Returns true if the object is a PogFn. Can optionally
@@ -15,6 +30,10 @@
   ([obj arity]
    (and (is-pog-fn? obj)
         (== arity (count (parameters obj))))))
+
+(defn checked-invoke [f args]
+  (doseq [[param arg] (zip (parameters f) args)]
+    (let [type (type* param)])))
 
 (defn pog-fn [parameters invoke-fn]
   "Returns a PogFn that returns parameters and directly

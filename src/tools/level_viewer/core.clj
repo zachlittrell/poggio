@@ -51,8 +51,14 @@
                                                              input-manager)
                                                            clickable)]
           (when-let [pog-fn (pog-fn-node-from (.getGeometry collision))]
-            (when (== 1 (count (parameters pog-fn)))
-              (set-current-function! nifty function-screen pog-fn *fn-map*))
+            (when (and (<= 2 (count (parameters pog-fn)))
+                       (pog-implements? (first (parameters pog-fn)) player))
+              (set-current-function! nifty 
+                                     function-screen 
+                                     (partial* pog-fn 
+                                               {(name* (first (parameters
+                                                                pog-fn))) player})
+                                     *fn-map*))
         )))))
 
 

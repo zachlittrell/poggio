@@ -41,13 +41,13 @@
                             :background-color "#990066"
                             :control
                      (droppable 
-                       :id param
+                       :id (name* param)
                        :align :left
                        :valign :center
                        :child-layout :horizontal
                        :padding "1px"
                   ;      :on-active-effect border-effect
-                       :control (label :text param)))))))
+                       :control (label :text (name* param))))))))
 
 (defn function-box [& functions]
   [(into {} functions)
@@ -68,7 +68,7 @@
             ;;(.height "10%"))
           (apply concat
               (for [param (parameters f)]
-                [[param :droppable]
+                [[(name* param) :droppable]
                  {:on-drop (fn [src draggable target]
                              (try
                              (drag-pog-fn! nifty draggable fn-map (.getElement
@@ -87,7 +87,7 @@
                                :let [param-elem (first (.getElements param-elem))]
                                :when (= "" (.getId param-elem))
                                :let [[label & more] (.getElements param-elem)]]
-                           [param-name
+                           [(name* param-name)
                             (pog-droppable->pog-fn param-elem fn-map)])))))
 
 

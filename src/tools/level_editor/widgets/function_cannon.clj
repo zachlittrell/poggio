@@ -4,7 +4,7 @@
            [com.jme3.math ColorRGBA Vector3f]
            [com.jme3.scene.shape Box Sphere])
   (:use [data coll color ring-buffer quaternion]
-        [jme-clj animate control geometry material model physics physics-control selector]
+        [jme-clj animate control geometry material model physics physics-control selector transform]
         [nifty-clj popup]
         [poggio.functions core scenegraph color]
         [seesawx core]))
@@ -58,7 +58,7 @@
                 :local-rotation dir
                 :controls [control]
                 :pog-fn (fn->pog-fn 
-                          (fn [balls]
+                          (fn [player balls]
                             (let [state* @*state*
                                   balls (value balls)]
                               (when (coll? balls)
@@ -76,7 +76,10 @@
                                 (swap! *state* (constantly {:state :active
                                                           :timer timer}))))))
                                       ""
-                                     ["balls"])
+                                     [{:name "player"
+                                       :type Warpable}
+                                      {:name "colors"
+                                       :type clojure.lang.Seqable}])
                 :children [cannon])))
  
 (def function-cannon-template

@@ -17,10 +17,14 @@
 (extend-protocol PogFnParameter
   java.lang.String
   (name* [s] s)
-  (type* [s] :value)
+  (type* [s] Object)
   clojure.lang.ILookup
   (name* [param] (:name param))
   (type* [param] (:type param)))
+
+(defn pog-implements? [param obj]
+  "Returns true if obj 'implements' the type of the PogFnParameter."
+  (implements? (type* param) obj))
 
 (defn is-pog-fn?
   "Returns true if the object is a PogFn. Can optionally
@@ -32,8 +36,11 @@
         (== arity (count (parameters obj))))))
 
 (defn checked-invoke [f args]
-  (doseq [[param arg] (zip (parameters f) args)]
-    (let [type (type* param)])))
+  "If the types of args match the types of f's parameters, then 
+   returns the result of invoking f on args. Else, it throws an exception."
+  (if-let [[[type obj]&_] (type-mismatches (map type* (parameters f)) args)]
+    (throw (Exception. (str obj " is not a valid argument")))
+    (invoke f args)))
 
 (defn pog-fn [parameters invoke-fn]
   "Returns a PogFn that returns parameters and directly
@@ -52,8 +59,9 @@
 (defn partial* [f args-map]
   "Partially applies a Pog function using args-map, which
    maps applied parameters to their values."
-  (basic-pog-fn (filter (comp not (partial contains? args-map)) (parameters f))
-               #(loop [params (parameters f)
+  (basic-pog-fn (filter (comp not (partial contains? args-map)) 
+                        (map name* (parameters f)))
+               #(loop [params (map name* (parameters f))
                        args   %
                        final-args []]
                   (if-let [[param & params] (seq params)]

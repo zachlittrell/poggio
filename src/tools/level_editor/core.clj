@@ -8,7 +8,8 @@
         [seesawx core]
         [tools.level-editor.widgets function-cannon globule-receiver
                                       glass-door]
-        [tools.level-viewer [core :only [view-level]]]))
+        [tools.level-viewer [core :only [view-level]]])
+  (:gen-class))
 
 (def max-x 13)
 (def max-y 13)

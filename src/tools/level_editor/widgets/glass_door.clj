@@ -3,7 +3,7 @@
            [com.jme3.bullet.control RigidBodyControl]
            [com.jme3.math ColorRGBA Vector3f]
            [com.jme3.scene.shape Box])
-  (:use [control bindings]
+  (:use [control bindings timer]
         [data coll color ring-buffer quaternion]
         [jme-clj animate control geometry material model node physics-control selector]
         [nifty-clj popup]
@@ -11,7 +11,7 @@
         [seesawx core]))
 ;
 (defn door-timer [time speed state door-node initial-location]
-  (timer-control time
+  (timer door-node time
       (fn []
         (let [state* @state]
             (swap! state 
@@ -34,17 +34,17 @@
     ;;We want to toggle the door only if it is not already opening
     (if (= (:state state*) :opened)
       (do
-        (.removeControl door-node (:close-timer state*))
+        (stop! (:close-timer state*))
         (let [timer (door-timer time speed state door-node initial-location)]
           (swap! state (constantly {:state :opened :close-timer timer}))
-          (.addControl door-node timer)))
+          (start! timer)))
     (when (not= (:state state*) :opening)
       (if (= (:state state*) :closing)
         ;;If the door is closing, stop the closing process
         (.stop (:closer state*))
         (if (= (:state state*) :opened)
           ;;If the door is opened, stop the previous timer.
-          (.removeControl door-node (:close-timer state*))))
+          (stop! (:close-timer state*))))
       (let [path (motion-path [(.getLocalTranslation door-node)
                                (.add initial-location
                                      (.mult (.getLocalRotation door-node)
@@ -60,8 +60,7 @@
                                 (swap! state (constantly {:state :opened
                                                           :opener motion-control
                                                           :close-timer timer}))
-                              (.addControl door-node 
-                                timer)))))))
+                              (start! timer)))))))
         (swap! state (constantly {:state :opening
                                   :opener (follow-path! door-node speed path)})))))))
 
@@ -99,7 +98,8 @@
                                                      speed
                                                      time app)))
                                      ""
-                                     ["open?"])
+                                     [{:name "open?"
+                                       :type Boolean}])
                  :local-translation loc
                  :local-rotation dir
                  :controls [control])
@@ -123,22 +123,3 @@
                  (fn [app#] 
                  (build-glass-door ~x ~z ~id ~direction ~distance ~movement ~speed ~time app#))))})
 
-;;(defn build-glass-door-sleeve [x z direction app]
-;;  (let [loc (Vector3f. (* x 16) -8 (* z 16))
-;;        dir (angle->quaternion direction :y)
-;;        control (RigidBodyControl. 0.0)]
-;;    (node :local-translation loc
-;;          :local-rotation dir
-;;          :controls[control]
-;;          :children [(geom :shape (Box. 8 8 1)
-;;                           :controls [(RigidBodyControl. 0)]
-;;                           )])))
-;;
-;;(def glass-door-sleeve-template
-;;  {:image (image-pad [100 100]
-;;            (.drawString "≎" 49 49))
-;;   :questions [{:id :direction :type :direction :label "Direction"}]
-;;   :prelude `(use '~'tools.level-editor.widgets.glass-door)
-;;   :build (fn [[x z] {:keys [direction]}]
-;;            `(fn [app#]
-;;               (build-glass-door ~x ~z ~direction app#)))})

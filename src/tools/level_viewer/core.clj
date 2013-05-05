@@ -31,7 +31,9 @@
                            #(pog-fn-node-from % 0)]
       [this f input e]
       (when (and (.getParent f) (.getParent input))
-        (invoke f [input]))))
+        (try
+        (checked-invoke f [input])
+        (catch Exception e)))))
 
 
 (defn set-up-keys! [nifty function-screen *fn-map* input-manager camera clickable]

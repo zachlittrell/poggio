@@ -1,5 +1,11 @@
 (ns jme-clj.control
+  (:use [control timer])
   (:import [com.jme3.scene.control Control]))
+
+(defrecord JMEControlTimer [timer-control spatial]
+  Timer
+  (start! [this] (.addControl spatial timer-control))
+  (stop! [this] (.removeControl spatial timer-control)))
 
 (defn timer-control 
   "Returns a control that executes f after time has elapsed,
@@ -24,4 +30,17 @@
                 (if (and repeat? result)
                   (swap! time-elapsed (constantly 0))
                   (.removeControl @spatial this))))))))))
+
+(defn timer
+  "Returns a Timer protocol object that when started,
+   adds a timer control to the given spatial, and removes
+   the control when stopped. One may either pass
+   directly the timer control and spatial, or pass the spatial
+   and arguments as per the function timer-control."
+  ([timer-control spatial]
+   (JMEControlTimer. timer-control spatial))
+  ([spatial time f]
+   (timer spatial time false f))
+  ([spatial time repeat? f]
+   (timer (timer-control time repeat? f) spatial)))
 

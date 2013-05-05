@@ -3,7 +3,8 @@
            [com.jme3.bullet.control RigidBodyControl]
            [com.jme3.math ColorRGBA Vector3f]
            [com.jme3.scene.shape Box])
-  (:use [data coll color ring-buffer quaternion]
+  (:use [control timer]
+        [data coll color ring-buffer quaternion]
         [jme-clj animate geometry material model physics physics-control selector]
         [nifty-clj popup]
         [poggio.functions core scenegraph color]

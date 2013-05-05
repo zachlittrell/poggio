@@ -3,7 +3,8 @@
            [com.jme3.bullet.control RigidBodyControl]
            [com.jme3.math ColorRGBA Vector3f]
            [com.jme3.scene.shape Box Sphere])
-  (:use [data coll color ring-buffer quaternion]
+  (:use [control timer]
+        [data coll color ring-buffer quaternion]
         [jme-clj animate control geometry material model physics physics-control selector transform]
         [nifty-clj popup]
         [poggio.functions core scenegraph color]
@@ -30,9 +31,9 @@
                         (.mult (quaternion->direction-vector dir)
                                vel))))
 
-(defn cannon-timer [app state nozzle-loc dir velocity mass balls]
+(defn cannon-timer [app spatial state nozzle-loc dir velocity mass balls]
   (let [*balls* (atom balls)]
-    (timer-control 0.5 true
+    (timer spatial 0.5 true
       (fn []
         (if-let [[ball & more-balls] (seq @*balls*)]
           (do
@@ -63,8 +64,8 @@
                                   balls (value balls)]
                               (when (coll? balls)
                                 (when (= (:state state*) :active)
-                                  (.removeControl cannon (:timer state*)))
-                                (let [timer (cannon-timer app *state*
+                                  (stop! (:timer state*)))
+                                (let [timer (cannon-timer app cannon *state*
                                                            (.add loc 
                                                              (.mult dir 
                                                                     (Vector3f. 0 4 2.1)))
@@ -72,9 +73,9 @@
                                                           (float velocity)
                                                           (float mass)
                                                           balls)]
-                                (.addControl cannon timer)
                                 (swap! *state* (constantly {:state :active
-                                                          :timer timer}))))))
+                                                          :timer timer}))
+                                 (start! timer)))))
                                       ""
                                      [{:name "player"
                                        :type Warpable}

@@ -129,7 +129,7 @@
                            (value false-fn)))))
   
 (defn constantly* [obj]
-  (fn->pog-fn (constantly obj) (str obj) []))
+  (fn->pog-fn (constantly obj) "constant"  []))
 
 (defn comp* [f1 f2]
   "Composes two PogFunctions."

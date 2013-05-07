@@ -33,7 +33,7 @@
 
 (defn cannon-timer [app spatial state nozzle-loc dir velocity mass balls]
   (let [*balls* (atom balls)]
-    (timer spatial 0.5 true
+    (control-timer spatial 0.5 true
       (fn []
         (if-let [[ball & more-balls] (seq @*balls*)]
           (do

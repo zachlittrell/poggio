@@ -11,7 +11,7 @@
         [seesawx core]))
 ;
 (defn door-timer [time speed state door-node initial-location]
-  (timer door-node time
+  (control-timer door-node time
       (fn []
         (let [state* @state]
             (swap! state 

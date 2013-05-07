@@ -31,18 +31,15 @@
                                                "init")))))
 
 
-(def concat* (fn->pog-fn concat "concat" ["xs" "ys"]))
+(def concat* (seq->pog-fn "concat" ["xs" "ys"]
+                (list if* (list empty?* "xs")
+                      "ys"
+                      (list cons* (list head* "xs")
+                                  (list "concat" (list tail* "xs")
+                                                 "ys")))))
 
-(def flatten* (fn->pog-fn flatten "flatten" ["xs"]))
-;;(def concat* (seq->pog-fn "concat" ["xs" "ys"]
-;;                (list if* (list empty?* "xs")
-;;                      "ys"
-;;                      (list cons* (list head* "xs")
-;;                                  (list "concat" (list tail* "xs")
-;;                                                 "ys")))))
-;;
-;;(def flatten* (seq->pog-fn "flatten" ["xs"]
-;;                (list reduce* concat* "xs" empty-list*)))
+(def flatten* (seq->pog-fn "flatten" ["xs"]
+                (list reduce* concat* "xs" empty-list*)))
 
 (def map* (seq->pog-fn "map" ["f" "xs"]
             (list if* (list empty?* "xs")

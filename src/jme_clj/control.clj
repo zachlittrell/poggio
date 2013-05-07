@@ -31,7 +31,7 @@
                   (swap! time-elapsed (constantly 0))
                   (.removeControl @spatial this))))))))))
 
-(defn timer
+(defn control-timer
   "Returns a Timer protocol object that when started,
    adds a timer control to the given spatial, and removes
    the control when stopped. One may either pass
@@ -40,7 +40,7 @@
   ([timer-control spatial]
    (JMEControlTimer. timer-control spatial))
   ([spatial time f]
-   (timer spatial time false f))
+   (control-timer spatial time false f))
   ([spatial time repeat? f]
-   (timer (timer-control time repeat? f) spatial)))
+   (control-timer (timer-control time repeat? f) spatial)))
 

@@ -33,17 +33,32 @@
 
 (defn cannon-timer [app spatial state nozzle-loc dir velocity mass balls]
   (let [*balls* (atom balls)]
-    (control-timer spatial 0.5 true
+    (control-timer spatial 0.5 false
       (fn []
-        (if-let [[ball & more-balls] (seq @*balls*)]
-          (do
-            (if (instance? ColorRGBA ball)
-              (shoot-globule! app nozzle-loc dir velocity mass ball))
-            (swap! *balls* (constantly more-balls)))
-          (do
-           (swap! state (constantly {:state :inactive}))
-            false)
-            )))))
+          (let [timer (computation-timer spatial
+                        5
+                        (fn []
+                          (let [balls (value @*balls*)]
+                            (if (empty? balls)
+                              (throw (Exception. "Empty"))
+                              [(first balls) (rest balls)])))
+                        (fn [[ball more-balls]]
+                          (if (instance? ColorRGBA ball)
+                            (do 
+                              (shoot-globule! app nozzle-loc dir velocity mass ball)
+                              (swap! *balls* (constantly more-balls))
+                              (let [timer (cannon-timer app spatial state
+                                                        nozzle-loc dir
+                                                        velocity mass more-balls)]
+                                (swap! state (constantly {:timer timer
+                                                          :state :active}))
+                                (start! timer)))))
+                          (fn [error]
+                            (println "Error:" error)
+                            (swap! state (constantly {:state :inactive}))))]
+            (swap! state (constantly {:state :active
+                                      :timer timer}))
+            (start! timer))))))
 
 
 (defn build-function-cannon [x z id direction velocity mass app]
@@ -58,11 +73,13 @@
                 :local-translation loc
                 :local-rotation dir
                 :controls [control]
-                :pog-fn (fn->pog-fn 
-                          (fn [player balls]
-                            (let [state* @*state*
-                                  balls (value balls)]
-                              (when (coll? balls)
+                :pog-fn (basic-pog-fn
+                          [{:name "player"
+                            :type Warpable}
+                           {:name "colors"
+                           :type clojure.lang.Seqable}]
+                          (fn [[player balls]]
+                            (let [state* @*state*]
                                 (when (= (:state state*) :active)
                                   (stop! (:timer state*)))
                                 (let [timer (cannon-timer app cannon *state*
@@ -76,11 +93,6 @@
                                 (swap! *state* (constantly {:state :active
                                                           :timer timer}))
                                  (start! timer)))))
-                                      ""
-                                     [{:name "player"
-                                       :type Warpable}
-                                      {:name "colors"
-                                       :type clojure.lang.Seqable}])
                 :children [cannon])))
  
 (def function-cannon-template

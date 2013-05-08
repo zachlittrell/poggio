@@ -13,7 +13,7 @@
     [7 9] [0 2] [2 5] [4 7] [5 8] [7 10] [0 3] [4 8] [5 9] [0 4] [1 5]
     [5 10] [6 11] [7 2] [6 2] [7 3] [4 1] [5 2] [7 4] [8 5] [3 1] [4 2]
     [8 6]},
-  :wall-mat "Textures/Terrain/BrickWall/BrickWall.jpg",
+  :wall-mat "Textures/paper1.jpg",
   :widgets
   [(do
     (clojure.core/fn

@@ -102,7 +102,7 @@
           {:loc loc
            :dir dir
            :walls walls
-           :wall-mat "Textures/Terrain/BrickWall/BrickWall.jpg"
+           :wall-mat "Textures/paper1.jpg"
            :widgets widgets})))
      
 

@@ -12,9 +12,6 @@
   clojure.lang.PersistentArrayMap
   (implements? [p child] (extends? p (class child))))
 
-(defmethod error-message implements? [f [type child]]
-  (str "Expected type " type))
-
 (defrecord UnionImpl
   [types]
   Implementable
@@ -37,3 +34,20 @@
 (defn check-types! [types objs]
   (doseq [[type obj] (zip types objs)]
     (assert! (implements? type obj))))
+
+(defprotocol GeneralTypeStringable
+  (general-type-str [type]))
+
+(extend-protocol GeneralTypeStringable
+  Class
+  (general-type-str [c] (.getSimpleName c))
+  clojure.lang.PersistentArrayMap
+  (general-type-str [p] (:name (meta (:var p)))))
+
+(defmulti type-str identity)
+
+(defmethod type-str :default [type]
+  (general-type-str type))
+
+(defmethod error-message implements? [f [type child]]
+  (str "Expected type " (type-str type)))

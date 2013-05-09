@@ -3,7 +3,8 @@
            [com.jme3.bullet BulletAppState]
            [com.jme3.input KeyInput MouseInput]
            [com.jme3.material Material]
-           [com.jme3.math ColorRGBA Vector3f])
+           [com.jme3.math ColorRGBA Vector3f]
+           [com.jme3.system AppSettings])
   (:require [jme-clj.input :as input])
   (:use [data coll]
         [nifty-clj builders]
@@ -106,6 +107,12 @@
                                        ["green" green*]
                                        ["blue" blue*]
                                        ["()" empty-list*]
+                                       ["BAD" (fn->pog-fn 
+                                                (fn [foo]
+                                                  (Thread/sleep 6000)
+                                                  [red*])
+                                                "bad"
+                                                ["foo"])]
                                        ["cons" cons*]
                                        ["triple" triple*]
                                        ["repeat" repeat*]
@@ -138,5 +145,7 @@
   (let [level (if (empty? args)
                 (eval (read-string (input "Enter level map")))
                 (load-string (slurp (first args))))]
-    (doto (make-app level)
-      (.start))))
+    (let [app (make-app level)]
+      (.setSettings app (doto (AppSettings. true)
+                          (.setSettingsDialogImage "Textures/splashscreen.png")))
+      (.start app))))

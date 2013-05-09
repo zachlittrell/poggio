@@ -3,14 +3,15 @@
            [com.jme3.bullet.control RigidBodyControl]
            [com.jme3.math ColorRGBA Vector3f]
            [com.jme3.scene.shape Box Sphere])
-  (:use [control timer]
-        [data coll color ring-buffer quaternion]
+  (:use [control assert timer]
+        [data coll color object ring-buffer quaternion]
         [jme-clj animate control geometry material model physics physics-control selector transform]
         [nifty-clj popup]
         [poggio.functions core scenegraph color]
         [seesawx core]))
 
 (def globule-shape (Sphere. 32 32 (float 0.4)))
+
 (defn shoot-globule! [app loc dir vel mass color]
   (let [globule-phys (RigidBodyControl. mass)
         globule-phys* (RigidBodyControl. mass)
@@ -39,20 +40,22 @@
                         5
                         (fn []
                           (let [balls (value @*balls*)]
-                            (if (empty? balls)
-                              (throw (Exception. "Empty"))
-                              [(first balls) (rest balls)])))
+                            (assert! (implements? clojure.lang.Seqable balls))
+                            (assert! (not-empty balls))
+                            (let [[ball & more-balls] balls]
+                              (assert! (implements? RGBA ball))
+                              [ball more-balls])))
+                        ;;Success
                         (fn [[ball more-balls]]
-                          (if (instance? ColorRGBA ball)
-                            (do 
-                              (shoot-globule! app nozzle-loc dir velocity mass ball)
-                              (swap! *balls* (constantly more-balls))
-                              (let [timer (cannon-timer app spatial state
-                                                        nozzle-loc dir
-                                                        velocity mass more-balls)]
-                                (swap! state (constantly {:timer timer
-                                                          :state :active}))
-                                (start! timer)))))
+                          (shoot-globule! app nozzle-loc dir velocity mass ball)
+                          (swap! *balls* (constantly more-balls))
+                          (let [timer (cannon-timer app spatial state
+                                                    nozzle-loc dir
+                                                    velocity mass more-balls)]
+                            (swap! state (constantly {:timer timer
+                                                      :state :active}))
+                            (start! timer)))
+                          ;;Failure
                           (fn [error]
                             (println "Error:" error)
                             (swap! state (constantly {:state :inactive}))))]
@@ -101,8 +104,7 @@
            (.drawLine 20 30 40 50)
            (.drawLine 20 50 40 30)
            (.drawLine 40 50 50 40)
-           (.drawLine 40 30 50 40)
-                     )
+           (.drawLine 40 30 50 40))
    :questions [{:id :id        :type :string    :label "ID"}
                {:id :direction :type :direction :label "Direction"}
                {:id :velocity  :type :decimal   :label "Velocity"}

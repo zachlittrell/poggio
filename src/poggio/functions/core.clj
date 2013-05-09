@@ -38,9 +38,8 @@
 (defn checked-invoke [f args]
   "If the types of args match the types of f's parameters, then 
    returns the result of invoking f on args. Else, it throws an exception."
-  (if-let [[[type obj]&_] (type-mismatches (map type* (parameters f)) args)]
-    (throw (Exception. (str obj " is not a valid argument")))
-    (invoke f args)))
+  (check-types! (map type* (parameters f)) args)
+  (invoke f args))
 
 (defn pog-fn [parameters invoke-fn]
   "Returns a PogFn that returns parameters and directly
@@ -92,7 +91,7 @@
    all elements must be already PogFns."
   (if (seq? seq)
     (let [[f & args] seq]
-      (partial* f (zipmap (parameters f)
+      (partial* f (zipmap (map name* (parameters f))
                           (map seq->partial-pog-fn args))))
     seq))
 
@@ -104,7 +103,7 @@
    (invoke (seq->partial-pog-fn seq) []))
   ([seq parameters args]
     (if (string? seq) (value (second args))
-      (let [param->arg (zipmap parameters args)]
+      (let [param->arg (zipmap (map name* parameters) args)]
       (invoke-seq (nested-leaf-map #(if-let [arg (param->arg %)]
                                      arg
                                       %)

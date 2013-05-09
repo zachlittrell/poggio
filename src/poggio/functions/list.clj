@@ -1,14 +1,27 @@
 (ns poggio.functions.list
-  (:use [poggio.functions core value]))
+  (:use [control assert]
+        [data object]
+        [poggio.functions core value]))
 
 (def cons* (basic-pog-fn ["head" "tail"]
               (fn [[head tail]]
                 (cons (value head)
-                      (lazy-seq (value tail))))))
+                      (lazy-seq 
+                        (let [tail' (value tail)]
+                          (assert! (implements? clojure.lang.Seqable tail'))
+                          tail'))))))
 
-(def head* (fn->pog-fn first "head" ["xs"]))
+(def head* (fn->pog-fn (fn [xs]
+                         (assert! (not-empty xs))
+                         (first xs)) "head" 
+                         [{:name "xs"
+                           :type clojure.lang.Seqable}]))
 
-(def tail* (fn->pog-fn rest "tail" ["xs"]))
+(def tail* (fn->pog-fn (fn [xs]
+                         (assert! (not-empty xs))
+                         (rest xs)) "tail"
+                       [{:name "xs"
+                         :type clojure.lang.Seqable}]))
 
 (def empty-list* (constantly* (list)))
 

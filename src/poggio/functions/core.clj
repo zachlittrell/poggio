@@ -1,9 +1,10 @@
 (ns poggio.functions.core
   (:use [control bindings]
-        [data coll object]))
+        [data coll object string]))
 
 (defprotocol PogFn
   "Protocol for functions in Poggio."
+  (docstring [f] "Returns the documentation of this function.")
   (parameters [f] "Returns a sequence of parameters.
                    Parameters must implement the PogFnParameter 
                    protocol.")
@@ -35,25 +36,37 @@
    (and (is-pog-fn? obj)
         (== arity (count (parameters obj))))))
 
+(defn docstring* [f]
+  "Returns the docstring of f with whitespace merged together."
+  (trivialize-whitespace (docstring f)))
+
 (defn checked-invoke [f args]
   "If the types of args match the types of f's parameters, then 
    returns the result of invoking f on args. Else, it throws an exception."
   (check-types! (map type* (parameters f)) args)
   (invoke f args))
 
-(defn pog-fn [parameters invoke-fn]
+(defn pog-fn 
   "Returns a PogFn that returns parameters and directly
    passes the arguments of invoke to invoke-fn."
-  (reify PogFn
-    (parameters [f] parameters)
-    (invoke [f args] (invoke-fn f args))))
+  ([parameters invoke-fn]
+   (pog-fn parameters "" invoke-fn))
+  ([parameters docstring invoke-fn]
+    (reify PogFn
+      (docstring [f] docstring)
+      (parameters [f] parameters)
+      (invoke [f args] (invoke-fn f args)))))
 
-(defn basic-pog-fn [parameters invoke-fn]
+(defn basic-pog-fn 
   "Returns a PogFn that returns parameters and passes
    just args from invoke to invoke-fn."
-  (reify PogFn
-    (parameters [f] parameters)
-    (invoke [f args] (invoke-fn args))))
+  ([parameters invoke-fn]
+   (basic-pog-fn parameters "" invoke-fn))
+  ([parameters docstring  invoke-fn]
+    (reify PogFn
+      (docstring [f] docstring)
+      (parameters [f] parameters)
+      (invoke [f args] (invoke-fn args)))))
 
 (defn partial* [f args-map]
   "Partially applies a Pog function using args-map, which
@@ -81,10 +94,13 @@
    PogFn into its output."
   (apply f (map value args)))
 
-(defn fn->pog-fn [f name parameters]
+(defn fn->pog-fn 
   "Returns a PogFn wrapping around a Clojure function."
-  (basic-pog-fn parameters
-               (partial invoke* f)))
+  ([f name parameters]
+   (fn->pog-fn f name parameters ""))
+  ([f name parameters docstring]
+    (basic-pog-fn parameters docstring
+                 (partial invoke* f))))
 
 (defn seq->partial-pog-fn [seq]
   "Converts seq into an applied PogFn. Unlike seq->pog-fn,
@@ -114,7 +130,9 @@
   "Returns a PogFn that invokes the function represented by seq.
    See invoke-seq for details"
   ([name params seq]
-   (pog-fn params
+   (seq->pog-fn name params "" seq))
+  ([name params docstring seq]
+   (pog-fn params docstring
            (fn [f args]
              (invoke-seq seq (cons name (parameters f))
                              (cons f args))))))

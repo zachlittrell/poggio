@@ -1,103 +1,194 @@
 (ns poggio.functions.gui
-  (:use [nifty-clj [builders :exclude [text]] elements events]
+  (:import [de.lessvoid.nifty.screen DefaultScreenController])
+  (:require [clojure.string :as str]
+            [nifty-clj [builders :as builders]]) 
+  (:use [data coll]
+        [nifty-clj [builders :exclude [text]] widgets elements events]
         [poggio.functions core]))
 
-(def border-effect (effect :effect-name "border"
-                           :effect-parameters {"color" "#694489"
-                                               "border" "1px"}))
+;;These will likely be moved out to a separate namespace
+(defn path [module name]
+  "Encodes the module and name into a single string path"
+  (str module " " name))
+
+(defn path-components [path]
+  "Decodes the path into a pair, the first element being
+   module, and second element being the function name."
+  (str/split path #" "))
+
+(defn look-up-path [fn-map path]
+  "Returns the function represented by the path in fn-map,
+   if it exists. Else, returns nil."
+  (get-in fn-map (path-components path)))
 
 
+(defn param->button
+  ([id param]
+   (param->button id param false))
+  ([id param headless?]
+   (let [head (button :id (name* param)
+                      :label (name* param))
+         *children-getters* (atom nil)]
+     (when headless?
+       (.visible head false)
+       (.width head "0px"))
+     {:id (name* param)
+      :button (panel :id id
+                :child-layout :horizontal
+                :align :left
+                :valign :center
+                :control head)})))
 
-(defn pog-fn->draggable [name f]
-  (draggable :id name
-             :background-color "#ff00ffff"
-             :color            "#ffffffff"
-             :on-active-effect border-effect
-             :child-layout :center
-             :valign :center
-             :control (label :text name)))
-
-(defn pog-fn->droppable [name f]
-  (panel    :background-color "#ff00ffff"
-            :color            "#ffffffff"
-           ; :on-active-effect border-effect
-            :id ""
-            :child-layout :horizontal
-            :valign :center
-            :padding "1px"
-            :panels  (list*
-                       (panel :child-layout :horizontal
-                              :align :left
-                              :valign :center
-                              :control 
-                         (label :align :left
-                                :valign :center
-                                :padding "1px"
-                                :text    name))
-                       (for [param (parameters f)]
-                   (panel :child-layout :horizontal
-                            :align :left
-                            :valign :center
-                            :background-color "#990066"
-                            :control
-                     (droppable 
-                       :id (name* param)
-                       :align :left
-                       :valign :center
-                       :child-layout :horizontal
-                       :padding "1px"
-                  ;      :on-active-effect border-effect
-                       :control (label :text (name* param))))))))
-
-(defn function-box [& functions]
-  [(into {} functions)
-    (panel :child-layout :vertical
-           :padding "1px"
-                         :controls (map (partial apply pog-fn->draggable)
-                                        functions))])
-
-(defn drag-pog-fn! 
-  ([nifty pog-draggable fn-map droppable-element]
-   (let [draggable (.getElement pog-draggable)]
-     (drag-pog-fn! nifty (.getId draggable)
-                   (fn-map (.getId draggable)) fn-map droppable-element)))
-  ([nifty name f fn-map droppable-element]
-    (let [parent (.getParent droppable-element)]
-      (apply build nifty parent
-          (doto (pog-fn->droppable name f))
-            ;;(.height "10%"))
-          (apply concat
-              (for [param (parameters f)]
-                [[(name* param) :droppable]
-                 {:on-drop (fn [src draggable target]
-                             (try
-                             (drag-pog-fn! nifty draggable fn-map (.getElement
-                                                                    target))
-                               (catch Exception e
-                                 (.printStackTrace e))))}])))
-    (remove-element! droppable-element)
-  false)))
-
-(defn pog-droppable->pog-fn [pog-draggable fn-map]
-  (let [[label & params] (.getElements pog-draggable)
-        id (text (first-child label))
-        f (fn-map id)]
-    (partial* f (into {} (for [[param-elem param-name] (map list params
-                                                                (parameters f))
-                               :let [param-elem (first (.getElements param-elem))]
-                               :when (= "" (.getId param-elem))
-                               :let [[label & more] (.getElements param-elem)]]
-                           [(name* param-name)
-                            (pog-droppable->pog-fn param-elem fn-map)])))))
+(defn get-pog-fn! [this fn-map]
+  (let [[head & params] (.getElements this)
+        f (look-up-path fn-map (.getId head))]
+    (partial* f (into {} (for [[elem param] (zip params (parameters f))
+                               :let [[head* & params*] (.getElements elem)]
+                               :when (not= (.getId head*) (name* param))]
+                           [(name* param) (get-pog-fn! elem fn-map)])))))
 
 
-(defn function-screen [nifty & functions]
-  (let [[fn-map fn-box] (apply function-box functions)
+(defn set-pog-fn! [this nifty path fn-map click-handler]
+ (let [[head & params] (.getElements this)
+       f (look-up-path fn-map path)]
+   ;;Remove old parameters
+   (doseq [child params]
+     (.markForRemoval child))
+   ;;Set the id to be the path
+   ;;So when we try to reconstruct this function,
+   ;;we know what to look-up.
+   (doto head
+    (.setId path)
+    (set-button-text! (second (path-components path))))
+   ;;Add parameters
+   (doseq [param (parameters f)]
+     (let [{:keys [id button]} (param->button
+                                             " "
+                                             param)
+           made-button (build nifty this button)]
+       (apply-interactions made-button
+          id {:on-left-click (partial click-handler
+                                      (select this " "))})
+       (.setId made-button "")))
+  ;; (.layoutLayers (.getCurrentScreen nifty))
+   ))
+
+
+(defn function-info []
+  {:info (tabs
+           :width "100%"
+           :height "100%"
+           :background-color "#ffffff00"
+           :tabs [(tab :id "doc" :caption "Doc"
+                       :background-color "#ffffff00"
+                       :width "100%"
+                       :height "100%"
+                       :control (scroll-panel
+                                  :background-color "#00000000"
+                                  :id "doc-scroller"
+                                  :width "100%"
+                                  :set  {"horizontal" "false"}
+                                  :height "100%"
+                                  :style "nifty-listbox"
+                                  :control (label :text "Documentation"
+                                                  :id "doc-label"
+                                                  :align :left
+                                                  :width "100%"
+                                                  :height "100%"
+                                                  :text-h-align :left
+                                                  :text-v-align :top
+                                                  :wrap? true)))])
+   :update! (fn [info f]
+                  (let [scroll (select info "#nifty-scrollpanel-child-root")]
+                    (set-text! (select info "doc-label") 
+                               (if f (docstring f)
+                                     ""))
+                    (.layoutElements scroll)
+                    (.setUp (nifty-control info :scroll) 0 20 0 200 de.lessvoid.nifty.controls.ScrollPanel$AutoScroll/OFF)))})
+
+(defn function-box [& modules]
+  (let [{:keys [update! info]} (function-info)
+        box (panel :child-layout :vertical
+                   :padding "1px"
+                   :width "100%"
+                   :panels 
+                   [(panel :child-layout :vertical
+                           :controls 
+                             [(drop-down :id "pog-mods-drop"
+                                         :width "100%")
+                              (drop-down :id "pog-fns-drop"
+                                         :width "100%")])
+                    (panel :id "pog-fns-info"
+                           :child-layout :vertical
+                           :control info)])
+        fn-map (into {} modules)]
+  {:fn-map fn-map
+   :fn-box box
+   :selected-fn! (fn [nifty screen]
+                   (path (-> screen
+                             (select , "pog-mods-drop")
+                             (nifty-control :drop-down)
+                             (.getSelection))
+                         (-> screen
+                             (select , "pog-fns-drop")
+                             (nifty-control :drop-down)
+                             (.getSelection))))
+   :initialize! (fn [nifty screen]
+                  (let [modules (-> screen
+                                     (select , "pog-mods-drop")
+                                     (nifty-control :drop-down))]
+                   (.addItem modules "Modules")
+                   (.addAllItems modules
+                                 (sort (keys fn-map))))
+                  (subscribe! nifty "pog-mods-drop" :drop-down-select
+                    (fn [topic data]
+                      (if (<= (.getSelectionItemIndex data) 0)
+                        (do (.clear (-> screen (select , "pog-fns-drop")
+                                               (nifty-control :drop-down))))
+                        (do
+                        (let [module (.getSelection data)
+                              functions (-> screen
+                                            (select , "pog-fns-drop")
+                                            (nifty-control :drop-down))]
+                          (.clear functions)
+                          (.addItem functions "Functions")
+                          (.addAllItems functions
+                                       (sort (map first (fn-map module)))))))))
+
+                  (subscribe! nifty "pog-fns-drop" :drop-down-select
+                    (fn [topic data]
+                      (if (<= (.getSelectionItemIndex data) 0)
+                        (update! (first (.getElements 
+                                          (select screen "pog-fns-info"))) nil)
+                        (do
+                        (let [name (.getSelection data)
+                              f ((fn-map (-> screen
+                                            (select , "pog-mods-drop")
+                                            (nifty-control :drop-down)
+                                            (.getSelection)))
+                                            name)
+                              info-pane (select screen "pog-fns-info")]
+                         (update! (first (.getElements info-pane)) f)))))))
+   :clean!       (fn [])}))
+
+
+(defn function-screen [nifty & modules]
+  (let [{:keys[fn-map fn-box initialize! clean!
+               selected-fn!]} (apply function-box modules)
+        {fn-pad :button
+         id :id} (param->button "fn-pad" "fn-pad-fn" true)
         *fn-map* (atom fn-map)
+        *focused-param* (atom nil)
+        select-panel (button-panel "Use Current Function?"
+                                   ["yes"     "Yes"]
+                                   ["cancel"  "Cancel"])
         made-screen
           (build-screen nifty
             (screen
-             :layer
+             :controller (proxy [DefaultScreenController] []
+                           (onStartScreen [] 
+                              (initialize! nifty (.getCurrentScreen nifty)))) 
+              :layer
               (layer
                 :align :right
                 :child-layout :center
@@ -106,37 +197,48 @@
                 (panel
                   :id "fn-panels"
                   :child-layout :vertical
-                  :width "33%"
+                  :height "100%"
+                  :width "40%"
                   :align :right
                   :panels
-                  [(doto fn-box (.align (keyword->align :left))
-                                (.width "33%"))
+                  [(panel :child-layout :vertical
+                          :height "10%"
+                          :control (scroll-panel :width "100%"
+                                                 :panel fn-pad
+                                                 :set {"vertical" "false"}
+                                                 :id "fn-pad-scroller"
+                                                 :style "nifty-listbox"))
+                   (panel :id "fn-controls"
+                          :visible? false
+                          :child-layout :vertical
+                          :height "80%"
+                          :align :right 
+                          :panels [select-panel
+                                   (doto fn-box (.align (keyword->align :left))
+                                                (.height "60%"))])
                    (panel
-                     :child-layout :center
-                     :id "fn-pad"
-                     :background-color "#fffffff"
-                     :align :left
-                     :height "50%"
-                     :control (control))
-                   (panel
-                     :child-layout :center
-                     :align :left
                      :height "10%"
+                     :child-layout :center
+                     :align :left
                      :control
-                     (button :label "Compute"
-                             :id "compute"))]))))]
+                        (button :label "Compute"
+                             :id "compute"))]))))
+        param-click (fn [element]
+                      (.setVisible (select made-screen "fn-controls") true)
+                      (swap! *focused-param* (constantly element)))]
     (apply-interactions made-screen
-      :compute {:on-left-click
-                #(when-let [[child & _] (seq (.getElements
-                                             (select made-screen "fn-pad")))]
-                   (let [pog-fn (pog-droppable->pog-fn child @*fn-map*)]
-                     (when (empty? (parameters pog-fn))
-                       (invoke (pog-droppable->pog-fn child @*fn-map*) []))))})
-    [*fn-map* made-screen]))
-
-(defn set-current-function! [nifty function-screen pog-fn *fn-map*]
-  (drag-pog-fn! nifty " " pog-fn 
-                (swap! *fn-map* assoc " " pog-fn) 
-                (first (.getElements (select function-screen "fn-pad")))))
-
-
+      :yes {:on-left-click #(set-pog-fn! @*focused-param*
+                                         nifty
+                                         (selected-fn! nifty made-screen)
+                                         @*fn-map*
+                                         param-click)}
+      :compute {:on-left-click #(-> (get-pog-fn! (select made-screen "fn-pad")
+                                                  @*fn-map*)
+                                     (invoke , []))})
+    {:set-current-function! 
+       (fn [pog-fn]
+         (set-pog-fn! (select made-screen "fn-pad")
+                      nifty (path "," ",")
+                      (swap! *fn-map* assoc "," {"," pog-fn})
+                      param-click))
+     :function-screen made-screen}))

@@ -35,8 +35,10 @@
            [de.lessvoid.nifty.controls.checkbox.builder CheckboxBuilder]
            [de.lessvoid.nifty.controls.dragndrop.builder DraggableBuilder
                                                          DroppableBuilder]
+           [de.lessvoid.nifty.controls.dropdown.builder DropDownBuilder]
            [de.lessvoid.nifty.controls.label.builder LabelBuilder]
            [de.lessvoid.nifty.controls.scrollpanel.builder ScrollPanelBuilder]
+           [de.lessvoid.nifty.controls.tabs.builder TabBuilder TabGroupBuilder]
            [de.lessvoid.nifty.controls.textfield.builder TextFieldBuilder]
            [de.lessvoid.nifty.loaderv2.types ElementType]
            [de.lessvoid.nifty.screen Screen
@@ -132,9 +134,10 @@
                          :replace [#"s$" ""]]
    :panels            [:do-seq
                          :replace [#"s$" ""]]
-   :text-halign       [:simple
+   :set               [:map-do-seq]
+   :text-h-align       [:simple
                          :thread-in `(keyword->align)]
-   :text-valign       [:simple
+   :text-v-align       [:simple
                          :thread-in `(keyword->valign)]
    :valign            [:simple
                          :thread-in `(keyword->valign)]
@@ -194,7 +197,9 @@
   {:id "label-generated LabelBuilder"
    :text "Label"}
   LabelBuilder [id]
-  {:id [:no-op]})
+  {:id [:no-op]
+   :wrap? [:simple
+           :replace [#"\?$" ""]]})
 
 (def-element-builder checkbox
   {:id "checkbox-generated CheckboxBuilder"}
@@ -227,6 +232,25 @@
 (def-element-builder popup
   {:id ""}
   PopupBuilder [id]
+  {:id [:no-op]})
+
+(def-element-builder tabs
+  {:id ""}
+  TabGroupBuilder [id]
+  {:id [:no-op]
+   :tabs [:do-seq
+          :replace [#"s$" ""]]})
+
+(def-element-builder tab
+  {:id ""
+   :caption "Tab"}
+   TabBuilder [id caption]
+   {:id [:no-op]
+    :caption [:no-op]})
+
+(def-element-builder drop-down
+  {:id ""}
+  DropDownBuilder [id]
   {:id [:no-op]})
 
 (def-opts-constructor effect

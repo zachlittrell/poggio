@@ -37,7 +37,7 @@
         (catch Exception e)))))
 
 
-(defn set-up-keys! [nifty function-screen *fn-map* input-manager camera clickable]
+(defn set-up-keys! [nifty set-current-function! input-manager camera clickable]
   (input/on-key!* input-manager :action KeyInput/KEY_SPACE
       [_ name is-pressed? tpf]
         (when is-pressed?
@@ -56,12 +56,10 @@
           (when-let [pog-fn (pog-fn-node-from (.getGeometry collision))]
             (when (and (<= 2 (count (parameters pog-fn)))
                        (pog-implements? (first (parameters pog-fn)) player))
-              (set-current-function! nifty 
-                                     function-screen 
-                                     (partial* pog-fn 
+              (set-current-function! (partial* pog-fn
                                                {(name* (first (parameters
-                                                                pog-fn))) player})
-                                     *fn-map*))
+                                                                pog-fn)))
+                                                player})))
         )))))
 
 
@@ -102,29 +100,32 @@
      (doto (.getGuiNode this)
           (.detachAllChildren))
     (let [[display nifty] (nifty this true)
-          [*fn-map* function-screen] (function-screen nifty
-                                       ["red" red*]
-                                       ["green" green*]
-                                       ["blue" blue*]
-                                       ["()" empty-list*]
-                                       ["BAD" (fn->pog-fn 
+          {:keys [set-current-function!
+                  function-screen]} (function-screen nifty
+                                       {"List" {"()" empty-list*
+                                                "cons" cons*
+                                                "flatten" flatten*
+                                                "concat"  concat*
+                                                "repeat"  repeat*
+                                                "triple"  triple*}
+                                        "Color" {"red" red*
+                                                 "green" green*
+                                                 "blue" blue*}
+                                        "User"  
+                                       {"BAD" (fn->pog-fn 
                                                 (fn [foo]
                                                   (Thread/sleep 6000)
                                                   [red*])
                                                 "bad"
-                                                ["foo"])]
-                                       ["cons" cons*]
-                                       ["triple" triple*]
-                                       ["repeat" repeat*]
-                                       ["concat" concat*]
-                                       ["flatten" flatten*])]
+                                                ["foo"]
+                                                (apply str (repeat 100 "str")))}})]
         (.addScreen nifty "function-screen" function-screen)
         (.gotoScreen nifty "function-screen")
 
  
             (doto (.getStateManager this)
         (.attach (BulletAppState.)))
-        (set-up-keys! nifty function-screen *fn-map* 
+        (set-up-keys! nifty set-current-function!
                       (.getInputManager this)
                       (.getCamera this) (.getRootNode this))
             (doto (.getFlyByCamera this)

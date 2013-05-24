@@ -53,3 +53,9 @@
   "Returns a randomly generated string, using the counter
    from gensym."
   (str prefix (clojure.lang.RT/nextID)))
+
+(defn trivialize-whitespace [s]
+  "Returns the string s with single newlines turned into spaces,
+   and multiple entries of whitespace turned into a single space."
+  (-> s
+     (str/replace #"\s+" " ")))

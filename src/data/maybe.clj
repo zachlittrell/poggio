@@ -1,11 +1,12 @@
 (ns data.maybe
   "Functions that operate with a Maybe/Option type.")
 
-(defrecord Just [just])
+(defprotocol Maybe)
 
-(defrecord NothingType [])
+(defrecord Just [just]
+  Maybe)
 
-(def nothing (NothingType.))
+(def nothing (reify Maybe))
 
 (defn nothing? [m]
   (identical? m nothing))

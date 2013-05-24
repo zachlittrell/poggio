@@ -109,19 +109,30 @@
   (event-topic-subscriber [f] (reify EventTopicSubscriber
                                 (onEvent [_ topic data] (f topic data)))))
 
-(def keyword->nifty-event
-  {:drag de.lessvoid.nifty.controls.DraggableDragStartedEvent
-   :drop de.lessvoid.nifty.controls.DroppableDroppedEvent})
+(defmulti nifty-event identity)
+(defmethod nifty-event :default [e] e)
+(defmethod nifty-event :drag [k]
+  de.lessvoid.nifty.controls.DraggableDragStartedEvent)
+(defmethod nifty-event :drop [k]
+  de.lessvoid.nifty.controls.DroppableDroppedEvent)
+(defmethod nifty-event :drop-down-select [k]
+   de.lessvoid.nifty.controls.DropDownSelectionChangedEvent)
 
 (defn subscribe! 
   ([nifty id class subscriber]
-   (subscribe! nifty (.getCurrentScreen nifty) class subscriber))
+   (subscribe! nifty (.getCurrentScreen nifty) id class subscriber))
   ([nifty screen id class subscriber]
    (.subscribe nifty screen id (if (keyword? class)
-                                 (keyword->nifty-event class)
+                                 (nifty-event class)
                                  class)
                (event-topic-subscriber subscriber))))
 
 (defn unsubscribe! [nifty id obj]
   (.unsubscribe nifty id obj))
+
+(defn unsubscribe-all!
+  ([nifty]
+   (unsubscribe-all! nifty (.getCurrentScreen nifty)))
+  ([nifty screen]
+   (.unsubscribe nifty screen)))
 

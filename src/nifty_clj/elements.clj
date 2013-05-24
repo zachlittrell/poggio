@@ -1,11 +1,43 @@
 (ns nifty-clj.elements
-  (:import [de.lessvoid.nifty.elements Element] 
+  (:import [de.lessvoid.nifty.controls Button DropDown ScrollPanel]
+           [de.lessvoid.nifty.elements Element] 
            [de.lessvoid.nifty.elements.render TextRenderer]))
+
+(defmulti nifty-control-class identity)
+
+(defmethod nifty-control-class :default [control-class] control-class)
+
+(defmethod nifty-control-class :button [_]
+  Button)
+
+(defmethod nifty-control-class :drop-down [_]
+  DropDown)
+
+(defmethod nifty-control-class :scroll [_]
+  ScrollPanel)
+
+(defn nifty-control [element control]
+  (.getNiftyControl element (nifty-control-class control)))
 
 (defn text [element]
   (-> element
       (.getRenderer TextRenderer)
       (.getWrappedText)))
+
+(defn set-text! [element text]
+  (-> element
+      (.getRenderer TextRenderer)
+      (.setText text)))
+
+(defn get-button-text! [element]
+  (-> element
+      (nifty-control :button)
+      (.getText)))
+
+(defn set-button-text! [element text]
+  (-> element
+     (nifty-control :button)
+     (.setText text)))
 
 (defn first-child [^Element element]
   "Returns the first child under element."
@@ -49,3 +81,6 @@
                                      element (.getElements subspace)
                                      :when (re-find selector (.getId element))]
                                  element)))))
+
+
+

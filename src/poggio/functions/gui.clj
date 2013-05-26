@@ -1,25 +1,9 @@
 (ns poggio.functions.gui
   (:import [de.lessvoid.nifty.screen DefaultScreenController])
-  (:require [clojure.string :as str]
-            [nifty-clj [builders :as builders]]) 
+  (:require [nifty-clj [builders :as builders]]) 
   (:use [data coll]
-        [nifty-clj [builders :exclude [text]] widgets elements events]
-        [poggio.functions core]))
-
-;;These will likely be moved out to a separate namespace
-(defn path [module name]
-  "Encodes the module and name into a single string path"
-  (str module " " name))
-
-(defn path-components [path]
-  "Decodes the path into a pair, the first element being
-   module, and second element being the function name."
-  (str/split path #" "))
-
-(defn look-up-path [fn-map path]
-  "Returns the function represented by the path in fn-map,
-   if it exists. Else, returns nil."
-  (get-in fn-map (path-components path)))
+        [nifty-clj [builders :exclude [text]] elements events]
+        [poggio.functions core modules]))
 
 
 (defn param->button
@@ -27,8 +11,7 @@
    (param->button id param false))
   ([id param headless?]
    (let [head (button :id (name* param)
-                      :label (name* param))
-         *children-getters* (atom nil)]
+                      :label (name* param))]
      (when headless?
        (.visible head false)
        (.width head "0px"))
@@ -49,29 +32,39 @@
 
 
 (defn set-pog-fn! [this nifty path fn-map click-handler]
- (let [[head & params] (.getElements this)
-       f (look-up-path fn-map path)]
+ (let [[head & params] (.getElements this)]
    ;;Remove old parameters
    (doseq [child params]
      (.markForRemoval child))
-   ;;Set the id to be the path
-   ;;So when we try to reconstruct this function,
-   ;;we know what to look-up.
-   (doto head
-    (.setId path)
-    (set-button-text! (second (path-components path))))
-   ;;Add parameters
-   (doseq [param (parameters f)]
-     (let [{:keys [id button]} (param->button
-                                             " "
-                                             param)
-           made-button (build nifty this button)]
-       (apply-interactions made-button
-          id {:on-left-click (partial click-handler
-                                      (select this " "))})
-       (.setId made-button "")))
-  ;; (.layoutLayers (.getCurrentScreen nifty))
-   ))
+   (if path
+     (let [f (look-up-path fn-map path)]
+       ;;Set the id to be the path
+       ;;So when we try to reconstruct this function,
+       ;;we know what to look-up.
+       (doto head
+        (.setId path)
+        (set-button-text! (second (path-components path))))
+       ;;Add parameters
+       (doseq [param (parameters f)]
+         (let [{:keys [id button]} (param->button
+                                                 " "
+                                                 param)
+               made-button (build nifty this button)]
+           (apply-interactions made-button
+              id {:on-left-click (partial click-handler
+                                          (select this " "))})
+           (.setId made-button "")))
+      ;; (.layoutLayers (.getCurrentScreen nifty))
+      )
+      (let [parent (.getParent this)
+            [head* & params*] (.getElements parent)
+            parent-f (look-up-path fn-map (.getId head*))
+            param (nth (parameters parent-f) (.indexOf params* this))]
+        (doto head
+          (.setId (name* param))
+          (set-button-text! (name* param)))
+        )
+   )))
 
 
 (defn function-info []
@@ -125,14 +118,18 @@
   {:fn-map fn-map
    :fn-box box
    :selected-fn! (fn [nifty screen]
-                   (path (-> screen
-                             (select , "pog-mods-drop")
-                             (nifty-control :drop-down)
-                             (.getSelection))
-                         (-> screen
-                             (select , "pog-fns-drop")
-                             (nifty-control :drop-down)
-                             (.getSelection))))
+                   (let [modules (-> screen
+                                     (select , "pog-mods-drop")
+                                     (nifty-control :drop-down))
+                         functions (-> screen
+                                       (select , "pog-fns-drop")
+                                       (nifty-control :drop-down))]
+                     (when (and (> (.getSelectedIndex modules) 0)
+                                (> (.getSelectedIndex functions) 0))
+                       (path (.getSelection modules)
+                             (.getSelection functions)))))
+                           
+
    :initialize! (fn [nifty screen]
                   (let [modules (-> screen
                                      (select , "pog-mods-drop")
@@ -179,9 +176,6 @@
          id :id} (param->button "fn-pad" "fn-pad-fn" true)
         *fn-map* (atom fn-map)
         *focused-param* (atom nil)
-        select-panel (button-panel "Use Current Function?"
-                                   ["yes"     "Yes"]
-                                   ["cancel"  "Cancel"])
         made-screen
           (build-screen nifty
             (screen
@@ -213,7 +207,22 @@
                           :child-layout :vertical
                           :height "80%"
                           :align :right 
-                          :panels [select-panel
+                          :panels [(panel :child-layout :center
+                                          :control (label 
+                                                     :color "#000"
+                                                     :text
+                                                      "Use Selected Function?"))
+                                   (panel :child-layout :horizontal
+                                          :controls
+                                           [(button :label "Ok"
+                                                    :width "33%"
+                                                    :id "ok")
+                                            (button :label "Clear"
+                                                    :width "33%"
+                                                    :id "clear")
+                                            (button :label "Cancel"
+                                                    :width "33%"
+                                                    :id "cancel")])
                                    (doto fn-box (.align (keyword->align :left))
                                                 (.height "60%"))])
                    (panel
@@ -227,11 +236,24 @@
                       (.setVisible (select made-screen "fn-controls") true)
                       (swap! *focused-param* (constantly element)))]
     (apply-interactions made-screen
-      :yes {:on-left-click #(set-pog-fn! @*focused-param*
-                                         nifty
-                                         (selected-fn! nifty made-screen)
-                                         @*fn-map*
-                                         param-click)}
+      :ok {:on-left-click (fn []
+                            (when-let [selected-fn (selected-fn! nifty made-screen)]
+                              (set-pog-fn! @*focused-param*
+                                          nifty
+                                          selected-fn
+                                          @*fn-map*
+                                          param-click)
+                              (.setVisible (select made-screen "fn-controls") false)))}
+      :cancel {:on-left-click (fn []
+                                (.setVisible (select made-screen "fn-controls")
+                                             false))}
+      :clear {:on-left-click (fn []
+                               (set-pog-fn! @*focused-param*
+                                            nifty
+                                            nil
+                                            @*fn-map*
+                                            param-click)
+                               (.setVisible (select made-screen "fn-controls") false))}
       :compute {:on-left-click #(-> (get-pog-fn! (select made-screen "fn-pad")
                                                   @*fn-map*)
                                      (invoke , []))})

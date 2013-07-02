@@ -2,9 +2,25 @@
   (:import [de.lessvoid.nifty.screen DefaultScreenController])
   (:require [nifty-clj [builders :as builders]]) 
   (:use [data coll]
-        [nifty-clj [builders :exclude [text]] elements events]
+        [nifty-clj [builders :exclude [text]] elements events widgets]
         [poggio.functions core modules]))
 
+
+(defn pog-button-info [pog-button]
+  (let [[first-paren head & extra :as elems] (.getElements pog-button)
+        params (butlast extra)
+        last-paren (last extra)]
+    {:head head
+     :params params
+     :first-paren first-paren
+     :last-paren last-paren
+     :children elems
+     :fn-name (.getId head)
+     :headless? (.isVisible head)}))
+
+
+(defn param-label [text]
+  (label :text text))
 
 (defn param->button
   ([id param]
@@ -20,22 +36,26 @@
                 :child-layout :horizontal
                 :align :left
                 :valign :center
-                :control head)})))
+                :controls [(label :text "(")
+                           head
+                           (label :text ")")])})))
 
 (defn get-pog-fn! [this fn-map]
-  (let [[head & params] (.getElements this)
+  (let [{:keys [head params fn-name]} (pog-button-info this)
         f (look-up-path fn-map (.getId head))]
     (partial* f (into {} (for [[elem param] (zip params (parameters f))
-                               :let [[head* & params*] (.getElements elem)]
-                               :when (not= (.getId head*) (name* param))]
+                               :let [{:keys [fn-name]} (pog-button-info elem)]
+                               :when (not= fn-name (name* param))]
                            [(name* param) (get-pog-fn! elem fn-map)])))))
 
 
 (defn set-pog-fn! [this nifty path fn-map click-handler]
- (let [[head & params] (.getElements this)]
+ (let [{:keys [head params fn-name last-paren]} (pog-button-info this)]
    ;;Remove old parameters
    (doseq [child params]
      (.markForRemoval child))
+   (.markForRemoval last-paren)
+ ;  (.layoutElements this)
    (if path
      (let [f (look-up-path fn-map path)]
        ;;Set the id to be the path
@@ -56,15 +76,20 @@
            (.setId made-button "")))
       ;; (.layoutLayers (.getCurrentScreen nifty))
       )
+     ;;If we were given no path, reset the parameter
+     ;;to match its initial state (i.e. blank)
       (let [parent (.getParent this)
-            [head* & params*] (.getElements parent)
-            parent-f (look-up-path fn-map (.getId head*))
+            {params* :params
+             fn-name* :fn-name} (pog-button-info parent)
+            parent-f (look-up-path fn-map fn-name*)
             param (nth (parameters parent-f) (.indexOf params* this))]
         (doto head
           (.setId (name* param))
           (set-button-text! (name* param)))
-        )
-   )))
+        ))
+   (build nifty this (param-label ")"))
+
+   ))
 
 
 (defn function-info []
@@ -101,6 +126,7 @@
 
 (defn function-box [& modules]
   (let [{:keys [update! info]} (function-info)
+        *search* (atom [])
         box (panel :child-layout :vertical
                    :padding "1px"
                    :width "100%"
@@ -110,7 +136,9 @@
                              [(drop-down :id "pog-mods-drop"
                                          :width "100%")
                               (drop-down :id "pog-fns-drop"
-                                         :width "100%")])
+                                         :width "100%")
+                              (text-field :id "pog-fns-search"
+                                          :width "100%")])
                     (panel :id "pog-fns-info"
                            :child-layout :vertical
                            :control info)])
@@ -124,10 +152,12 @@
                          functions (-> screen
                                        (select , "pog-fns-drop")
                                        (nifty-control :drop-down))]
-                     (when (and (> (.getSelectedIndex modules) 0)
-                                (> (.getSelectedIndex functions) 0))
-                       (path (.getSelection modules)
-                             (.getSelection functions)))))
+                     (cond  (== (.getSelectedIndex modules)
+                                (dec (.itemCount modules)))
+                              (.getSelection functions)
+                            (> (.getSelectedIndex functions) 0)
+                             (path (.getSelection modules)
+                                   (.getSelection functions)))))
                            
 
    :initialize! (fn [nifty screen]
@@ -136,12 +166,32 @@
                                      (nifty-control :drop-down))]
                    (.addItem modules "Modules")
                    (.addAllItems modules
-                                 (sort (keys fn-map))))
+                                 (sort (keys fn-map)))
+                   (.addItem modules "Search..."))
                   (subscribe! nifty "pog-mods-drop" :drop-down-select
                     (fn [topic data]
-                      (if (<= (.getSelectionItemIndex data) 0)
-                        (do (.clear (-> screen (select , "pog-fns-drop")
-                                               (nifty-control :drop-down))))
+                      (cond
+                        ;;If there is either no items or 
+                        ;;We are at the 'Modules' label
+                        ;;Just clear out
+                        (<= (.getSelectionItemIndex data) 0)
+                          (do (.clear (-> screen (select , "pog-fns-drop")
+                                                 (nifty-control :drop-down))))
+                        ;;If we are on the Search label
+                        ;;Add the search items
+                        (== (.getSelectionItemIndex data)
+                            (-> data
+                               (.getDropDown)
+                               (.itemCount) (dec)))
+                        (let [functions (-> screen (select , "pog-fns-drop")
+                                                   (nifty-control :drop-down))]
+                          (doto functions
+                            (.clear)
+                            (.addItem "Functions")
+                            (.addAllItems (sort @*search*))))
+
+                          
+                        :else
                         (do
                         (let [module (.getSelection data)
                               functions (-> screen
@@ -158,14 +208,39 @@
                         (update! (first (.getElements 
                                           (select screen "pog-fns-info"))) nil)
                         (do
-                        (let [name (.getSelection data)
-                              f ((fn-map (-> screen
-                                            (select , "pog-mods-drop")
-                                            (nifty-control :drop-down)
-                                            (.getSelection)))
-                                            name)
+                        (let [modules (-> screen
+                                          (select , "pog-mods-drop")
+                                          (nifty-control :drop-down))
+                              [module fn-name] 
+                                (if (== (.getSelectedIndex modules)
+                                        (dec (.itemCount modules)))
+                                  (path-components (.getSelection data))
+                                  [(.getSelection modules)
+                                   (.getSelection data)])
+                              f ((fn-map module) fn-name)
                               info-pane (select screen "pog-fns-info")]
-                         (update! (first (.getElements info-pane)) f)))))))
+                         (update! (first (.getElements info-pane)) f))))))
+
+                  (subscribe! nifty "pog-fns-search" :text-field-change
+                    (fn [topic data]
+                      (let [text (.getText data)
+                            pattern (java.util.regex.Pattern/compile 
+                                      text
+                                      (bit-or java.util.regex.Pattern/LITERAL
+                                              java.util.regex.Pattern/CASE_INSENSITIVE))
+                            matches (for [[module functions] fn-map
+                                          [function _] functions
+                                          :when (re-find pattern function)]
+                                      (path module function))
+                            modules (-> (select screen "pog-mods-drop")
+                                        (nifty-control :drop-down))
+                            functions (-> (select screen "pog-fns-drop")
+                                          (nifty-control :drop-down))]
+
+                      (swap! *search* (constantly matches))
+                      (.selectItemByIndex modules (dec (.itemCount modules)))
+                      (when (not-empty matches)
+                        (.selectItemByIndex functions 1))))))
    :clean!       (fn [])}))
 
 
@@ -231,7 +306,7 @@
                      :align :left
                      :control
                         (button :label "Compute"
-                             :id "compute"))]))))
+                                  :id "compute"))]))))
         param-click (fn [element]
                       (.setVisible (select made-screen "fn-controls") true)
                       (swap! *focused-param* (constantly element)))]
@@ -252,8 +327,7 @@
                                             nifty
                                             nil
                                             @*fn-map*
-                                            param-click)
-                               (.setVisible (select made-screen "fn-controls") false))}
+                                            param-click))}
       :compute {:on-left-click #(-> (get-pog-fn! (select made-screen "fn-pad")
                                                   @*fn-map*)
                                      (invoke , []))})

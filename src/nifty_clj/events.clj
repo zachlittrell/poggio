@@ -117,6 +117,8 @@
   de.lessvoid.nifty.controls.DroppableDroppedEvent)
 (defmethod nifty-event :drop-down-select [k]
    de.lessvoid.nifty.controls.DropDownSelectionChangedEvent)
+(defmethod nifty-event :text-field-change [k]
+  de.lessvoid.nifty.controls.TextFieldChangedEvent)
 
 (defn subscribe! 
   ([nifty id class subscriber]

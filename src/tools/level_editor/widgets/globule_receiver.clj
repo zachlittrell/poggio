@@ -7,7 +7,7 @@
         [data coll color ring-buffer quaternion]
         [jme-clj animate geometry material model physics physics-control selector]
         [nifty-clj popup]
-        [poggio.functions core scenegraph color]
+        [poggio.functions core scenegraph color utilities]
         [seesawx core]))
 
 (defn process-globule! [match? on-match previous globule]
@@ -30,6 +30,11 @@
                 :local-rotation dir
                 :controls [control]
                 :pog-fn (basic-pog-fn  ["ball"]
+                                      (docstr [["color" "A colored globule"]]
+                                              (str "Activates " target-id 
+                                                   " once it receives a red,"
+                                                   " green, and blue globule."))
+                                               
                                       (partial apply process-globule!
                                               (comp (partial = [[0.0 0.0 1.0]
                                                                 [0.0 1.0 0.0]

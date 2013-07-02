@@ -6,8 +6,7 @@
         [control.io :only [err-println]]
         [data [function :only [no-op]]
               [string :only [dash->camel-case]]
-              [keyword :only [keyword->symbol]]]
-        [clojure.tools.macro :only [name-with-attributes]]))
+              [keyword :only [keyword->symbol]]]))
 
 (defmacro def-directed-opts-constructor-body*
   "Returns the body of the macro specified in

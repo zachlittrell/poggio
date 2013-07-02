@@ -10,7 +10,7 @@
   (if (zero? (.length word))
     ""
     (str (Character/toUpperCase (.charAt word 0))
-         (.substring word 1))))
+         (subs word 1))))
 
 (defn lower-case-word [^String word]
   "Returns the word with the first letter
@@ -18,7 +18,7 @@
   (if (zero? (.length word))
     ""
     (str (Character/toLowerCase (.charAt word 0))
-         (.substring word 1))))
+         (subs word 1))))
 
 (defn dash->camel-case
   "Takes a string with each word

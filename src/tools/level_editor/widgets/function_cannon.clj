@@ -7,7 +7,7 @@
         [data coll color object ring-buffer quaternion]
         [jme-clj animate control geometry material model physics physics-control selector transform]
         [nifty-clj popup]
-        [poggio.functions core scenegraph color]
+        [poggio.functions core scenegraph color utilities]
         [seesawx core]))
 
 (def globule-shape (Sphere. 32 32 (float 0.4)))
@@ -77,10 +77,13 @@
                 :local-rotation dir
                 :controls [control]
                 :pog-fn (basic-pog-fn
-                          [{:name "player"
+                         [{:name "player"
                             :type Warpable}
                            {:name "colors"
                            :type clojure.lang.Seqable}]
+                          (docstr [["colors" "a list of colors"]]
+                                  "Spits out a colored globule for each color in colors.")
+ 
                           (fn [[player balls]]
                             (let [state* @*state*]
                                 (when (= (:state state*) :active)

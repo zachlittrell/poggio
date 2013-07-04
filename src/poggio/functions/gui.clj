@@ -152,8 +152,7 @@
                          functions (-> screen
                                        (select , "pog-fns-drop")
                                        (nifty-control :drop-down))]
-                     (cond  (== (.getSelectedIndex modules)
-                                (dec (.itemCount modules)))
+                     (cond  (== (.getSelectedIndex modules) 1)
                               (.getSelection functions)
                             (> (.getSelectedIndex functions) 0)
                              (path (.getSelection modules)
@@ -165,9 +164,9 @@
                                      (select , "pog-mods-drop")
                                      (nifty-control :drop-down))]
                    (.addItem modules "Modules")
+                   (.addItem modules "Search...")
                    (.addAllItems modules
-                                 (sort (keys fn-map)))
-                   (.addItem modules "Search..."))
+                                 (sort (keys fn-map))))
                   (subscribe! nifty "pog-mods-drop" :drop-down-select
                     (fn [topic data]
                       (cond
@@ -179,10 +178,7 @@
                                                  (nifty-control :drop-down))))
                         ;;If we are on the Search label
                         ;;Add the search items
-                        (== (.getSelectionItemIndex data)
-                            (-> data
-                               (.getDropDown)
-                               (.itemCount) (dec)))
+                        (== (.getSelectionItemIndex data) 1)
                         (let [functions (-> screen (select , "pog-fns-drop")
                                                    (nifty-control :drop-down))]
                           (doto functions
@@ -212,8 +208,7 @@
                                           (select , "pog-mods-drop")
                                           (nifty-control :drop-down))
                               [module fn-name] 
-                                (if (== (.getSelectedIndex modules)
-                                        (dec (.itemCount modules)))
+                                (if (== (.getSelectedIndex modules) 1)
                                   (path-components (.getSelection data))
                                   [(.getSelection modules)
                                    (.getSelection data)])
@@ -238,7 +233,7 @@
                                           (nifty-control :drop-down))]
 
                       (swap! *search* (constantly matches))
-                      (.selectItemByIndex modules (dec (.itemCount modules)))
+                      (.selectItemByIndex modules 1)
                       (when (not-empty matches)
                         (.selectItemByIndex functions 1))))))
    :clean!       (fn [])}))

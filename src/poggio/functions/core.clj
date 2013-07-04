@@ -1,6 +1,7 @@
 (ns poggio.functions.core
   (:use [control bindings]
-        [data coll object string]))
+        [data coll object string]
+        [poggio.functions utilities]))
 
 (defprotocol PogFn
   "Protocol for functions in Poggio."
@@ -36,6 +37,19 @@
    (and (is-pog-fn? obj)
         (== arity (count (parameters obj))))))
 
+(defprotocol ScopedPogFn
+  "Protocol for PogFn that takes a map of variables.
+   It is assumed if you extend ScopedPogFn, you also
+   extend PogFn."
+  (scoped-invoke [f env]))
+
+    
+(defrecord PogFnType [parameter-count]
+  Implementable
+  (implements? [p child]
+    (is-pog-fn? child 2)))
+
+
 (defn docstring* [f]
   "Returns the docstring of f with whitespace merged together."
   (trivialize-whitespace (docstring f)))
@@ -67,6 +81,19 @@
       (docstring [f] docstring)
       (parameters [f] parameters)
       (invoke [f args] (invoke-fn args)))))
+
+(defmacro scoped-pog-fn [parameters docstring scope-bindings & body]
+  "Returns a PogFn that is also a ScopedPogFn. invoke delegates to
+   scoped-invoke, putting the parameters into the scope."
+  `(reify
+    ScopedPogFn
+    (scoped-invoke ~scope-bindings
+      ~@body)
+    PogFn
+    (docstring [f#] ~docstring)
+    (parameters [f#] ~parameters)
+    (invoke [f# args#]
+      (scoped-invoke f# (zipmap (map name* ~parameters) args#)))))
 
 (defn partial* [f args-map]
   "Partially applies a Pog function using args-map, which
@@ -117,13 +144,16 @@
    any nested function-sequences."
   ([seq]
    (invoke (seq->partial-pog-fn seq) []))
+  ([seq env]
+   (invoke-seq (nested-leaf-map #(or (env %) %) seq)))
   ([seq parameters args]
-    (if (string? seq) (value (second args))
-      (let [param->arg (zipmap (map name* parameters) args)]
-      (invoke-seq (nested-leaf-map #(if-let [arg (param->arg %)]
-                                     arg
-                                      %)
-                                  seq))))))
+     (invoke-seq seq parameters args {}))
+  ([seq parameters args env]
+    (let [param->arg (merge env (zipmap (map name* parameters) args))]
+      (if (string? seq)
+        (or (value (param->arg seq)))
+            ;;TODO Here we'll throw an exception
+        (invoke-seq seq param->arg)))))
 
 
 (defn seq->pog-fn
@@ -132,19 +162,27 @@
   ([name params seq]
    (seq->pog-fn name params "" seq))
   ([name params docstring seq]
-   (pog-fn params docstring
-           (fn [f args]
-             (invoke-seq seq (cons name (parameters f))
-                             (cons f args))))))
-                          
+   (scoped-pog-fn params docstring
+      [f env]
+      (invoke-seq seq (assoc env name f)))))
 
 
-(def if* (basic-pog-fn ["pred" "true-fn" "false-fn"]
+(def if* (basic-pog-fn ["predicate" "true-fn" "false-fn"]
                        (fn [[pred true-fn false-fn]]
                          (if (invoke pred [])
                            (value true-fn)
                            (value false-fn)))))
-  
+(def let* (scoped-pog-fn ["var" "val" "function"]
+                         (docstr [["var" "a variable"]
+                                  ["val" "a value"]
+                                  ["function" "a function to execute"]]
+                                 "function executed with variable set to value")
+                         [f env]
+                         (if (implements? ScopedPogFn (env "function"))
+                           (scoped-invoke (env "function")
+                                          (assoc env (env "var") (env "val")))
+                           (value (env "function")))))
+
 (defn constantly* [obj]
   (fn->pog-fn (constantly obj) "constant"  []))
 

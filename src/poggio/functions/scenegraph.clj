@@ -8,7 +8,8 @@
    its implementation to pog-fn."
   (proxy [Node poggio.functions.core.PogFn] [name]
      (parameters [] (parameters pog-fn))
-     (invoke [args] (invoke pog-fn args))
+     (invoke [args] 
+             (invoke* pog-fn {} args))
      (docstring [] (docstring pog-fn))))
 
 

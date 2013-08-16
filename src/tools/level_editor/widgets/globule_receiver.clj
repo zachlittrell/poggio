@@ -11,8 +11,8 @@
         [seesawx core]))
 
 (defn process-globule! [match? on-match previous globule]
-  (detach! globule)
-  (let [results (swap! previous adjoin (value globule))]
+  (detach! (:globule globule))
+  (let [results (swap! previous adjoin (value (:value globule) {}))]
     (when (match? results)
       (on-match))))
 
@@ -29,20 +29,23 @@
                                                           (Vector3f. 0 0 8)))
                 :local-rotation dir
                 :controls [control]
-                :pog-fn (basic-pog-fn  ["ball"]
-                                      (docstr [["color" "A colored globule"]]
-                                              (str "Activates " target-id 
-                                                   " once it receives a red,"
-                                                   " green, and blue globule."))
-                                               
-                                      (partial apply process-globule!
-                                              (comp (partial = [[0.0 0.0 1.0]
-                                                                [0.0 1.0 0.0]
-                                                                [1.0 0.0 0.0]])
-                                                    lifo)
-                                              #(when-let [target (select app target-id)]
-                                                 (invoke target [false]))
-                                              (atom (ring-buffer 3))))
+                :pog-fn (fn->pog-fn 
+                         (partial process-globule!
+                                 (comp (partial = [[0.0 0.0 1.0]
+                                                   [0.0 1.0 0.0]
+                                                   [1.0 0.0 0.0]])
+                                       lifo)
+                                 #(when-let [target (select app target-id)]
+                                    (invoke* target [false]))
+                                 (atom (ring-buffer 3)))
+                          "receiver"
+                          ["ball"]
+                          (docstr [["color" "A colored globule"]]
+                            (str "Activates " target-id 
+                                 " once it receives a red,"
+                                 " green, and blue globule."))
+                                       
+                                    )
                 :children [hoop])))
 
 

@@ -1,5 +1,6 @@
 (ns poggio.functions.core
-  (:use [control bindings]
+  (:require [data.map :as map])
+  (:use [control assert bindings]
         [data coll object string]
         [poggio.functions utilities]))
 
@@ -9,7 +10,16 @@
   (parameters [f] "Returns a sequence of parameters.
                    Parameters must implement the PogFnParameter 
                    protocol.")
-  (invoke [f args] "Returns the result of applying args to f."))
+  (invoke [f args] "Returns the result of invoke f with the given args"))
+
+(extend-protocol PogFn
+  Object
+  (parameters [_] [])
+  (invoke [f env] f))
+
+(defprotocol LazyPogFn
+  "Protocol for functions that take their arguments outside of the scope."
+  (lazy-invoke [f env args]))
 
 (defprotocol PogFnParameter
   "Protocol for parameters of a PogFn."
@@ -28,37 +38,24 @@
   "Returns true if obj 'implements' the type of the PogFnParameter."
   (implements? (type* param) obj))
 
+
 (defn is-pog-fn?
   "Returns true if the object is a PogFn. Can optionally
    specify what arity the PogFn ought to be."
   ([obj]
    (extends? PogFn (class obj)))
   ([obj arity]
-   (and (is-pog-fn? obj)
-        (== arity (count (parameters obj))))))
+    (and (is-pog-fn? obj)
+         (== arity (count (parameters obj))))))
 
-(defprotocol ScopedPogFn
-  "Protocol for PogFn that takes a map of variables.
-   It is assumed if you extend ScopedPogFn, you also
-   extend PogFn."
-  (scoped-invoke [f env]))
-
-    
 (defrecord PogFnType [parameter-count]
   Implementable
   (implements? [p child]
     (is-pog-fn? child 2)))
 
-
 (defn docstring* [f]
   "Returns the docstring of f with whitespace merged together."
   (trivialize-whitespace (docstring f)))
-
-(defn checked-invoke [f args]
-  "If the types of args match the types of f's parameters, then 
-   returns the result of invoking f on args. Else, it throws an exception."
-  (check-types! (map type* (parameters f)) args)
-  (invoke f args))
 
 (defn pog-fn 
   "Returns a PogFn that returns parameters and directly
@@ -69,7 +66,7 @@
     (reify PogFn
       (docstring [f] docstring)
       (parameters [f] parameters)
-      (invoke [f args] (invoke-fn f args)))))
+      (invoke [f env] (invoke-fn f env)))))
 
 (defn basic-pog-fn 
   "Returns a PogFn that returns parameters and passes
@@ -80,46 +77,84 @@
     (reify PogFn
       (docstring [f] docstring)
       (parameters [f] parameters)
-      (invoke [f args] (invoke-fn args)))))
+      (invoke [f env] 
+              (invoke-fn env)))))
 
-(defmacro scoped-pog-fn [parameters docstring scope-bindings & body]
-  "Returns a PogFn that is also a ScopedPogFn. invoke delegates to
-   scoped-invoke, putting the parameters into the scope."
-  `(reify
-    ScopedPogFn
-    (scoped-invoke ~scope-bindings
-      ~@body)
-    PogFn
-    (docstring [f#] ~docstring)
-    (parameters [f#] ~parameters)
-    (invoke [f# args#]
-      (scoped-invoke f# (zipmap (map name* ~parameters) args#)))))
+(def variable-defined? contains?)
+
+(defmethod error-message variable-defined? [f [env symbol-name]]
+  (str symbol-name " is not defined."))
+
+(declare value)
+(defrecord PogFnVar [name]
+  PogFn
+  (docstring [f] "")
+  (parameters [f] [])
+  (invoke [f env]
+    (lazy-invoke f env env))
+  LazyPogFn
+  (lazy-invoke [f env _] 
+    (assert! (variable-defined? env name))
+    (value (env name) env)))
+
+(defn var* [name]
+  "Returns a PogFnVar for name."
+  (PogFnVar. name))
+
+(defn var*? [o]
+  (implements? PogFnVar o))
+
+(defn correct-arity? [f args]
+  "Returns true iff args is the correct length for f."
+  (== (count (parameters f))
+      (count args)))
+
+
+(defn invoke* 
+  ([f args]
+   (invoke* f {} args))
+  ([f env args]
+    (let [f (value f env)]
+      (if (zero? (count args))
+        f
+        (let [args (if (map? args) args (zipmap (map name* (parameters f)) args))]
+          (assert! (is-pog-fn? f (count args)))
+          (if (implements? LazyPogFn f)
+            (lazy-invoke f env args)
+            (invoke f (map/value-map args #(value % env)))))))))
 
 (defn partial* [f args-map]
   "Partially applies a Pog function using args-map, which
    maps applied parameters to their values."
-  (basic-pog-fn (filter (comp not (partial contains? args-map)) 
-                        (map name* (parameters f)))
-               #(loop [params (map name* (parameters f))
-                       args   %
-                       final-args []]
-                  (if-let [[param & params] (seq params)]
-                    (if-let [arg (args-map param)]
-                      (recur params args (conj final-args arg))
-                      (recur params (next args) (conj final-args (first args))))
-                    (invoke f final-args)))))
+  (reify
+    LazyPogFn
+    (lazy-invoke [_ env args]
+      (invoke* f env (map (comp (merge args args-map)
+                                name*)
+                          (parameters f))))
+    PogFn
+    (parameters [_] (filter #(not (contains? args-map %))
+                            (map name* (parameters f))))
+    (invoke [f env]
+      (lazy-invoke f env env))))
 
-(defn value [v]
-  "Returns (invoke v []) if v is a nullary PogFn,
+(defn value 
+  "Returns (invoke v env) if v is a nullary PogFn,
    otherwise just v."
-  (if (is-pog-fn? v 0)
-    (invoke v [])
-    v))
+  ([v]
+   (value v {}))
+  ([v env]
+  (cond (var*? v) (value (lazy-invoke v env {}) env)
+        (is-pog-fn? v 0) (if (implements? LazyPogFn v)
+                           (lazy-invoke v env {})
+                           (invoke v {}))
+        :else v)))
 
-(defn invoke* [f args]
+(defn fn-invoke [f parameters args]
   "Invokes clojure function f on args, reducing any nullary
    PogFn into its output."
-  (apply f (map value args)))
+  (apply f (for [param (map name* parameters)]
+             (value (args param)))))
 
 (defn fn->pog-fn 
   "Returns a PogFn wrapping around a Clojure function."
@@ -127,34 +162,40 @@
    (fn->pog-fn f name parameters ""))
   ([f name parameters docstring]
     (basic-pog-fn parameters docstring
-                 (partial invoke* f))))
+                 (partial fn-invoke f parameters))))
 
 (defn seq->partial-pog-fn [seq]
   "Converts seq into an applied PogFn. Unlike seq->pog-fn,
    all elements must be already PogFns."
   (if (seq? seq)
-    (let [[f & args] seq]
-      (partial* f (zipmap (map name* (parameters f))
-                          (map seq->partial-pog-fn args))))
+    (let [[f & args] seq
+          f* (seq->partial-pog-fn f)
+          args* (map seq->partial-pog-fn args)]
+      (reify 
+        LazyPogFn
+        (lazy-invoke [f env args]
+          (invoke* f* env args*))
+        PogFn
+        (parameters [_] [])
+        (invoke [_ env]
+          (invoke* f* env args*))))
     seq))
 
 (defn invoke-seq 
   "Invokes the function represented by the seq, with the first argument
    as the function, followed by its arguments. Will recursively invoke
    any nested function-sequences."
-  ([seq]
-   (invoke (seq->partial-pog-fn seq) []))
-  ([seq env]
-   (invoke-seq (nested-leaf-map #(or (env %) %) seq)))
-  ([seq parameters args]
-     (invoke-seq seq parameters args {}))
-  ([seq parameters args env]
-    (let [param->arg (merge env (zipmap (map name* parameters) args))]
-      (if (string? seq)
-        (or (value (param->arg seq)))
-            ;;TODO Here we'll throw an exception
-        (invoke-seq seq param->arg)))))
-
+  ([seq env args]
+   (invoke* (seq->partial-pog-fn seq) 
+            (merge env 
+              (map/value-map args
+                (fn [f]
+                  (reify PogFn
+                    (parameters [_] [])
+                    (invoke [_ _] (value f env))))))
+            {})))
+;;HEre, we're going to carefully merge env and args, turning args into
+;;late binders
 
 (defn seq->pog-fn
   "Returns a PogFn that invokes the function represented by seq.
@@ -162,30 +203,59 @@
   ([name params seq]
    (seq->pog-fn name params "" seq))
   ([name params docstring seq]
-   (scoped-pog-fn params docstring
-      [f env]
-      (invoke-seq seq (assoc env name f)))))
+   (reify
+     PogFn
+     (parameters [_] params)
+     (docstring [_] docstring)
+     LazyPogFn
+     (lazy-invoke [f env args]
+        (invoke-seq seq (assoc env name f) args)))))
 
 
-(def if* (basic-pog-fn ["predicate" "true-fn" "false-fn"]
-                       (fn [[pred true-fn false-fn]]
-                         (if (invoke pred [])
-                           (value true-fn)
-                           (value false-fn)))))
-(def let* (scoped-pog-fn ["var" "val" "function"]
-                         (docstr [["var" "a variable"]
-                                  ["val" "a value"]
-                                  ["function" "a function to execute"]]
-                                 "function executed with variable set to value")
-                         [f env]
-                         (if (implements? ScopedPogFn (env "function"))
-                           (scoped-invoke (env "function")
-                                          (assoc env (env "var") (env "val")))
-                           (value (env "function")))))
+(def if* 
+ (reify 
+   LazyPogFn
+   (lazy-invoke [f env {pred "predicate" true-fn "true-fn" false-fn "false-fn"
+                        :as args}]
+      (let [pred (value pred env)]
+        (assert! (implements? Boolean pred))
+        (if pred
+          (value true-fn env)
+          (value false-fn env))))
+   PogFn
+   (parameters [_]  [{:name "predicate"
+                      :type (PogFnType. 0)}
+                        "true-fn" "false-fn"])
+   (docstring [_] 
+              (docstr [["pred" "a boolean"]
+                       ["true-fn" "a value"]
+                       ["false-fn" "a value"]]
+                      "true-fn if pred is true, else it returns false-fn."))
+   (invoke [f env]
+      (lazy-invoke f env env))))
+
+(def let* 
+  (reify
+    LazyPogFn
+    (lazy-invoke [_ env args]
+      (value (env "function") (assoc env (:name (args "var"))
+                                         (args "val"))))
+    PogFn
+   (parameters [_] [{:name "var"
+                     :type PogFnVar}
+                     "val" "function"])
+   (docstring [_]  
+     (docstr [["var" "a variable"]
+              ["val" "a value"]
+              ["function" "a function to execute"]]
+             "function executed with variable set to value"))
+   (invoke [f env]
+      (lazy-invoke f env env))))
 
 (defn constantly* [obj]
   (fn->pog-fn (constantly obj) "constant"  []))
 
 (defn comp* [f1 f2]
   "Composes two PogFunctions."
-  (seq->pog-fn "compose" ["f" "g" "x"] (list "f" (list "g" "x"))))
+  (seq->pog-fn "compose" ["f" "g" "x"] (list (var* "f") 
+                                             (list (var* "g") (var* "x")))))

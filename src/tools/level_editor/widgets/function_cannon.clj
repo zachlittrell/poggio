@@ -16,15 +16,17 @@
   (let [globule-phys (RigidBodyControl. mass)
         globule-phys* (RigidBodyControl. mass)
         globule (geom :shape globule-shape
-                      ;;:local-translation loc
-                      ;;:local-rotation dir
                       :material (material :asset-manager app
                                           :color {"Color" color})
                       :controls [globule-phys*])]
     (attach! app
              (pog-fn-node 
                 :local-translation loc
-                :pog-fn (constantly* (color->triple color))
+                :pog-fn (reify PogFn
+                          (parameters [f] [])
+                          (invoke [f env]
+                            {:globule (.getParent globule)
+                             :value (constantly* (color->triple color))}))
                 :local-rotation dir
                 :children [globule]
                 :controls [globule-phys*]))
@@ -39,7 +41,7 @@
           (let [timer (computation-timer spatial
                         5
                         (fn []
-                          (let [balls (value @*balls*)]
+                          (let [balls (value @*balls* {})]
                             (assert! (implements? clojure.lang.Seqable balls))
                             (assert! (not-empty balls))
                             (let [[ball & more-balls] balls]
@@ -57,6 +59,7 @@
                             (start! timer)))
                           ;;Failure
                           (fn [error]
+                            ;;TODO Properly handle error.
                             (println "Error:" error)
                             (swap! state (constantly {:state :inactive}))))]
             (swap! state (constantly {:state :active
@@ -76,15 +79,8 @@
                 :local-translation loc
                 :local-rotation dir
                 :controls [control]
-                :pog-fn (basic-pog-fn
-                         [{:name "player"
-                            :type Warpable}
-                           {:name "colors"
-                           :type clojure.lang.Seqable}]
-                          (docstr [["colors" "a list of colors"]]
-                                  "Spits out a colored globule for each color in colors.")
- 
-                          (fn [[player balls]]
+                :pog-fn (fn->pog-fn
+                          (fn [player balls]
                             (let [state* @*state*]
                                 (when (= (:state state*) :active)
                                   (stop! (:timer state*)))
@@ -98,7 +94,17 @@
                                                           balls)]
                                 (swap! *state* (constantly {:state :active
                                                           :timer timer}))
-                                 (start! timer)))))
+                                 (start! timer))))
+
+                         "cannon"
+                         [{:name "player"
+                            :type Warpable}
+                           {:name "colors"
+                           :type clojure.lang.Seqable}]
+                          (docstr [["colors" "a list of colors"]]
+                                  "Spits out a colored globule for each color in colors.")
+ 
+                          )
                 :children [cannon])))
  
 (def function-cannon-template

@@ -3,15 +3,21 @@
         [data object]
         [poggio.functions core value utilities]))
 
-(def cons* (basic-pog-fn ["head" "tail"]
-              (docstr [["head" "a value"] ["tail" "a list"]]
-                      "a list whose first element is head and last elements are tail")
-              (fn [[head tail]]
-                (cons (value head)
-                      (lazy-seq 
-                        (let [tail' (value tail)]
-                          (assert! (implements? clojure.lang.Seqable tail'))
-                          tail'))))))
+(def cons*
+  (reify
+    PogFn
+    (parameters [_] ["head" "tail"])
+    (docstring [_] (docstr [["head" "a value"] ["tail" "a list"]]
+                      "a list whose first element is head and last elements are tail"))
+    (invoke [f env]
+      (lazy-invoke f env env))
+    LazyPogFn
+     (lazy-invoke [f env {head "head" tail "tail" :as arg}]
+        (cons (value head env)
+              (lazy-seq 
+                (let [tail' (value tail env)]
+                  (assert! (implements? clojure.lang.Seqable tail'))
+                  tail'))))))
 
 (def head* (fn->pog-fn (fn [xs]
                          (assert! (not-empty xs))
@@ -34,42 +40,43 @@
 (def repeat* (seq->pog-fn "repeat" ["o"]
                (docstr [["o" "a value"]]
                        "a list with the element o, over and over again.")
-               (list cons* "o" (list "repeat" "o"))))
+               (list cons* (var* "o") (list (var* "repeat") (var* "o")))))
 
 (def empty?* (fn->pog-fn empty? "empty?" ["xs"]))
 
 (def triple* (seq->pog-fn "triple" ["a" "b" "c"]
                 (docstr [["a" "a value"] ["b" "a value"] ["c" "a value"]]
                         "a list with the elements a, b, and c")
-                (list cons* "a"
-                      (list cons* "b"
-                            (list cons* "c" empty-list*)))))
+                (list cons* (var* "a")
+                      (list cons* (var* "b")
+                            (list cons* (var* "c") empty-list*)))))
 
 (def reduce* (seq->pog-fn "reduce" ["f" "xs" "init"]
-                (list if* (list empty?* "xs")
-                      "init"
-                      (list "f" (list head* "xs")
-                                (list "reduce" "f"
-                                               (list tail* "xs")
-                                               "init")))))
+                (list if* (list empty?* (var* "xs"))
+                      (var* "init")
+                      (list (var* "f") (list head* (var* "xs"))
+                                (list (var* "reduce") (var* "f")
+                                               (list tail* (var* "xs"))
+                                               (var* "init"))))))
 
 
 (def concat* (seq->pog-fn "concat" ["xs" "ys"]
                 (docstr [["xs" "a list"] ["ys" "a list"]]
                         "a list of xs's elements, followed by ys's elements")
-                (list if* (list empty?* "xs")
-                      "ys"
-                      (list cons* (list head* "xs")
-                                  (list "concat" (list tail* "xs")
-                                                 "ys")))))
+                (list if* (list empty?* (var* "xs"))
+                      (var* "ys")
+                      (list cons* (list head* (var* "xs"))
+                                  (list (var* "concat") 
+                                        (list tail* (var* "xs"))
+                                                 (var* "ys"))))))
 
 (def flatten* (seq->pog-fn "flatten" ["xs"]
                 (docstr [["xs" "a list of lists"]]
                         "a list of xs's lists joined together")
-                (list reduce* concat* "xs" empty-list*)))
+                (list reduce* concat* (var* "xs") empty-list*)))
 
 (def map* (seq->pog-fn "map" ["f" "xs"]
-            (list if* (list empty?* "xs")
+            (list if* (list empty?* (var* "xs"))
                   empty-list*
-                  (list cons* (list "f" (list head* "xs"))
-                              (list "map" "f" (list tail* "xs"))))))
+                  (list cons* (list (var* "f") (list head* (var* "xs")))
+                              (list (var* "map") (var* "f") (list tail* (var* "xs")))))))

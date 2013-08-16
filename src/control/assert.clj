@@ -12,4 +12,3 @@
 
 (defmethod error-message not-empty [f [list]]
   "Empty list.")
-

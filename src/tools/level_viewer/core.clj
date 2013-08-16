@@ -33,8 +33,9 @@
       [this f input e]
       (when (and (.getParent f) (.getParent input))
         (try
-        (checked-invoke f [input])
-        (catch Exception e)))))
+        (invoke* f {} [input])
+        (catch Exception e
+          (.printStackTrace e))))))
 
 
 (defn set-up-keys! [nifty set-current-function! input-manager camera clickable]

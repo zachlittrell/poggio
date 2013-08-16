@@ -1,8 +1,9 @@
 (ns poggio.functions.gui
   (:import [de.lessvoid.nifty.screen DefaultScreenController])
-  (:require [nifty-clj [builders :as builders]]) 
+  (:require [clojure.string :as str]
+            [nifty-clj [builders :as builders]]) 
   (:use [data coll]
-        [nifty-clj [builders :exclude [text]] elements events widgets]
+        [nifty-clj [builders :exclude [text]] elements events popup widgets]
         [poggio.functions core modules]))
 
 
@@ -218,14 +219,12 @@
 
                   (subscribe! nifty "pog-fns-search" :text-field-change
                     (fn [topic data]
-                      (let [text (.getText data)
-                            pattern (java.util.regex.Pattern/compile 
-                                      text
-                                      (bit-or java.util.regex.Pattern/LITERAL
-                                              java.util.regex.Pattern/CASE_INSENSITIVE))
+                      (let [text (str/lower-case (.getText data))
                             matches (for [[module functions] fn-map
                                           [function _] functions
-                                          :when (re-find pattern function)]
+                                          :when (< -1 
+                                                   (.indexOf (str/lower-case function)
+                                                             text))]
                                       (path module function))
                             modules (-> (select screen "pog-mods-drop")
                                         (nifty-control :drop-down))
@@ -325,7 +324,7 @@
                                             param-click))}
       :compute {:on-left-click #(-> (get-pog-fn! (select made-screen "fn-pad")
                                                   @*fn-map*)
-                                     (invoke , []))})
+                                     (invoke* , {} []))})
     {:set-current-function! 
        (fn [pog-fn]
          (set-pog-fn! (select made-screen "fn-pad")

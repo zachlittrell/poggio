@@ -66,3 +66,12 @@
       (if-let [[m2 & ms] more]
         (recur (merge m (key-filter m2 in-shared-keys)) ms)
         m))))
+
+(defn invert-map [m]
+  "Returns a map inverted."
+  (loop [m m
+         m' {}]
+    (if-let [[[key val] & more] m]
+      (recur more
+             (assoc m' (conj (m' val) key)))
+      m')))

@@ -49,5 +49,11 @@
 (defmethod type-str :default [type]
   (general-type-str type))
 
+(defn obj-type-str [obj]
+  (type-str (type obj)))
+
 (defmethod error-message implements? [f [type child]]
-  (str "Expected type " (type-str type)))
+  (format "Expected type %s. Received type %s"
+          (type-str type)
+          (obj-type-str child)))
+

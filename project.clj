@@ -5,7 +5,7 @@
                    [[lein-autodoc "0.9.0"]
                    [com.jme3/jME3-testdata "3.0.0.20121220-SNAPSHOT"]]}}
   :resource-paths ["assets"]
-  :dependencies [[org.clojure/clojure "1.4.0"]
+  :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/core.match "0.2.0-alpha9"]
                  [org.clojure/math.combinatorics "0.0.3"]
                  [org.clojure/tools.macro "0.1.1"]
@@ -33,4 +33,5 @@
                  [com.jme3/stack-alloc "3.0.0.20121220-SNAPSHOT"]
                  [com.jme3/vecmath "3.0.0.20121220-SNAPSHOT"]
                  [com.jme3/xmlpull-xpp3 "3.0.0.20121220-SNAPSHOT"]
-                 [seesaw "1.4.2"]])
+                 [instaparse "1.2.2"]
+                 [seesaw "1.4.3"]])

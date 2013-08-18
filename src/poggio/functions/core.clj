@@ -194,8 +194,6 @@
                     (parameters [_] [])
                     (invoke [_ _] (value f env))))))
             {})))
-;;HEre, we're going to carefully merge env and args, turning args into
-;;late binders
 
 (defn seq->pog-fn
   "Returns a PogFn that invokes the function represented by seq.

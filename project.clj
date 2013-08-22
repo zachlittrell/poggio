@@ -4,6 +4,7 @@
   :profiles {:dev {:dependencies 
                    [[lein-autodoc "0.9.0"]
                    [com.jme3/jME3-testdata "3.0.0.20121220-SNAPSHOT"]]}}
+  :java-source-paths ["src/jme_clj"]
   :resource-paths ["assets"]
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/core.match "0.2.0-alpha9"]

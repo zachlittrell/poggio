@@ -214,9 +214,11 @@
   {:id [:no-op]})
    
 (def-element-builder text-field
-  {:id "text-field-generated TextFieldBuilder"}
-  TextFieldBuilder [id]
-  {:id [:no-op]})
+  {:id "text-field-generated TextFieldBuilder"
+   :initial-text ""}
+  TextFieldBuilder [id initial-text]
+  {:id [:no-op]
+   :initial-text [:no-op]})
 
 (def-element-builder draggable
   {:id "draggable-generated DraggableBuilder"}

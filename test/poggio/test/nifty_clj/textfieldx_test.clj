@@ -1,13 +1,20 @@
 (ns poggio.test.nifty-clj.textfieldx-test
-  (:use [nifty-clj builders textfieldx [elements :exclude [text]]])
+  (:use [nifty-clj builders events textfieldx [elements :exclude [text]]])
   (:import [com.jme3.app SimpleApplication]))
 
-(def my-screen
-  (screen-around
-    (textfieldx-component :id "HI"
-                          :text "HI\nGoodbye\nBlue Skies"
-                          :width "300px"
-                          :height "300px")))
+(defn my-screen [nifty]
+  (let [{:keys [initialize! textfieldx]} (textfieldx :id "HI" 
+                                                     :width "300px"
+                                                     :height "300px"
+                                                     :text "Mr\nBlue\nSky")]
+  (screen
+    :controller (proxy [de.lessvoid.nifty.screen.DefaultScreenController] []
+                  (onStartScreen []
+                    (initialize! nifty)))
+        :layer (layer :child-layout :center
+             :panel
+              (panel :child-layout :center
+                     :control textfieldx)))))
 
 (defn make-app []
   (proxy [SimpleApplication] []
@@ -15,7 +22,7 @@
       (doto (.getGuiNode this)
         (.detachAllChildren))
       (let [[_ nifty] (nifty this true)
-            screen (.build my-screen nifty)]
+            screen (.build (my-screen nifty) nifty)]
         (.addScreen nifty "crosshair" screen)
         (let [scroll (select screen "#nifty-scrollpanel-child-root")]
          );; (.layoutElements scroll)

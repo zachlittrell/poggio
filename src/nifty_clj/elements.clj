@@ -3,6 +3,9 @@
            [de.lessvoid.nifty.elements Element] 
            [de.lessvoid.nifty.elements.render TextRenderer]))
 
+(defn element? [element]
+  (instance? Element element))
+
 (defmulti nifty-control-class identity)
 
 (defmethod nifty-control-class :default [control-class] control-class)
@@ -16,8 +19,21 @@
 (defmethod nifty-control-class :scroll [_]
   ScrollPanel)
 
+(defmethod nifty-control-class :text-field [_]
+  de.lessvoid.nifty.controls.TextField)
+
 (defn nifty-control [element control]
   (.getNiftyControl element (nifty-control-class control)))
+
+(defn text-field-logic [textfield-control]
+  ;;I greatly regret the black magic incurred in this method.
+  ;;Please, do not try this at home.
+  (let [text-field-logic-field (.getDeclaredField (class textfield-control)
+                                                  "textField")]
+    (when (not (.isAccessible text-field-logic-field))
+      (.setAccessible text-field-logic-field true))
+    (.get text-field-logic-field textfield-control)))
+
 
 (defn text [element]
   (-> element
@@ -28,6 +44,11 @@
   (-> element
       (.getRenderer TextRenderer)
       (.setText text)))
+
+(defn text-field-text [element]
+  (-> element
+      (nifty-control :text-field)
+      (.getRealText)))
 
 (defn get-button-text! [element]
   (-> element

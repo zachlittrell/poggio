@@ -2,10 +2,30 @@
   "Functions for creating and manipulating a textfieldx, a special
   nifty text area."
   (:require [clojure.string :as str])
-  (:use
-        [nifty-clj [builders :exclude [text]] elements]))
+  (:use [data string]
+        [nifty-clj [builders :exclude [text]] events elements]))
 
+(defn textfield-entry 
+  ([line-number line]
+   (textfield-entry line-number line nil))
+  ([line-number line tail]
+   (panel :child-layout :vertical
+          :width "100%"
+          :panels  (cons (panel :child-layout :horizontal
+                                :width "100%"
+                                :controls [(label :text (str line-number))
+                                           (text-field :initial-text line
+                                                       :id (genstr "textbox")
+                                                       :width "100%")])
+                         (if (nil? tail) nil (list tail))))))
 
+(defn textfield [textfield-entry]
+  (-> textfield-entry
+      (.getElements)
+      (first)
+      (.getElements)
+      (second)))
+     
 (defn parent [textfield-entry]
   (.getParent textfield-entry))
 
@@ -18,69 +38,88 @@
   (-> textfield-entry
       (.getElements)
       first
+      (.getElements)
       first
       text
-      int))
+      (Integer/parseInt)))
 
-(defn set-line-numer! [textfield-entry f]
+(defn set-line-number! [textfield-entry f]
   (let [label (-> textfield-entry
                   (.getElements)
                   first
+                  (.getElements)
                   first)]
-    (set-text! label (str (f (int (text label)))))))
+    (set-text! label (str (f (Integer/parseInt (text label)))))))
 
 (defn line-text [textfield-entry]
   (-> textfield-entry
       (.getElements)
       (first)
+      (.getElements)
       (second)
-      (text)))
+      (text-field-text)))
       
 
 (defmacro do-entries [[sym entry] & body]
-  `(loop [entry# ~entry]
-     (when (not (nil? entry#))
-       (let [~sym entry#]
-         ~@body)
-       (recur (tail entry#)))))
+  `(loop [~sym ~entry]
+     (when (not (nil? ~sym))
+       ~@body
+       (recur (tail ~sym)))))
 
-(defn set-tail! [entry new-tail]
-  (let [elems (.getElements entry)]
-    (if (== 1 (count elems))
-      (.add entry new-tail)
-      (let [prev-tail (tail (second elems))]
-        (.markForRemoval prev-tail)
-        (.add entry new-tail)))))
+(defmacro for-entries [[sym entry] & body]
+  `(let [coll (transient [])]
+     (do-entries [~sym ~entry]
+        (conj! coll (do ~@body)))
+     (persistent! coll)))
 
+(defn set-tail! 
+  ([entry new-tail]
+   (set-tail! nil entry new-tail))
+  ([nifty entry new-tail]
+    (let [elems (.getElements entry)]
+      (if (== 1 (count elems))
+        (.add entry new-tail)
+        (let [prev-tail (tail (second elems))]
+          (remove-element! prev-tail)
+          (if (element? new-tail)
+            (.add entry new-tail)
+            (build nifty entry new-tail)))))))
+
+(declare swap-cursors!)
 (defn remove-entry! [entry]
   ;;Do not allow them to remove the very first line
   (when (not (zero? (line-number entry)))
     (let [parent (parent entry)
           next-tail (tail entry)]
-      (set-tail! parent next-tail)
-      (do-entries [entry* next-tail]
-        (set-line-number! entry* dec)))))
+      (swap-cursors! entry parent :end)
+      (if (nil? next-tail)
+        (.markForRemoval entry)
+        (.markForMove next-tail parent
+          (reify de.lessvoid.nifty.EndNotify
+            (perform [_] 
+              (do-entries [entry* next-tail]
+                 (set-line-number! entry* dec))
+              (.markForRemoval entry)))))
+      (.layoutElements parent))))
 
-(defn new-entry! [entry]
+(declare initialize-entry!)
+(defn new-entry! [nifty entry]
   (let [prev-tail (tail entry)
-        new-entry (textfield-entry (line-number entry) "" prev-tail)]
-    (set-tail! entry new-entry)
-    (do-entries [entry* new-entry]
-      (set-line-number! entry* inc))))
+        new-entry (textfield-entry (inc (line-number entry)) "")]
+    ;;(.markForRemoval prev-tail)
+    (let [new-entry* (build nifty entry new-entry)]
+      (initialize-entry! nifty new-entry*)
+      (swap-cursors! entry new-entry*)
+      (when prev-tail
+        (.markForMove prev-tail new-entry*
+              (reify de.lessvoid.nifty.EndNotify
+                (perform [_] 
+                  (do-entries [entry* (tail new-entry*)]
+                      (set-line-number! entry* inc)))))))))
 
+;;(defn lines [entry]
+;;  (str/join "\n" (for-entries [entry* entry] (line entry*))))
 
-(defn textfield-entry 
-  ([line-number line]
-   (textfield-entry line-number line nil))
-  ([line-number line tail]
-   (panel :child-layout :vertical
-          :width "100%"
-          :panels  (cons (panel :child-layout :horizontal
-                                :width "100%"
-                                :controls [(label :text (str line-number))
-                                           (text-field :initial-text line
-                                                       :width "100%")])
-                         (if (nil? tail) nil (list tail))))))
 
 (defn textfieldx-component [& {:keys [id text width height]
                                :or {:id ""
@@ -94,12 +133,13 @@
                 :style "nifty-listbox"
                 :panels 
                 [(panel :child-layout :vertical
+                        :id "textfield-entries"
                         :width "100%"
                         :panel
                         (loop [prev nil
                                index (dec (count lines))
                                lines (rseq lines)
-                               ]
+                                ]
                           (if-let [[end & front] lines]
                             (let [field (textfield-entry index end prev)]
                               (recur field
@@ -107,3 +147,53 @@
                                      front))
                             prev)))])))
 
+(defn first-entry [textfieldx]
+  (-> textfieldx
+      (select , "textfield-entries")
+      (.getElements)
+      (first)))
+
+(defn swap-cursors! 
+  ([entry tail]
+   (swap-cursors! entry tail nil))
+  ([entry tail position]
+  (let [entry-logic (text-field-logic  
+                     (nifty-control
+                        (textfield entry) :text-field))
+       tail-field (textfield tail)
+       tail-control (nifty-control tail-field
+                                   :text-field)]
+       (.setFocus tail-field)
+       (.setCursorPosition tail-control
+          (case position
+            :end (.length (.getRealText tail-control))
+            (.getCursorPosition entry-logic))))))
+
+(defn initialize-entry! [nifty entry]
+  (subscribe! nifty (.getId (textfield entry)) 
+              :nifty-input-event
+    (fn [topic data]
+      (condp = (nifty-input-event->keyword data)
+        :submit-text 
+          (new-entry! nifty entry)
+        :backspace
+          (when (= "" (line-text entry))
+            (remove-entry! entry)) 
+        :move-cursor-down
+          (when-let [tail (tail entry)]
+            (swap-cursors! entry tail))
+        :move-cursor-up
+           (when (not (zero? (line-number entry)))
+             (swap-cursors! entry (parent entry)))
+        nil))))
+
+
+(defn textfieldx [& opts]
+  (let [{:keys [id] :as opts-map} opts]
+    {:textfieldx (apply textfieldx-component opts)
+     :initialize! (fn [nifty]
+                    (do-entries [entry (first-entry 
+                                         (select 
+                                           (select (.getCurrentScreen nifty) id)
+                                           "textfield-entries"))]
+                      (initialize-entry! nifty entry)))}))

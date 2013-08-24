@@ -1,6 +1,7 @@
 (ns nifty-clj.events
   "Functions for handling events (in particular, interactions) in nifty-gui."
-  (:use [data.string :only [dash->camel-case]])
+  (:use [data.string :only [dash->camel-case]]
+        [data enum])
   (:import [clojure.lang IFn]
            [de.lessvoid.nifty NiftyMethodInvoker]
            [de.lessvoid.nifty.controls Droppable
@@ -109,8 +110,16 @@
   (event-topic-subscriber [f] (reify EventTopicSubscriber
                                 (onEvent [_ topic data] (f topic data)))))
 
+(def-enum-keyword-map keyword->nifty-input-event
+      de.lessvoid.nifty.input.NiftyInputEvent)
+
+(def nifty-input-event->keyword
+  (clojure.set/map-invert keyword->nifty-input-event))
+
 (defmulti nifty-event identity)
 (defmethod nifty-event :default [e] e)
+(defmethod nifty-event :nifty-input-event [k]
+  de.lessvoid.nifty.input.NiftyInputEvent)
 (defmethod nifty-event :drag [k]
   de.lessvoid.nifty.controls.DraggableDragStartedEvent)
 (defmethod nifty-event :drop [k]

@@ -38,5 +38,5 @@
         (seq->pog-fn "" parameters docstring
             code-seq))
       (fn [failure]
-        (throw (Exception. failure))))))
+        (throw (Exception. (str failure)))))))
 

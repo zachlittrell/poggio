@@ -3,95 +3,15 @@
   (:require [clojure.string :as str]
             [nifty-clj [builders :as builders]]) 
   (:use [data coll]
-        [nifty-clj [builders :exclude [text]] elements events popup widgets]
-        [poggio.functions core modules]))
+        [nifty-clj [builders :exclude [text]] elements events popup textfieldx]
+        [poggio.functions core parser modules]))
 
+(defn set-pog-fn! [fn-pad-param nifty f]
+  (set-text! fn-pad-param (name* (first (parameters f)))))
 
-(defn pog-button-info [pog-button]
-  (let [[first-paren head & extra :as elems] (.getElements pog-button)
-        params (butlast extra)
-        last-paren (last extra)]
-    {:head head
-     :params params
-     :first-paren first-paren
-     :last-paren last-paren
-     :children elems
-     :fn-name (.getId head)
-     :headless? (.isVisible head)}))
-
-
-(defn param-label [text]
-  (label :text text))
-
-(defn param->button
-  ([id param]
-   (param->button id param false))
-  ([id param headless?]
-   (let [head (button :id (name* param)
-                      :label (name* param))]
-     (when headless?
-       (.visible head false)
-       (.width head "0px"))
-     {:id (name* param)
-      :button (panel :id id
-                :child-layout :horizontal
-                :align :left
-                :valign :center
-                :controls [(label :text "(")
-                           head
-                           (label :text ")")])})))
-
-(defn get-pog-fn! [this fn-map]
-  (let [{:keys [head params fn-name]} (pog-button-info this)
-        f (look-up-path fn-map (.getId head))]
-    (partial* f (into {} (for [[elem param] (zip params (parameters f))
-                               :let [{:keys [fn-name]} (pog-button-info elem)]
-                               :when (not= fn-name (name* param))]
-                           [(name* param) (get-pog-fn! elem fn-map)])))))
-
-
-(defn set-pog-fn! [this nifty path fn-map click-handler]
- (let [{:keys [head params fn-name last-paren]} (pog-button-info this)]
-   ;;Remove old parameters
-   (doseq [child params]
-     (.markForRemoval child))
-   (.markForRemoval last-paren)
- ;  (.layoutElements this)
-   (if path
-     (let [f (look-up-path fn-map path)]
-       ;;Set the id to be the path
-       ;;So when we try to reconstruct this function,
-       ;;we know what to look-up.
-       (doto head
-        (.setId path)
-        (set-button-text! (second (path-components path))))
-       ;;Add parameters
-       (doseq [param (parameters f)]
-         (let [{:keys [id button]} (param->button
-                                                 " "
-                                                 param)
-               made-button (build nifty this button)]
-           (apply-interactions made-button
-              id {:on-left-click (partial click-handler
-                                          (select this " "))})
-           (.setId made-button "")))
-      ;; (.layoutLayers (.getCurrentScreen nifty))
-      )
-     ;;If we were given no path, reset the parameter
-     ;;to match its initial state (i.e. blank)
-      (let [parent (.getParent this)
-            {params* :params
-             fn-name* :fn-name} (pog-button-info parent)
-            parent-f (look-up-path fn-map fn-name*)
-            param (nth (parameters parent-f) (.indexOf params* this))]
-        (doto head
-          (.setId (name* param))
-          (set-button-text! (name* param)))
-        ))
-   (build nifty this (param-label ")"))
-
-   ))
-
+(defn get-pog-fn [fn-pad f fn-map ]
+  (seq->pog-fn "" [] 
+    (list f (code-pog-fn [] "" (lines (first-entry fn-pad))))))
 
 (defn function-info []
   {:info (tabs
@@ -112,9 +32,7 @@
                                   :control (label :text "Documentation"
                                                   :id "doc-label"
                                                   :align :left
-                                                  :width "100%"
-                                                  :height "100%"
-                                                  :text-h-align :left
+                                                  :width "100%" :height "100%" :text-h-align :left
                                                   :text-v-align :top
                                                   :wrap? true)))])
    :update! (fn [info f]
@@ -241,16 +159,17 @@
 (defn function-screen [nifty & modules]
   (let [{:keys[fn-map fn-box initialize! clean!
                selected-fn!]} (apply function-box modules)
-        {fn-pad :button
-         id :id} (param->button "fn-pad" "fn-pad-fn" true)
+        {initialize2! :initialize!
+         textfieldx :textfieldx} (textfieldx :id "fn-pad")
         *fn-map* (atom fn-map)
-        *focused-param* (atom nil)
+        *current-f* (atom nil)
         made-screen
           (build-screen nifty
             (screen
              :controller (proxy [DefaultScreenController] []
                            (onStartScreen [] 
-                              (initialize! nifty (.getCurrentScreen nifty)))) 
+                              (initialize! nifty (.getCurrentScreen nifty))
+                              (initialize2! nifty)))
               :layer
               (layer
                 :align :right
@@ -265,70 +184,38 @@
                   :align :right
                   :panels
                   [(panel :child-layout :vertical
-                          :height "10%"
-                          :control (scroll-panel :width "100%"
-                                                 :panel fn-pad
-                                                 :set {"vertical" "false"}
-                                                 :id "fn-pad-scroller"
-                                                 :style "nifty-listbox"))
+                          :height "30%"
+                          :controls [(label :id "fn-pad-param"
+                                            :width "100%"
+                                            :text ""
+                                            :color "#000")
+                                     textfieldx]
+                          :padding "2px")
                    (panel :id "fn-controls"
-                          :visible? false
                           :child-layout :vertical
-                          :height "80%"
+                          :height "60%"
                           :align :right 
-                          :panels [(panel :child-layout :center
-                                          :control (label 
-                                                     :color "#000"
-                                                     :text
-                                                      "Use Selected Function?"))
-                                   (panel :child-layout :horizontal
-                                          :controls
-                                           [(button :label "Ok"
-                                                    :width "33%"
-                                                    :id "ok")
-                                            (button :label "Clear"
-                                                    :width "33%"
-                                                    :id "clear")
-                                            (button :label "Cancel"
-                                                    :width "33%"
-                                                    :id "cancel")])
-                                   (doto fn-box (.align (keyword->align :left))
-                                                (.height "60%"))])
+                          :panels [(doto fn-box (.align (keyword->align :left))
+                                                (.height "100%"))])
                    (panel
                      :height "10%"
                      :child-layout :center
                      :align :left
                      :control
-                        (button :label "Compute"
-                                  :id "compute"))]))))
-        param-click (fn [element]
-                      (.setVisible (select made-screen "fn-controls") true)
-                      (swap! *focused-param* (constantly element)))]
+                        (button :label "Send"
+                                  :id "compute"))]))))]
     (apply-interactions made-screen
-      :ok {:on-left-click (fn []
-                            (when-let [selected-fn (selected-fn! nifty made-screen)]
-                              (set-pog-fn! @*focused-param*
-                                          nifty
-                                          selected-fn
-                                          @*fn-map*
-                                          param-click)
-                              (.setVisible (select made-screen "fn-controls") false)))}
-      :cancel {:on-left-click (fn []
-                                (.setVisible (select made-screen "fn-controls")
-                                             false))}
-      :clear {:on-left-click (fn []
-                               (set-pog-fn! @*focused-param*
-                                            nifty
-                                            nil
-                                            @*fn-map*
-                                            param-click))}
-      :compute {:on-left-click #(-> (get-pog-fn! (select made-screen "fn-pad")
+      :compute {:on-left-click #(-> (get-pog-fn (select made-screen "fn-pad")
+                                                  @*current-f*
                                                   @*fn-map*)
-                                     (invoke* , {} []))})
+                                     (invoke* , (into {}
+                                                 (for [[module, fs] @*fn-map*
+                                                       f fs]
+                                                   f))
+                                              []))})
     {:set-current-function! 
        (fn [pog-fn]
-         (set-pog-fn! (select made-screen "fn-pad")
-                      nifty (path "," ",")
-                      (swap! *fn-map* assoc "," {"," pog-fn})
-                      param-click))
+         (swap! *current-f* (constantly pog-fn))
+         (set-pog-fn! (select made-screen "fn-pad-param")
+                      nifty pog-fn))
      :function-screen made-screen}))

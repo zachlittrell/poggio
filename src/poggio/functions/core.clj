@@ -1,6 +1,6 @@
 (ns poggio.functions.core
   (:require [data.map :as map])
-  (:use [control assert bindings]
+  (:use [control assert bindings io]
         [data coll object string]
         [poggio.functions utilities]))
 
@@ -117,11 +117,11 @@
     (let [f (value f env)]
       (if (zero? (count args))
         f
-        (let [args (if (map? args) args (zipmap (map name* (parameters f)) args))]
+        (let [args* (if (map? args) args (zipmap (map name* (parameters f)) args))]
           (assert! (is-pog-fn? f (count args)))
           (if (implements? LazyPogFn f)
-            (lazy-invoke f env args)
-            (invoke f (map/value-map args #(value % env)))))))))
+            (lazy-invoke f env args*)
+            (invoke f (map/value-map args* #(value % env)))))))))
 
 (defn partial* [f args-map]
   "Partially applies a Pog function using args-map, which

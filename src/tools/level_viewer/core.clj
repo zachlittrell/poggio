@@ -103,7 +103,7 @@
     (let [[display nifty] (nifty this true)
           {:keys [set-current-function!
                   function-screen]} (function-screen nifty
-                                       {"List" {"()" empty-list*
+                                       {"List" {"[]" empty-list*
                                                 "cons" cons*
                                                 "flatten" flatten*
                                                 "concat"  concat*

@@ -66,12 +66,6 @@
        ~@body
        (recur (tail ~sym)))))
 
-(defmacro for-entries [[sym entry] & body]
-  `(let [coll (transient [])]
-     (do-entries [~sym ~entry]
-        (conj! coll (do ~@body)))
-     (persistent! coll)))
-
 (defn set-tail! 
   ([entry new-tail]
    (set-tail! nil entry new-tail))
@@ -117,15 +111,18 @@
                   (do-entries [entry* (tail new-entry*)]
                       (set-line-number! entry* inc)))))))))
 
-;;(defn lines [entry]
-;;  (str/join "\n" (for-entries [entry* entry] (line entry*))))
-
+(defn lines [entry]
+  (let [buffer (StringBuilder.)]
+    (do-entries [entry* entry]
+      (.append buffer (line-text entry*))
+      (.append buffer "\n"))
+    (.substring buffer 0 (max 1 (dec (.length buffer))))))
 
 (defn textfieldx-component [& {:keys [id text width height]
-                               :or {:id ""
-                                    :text ""
-                                    :width "100%"
-                                    :height "100%"}}]
+                               :or {id ""
+                                    text ""
+                                    width "100%"
+                                    height "100%"}}]
   (let [lines (str/split-lines text)]
     (scroll-panel :id id
                  :width width

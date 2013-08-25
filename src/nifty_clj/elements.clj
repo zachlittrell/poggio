@@ -22,6 +22,12 @@
 (defmethod nifty-control-class :text-field [_]
   de.lessvoid.nifty.controls.TextField)
 
+(defmethod nifty-control-class :tab-group [_]
+  de.lessvoid.nifty.controls.TabGroup)
+
+(defmethod nifty-control-class :tab [_]
+  de.lessvoid.nifty.controls.Tab)
+
 (defn nifty-control [element control]
   (.getNiftyControl element (nifty-control-class control)))
 

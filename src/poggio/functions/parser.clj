@@ -20,9 +20,10 @@
            RP = #'\\)'"
           var-pattern))
 
+(def parser (insta/parser code-cfg))
+
 (defn parse [code]
-  (let [parser (insta/parser code-cfg)
-        parse-tree (parser code)]
+  (let [parse-tree (parser code)]
     (if (insta/failure? parse-tree)
       (left (:line parse-tree))
       (right 
@@ -36,7 +37,8 @@
     (on-either code-seq?
       (fn [code-seq]
         (seq->pog-fn "" parameters docstring
-            code-seq))
+            code-seq
+            code))
       (fn [failure]
         (throw (Exception. (str failure)))))))
 

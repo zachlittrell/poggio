@@ -21,6 +21,11 @@
   "Protocol for functions that take their arguments outside of the scope."
   (lazy-invoke [f env args]))
 
+(defprotocol Sourceable 
+  "Protocol for functions that give their source code."
+  (source-code [f] "Returns the source code as a string, or nil if there is no
+                    source code."))
+
 (defprotocol PogFnParameter
   "Protocol for parameters of a PogFn."
   (name* [param] "Returns the name of the parameter" )
@@ -201,10 +206,14 @@
   ([name params seq]
    (seq->pog-fn name params "" seq))
   ([name params docstring seq]
+   (seq->pog-fn name params docstring seq nil))
+  ([name params docstring seq source]
    (reify
      PogFn
      (parameters [_] params)
      (docstring [_] docstring)
+     Sourceable
+     (source-code [f] source)
      LazyPogFn
      (lazy-invoke [f env args]
         (invoke-seq seq (assoc env name f) args)))))

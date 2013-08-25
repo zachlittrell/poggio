@@ -2,7 +2,7 @@
   (:import [de.lessvoid.nifty.screen DefaultScreenController])
   (:require [clojure.string :as str]
             [nifty-clj [builders :as builders]]) 
-  (:use [data coll]
+  (:use [data coll object]
         [nifty-clj [builders :exclude [text]] elements events popup textfieldx]
         [poggio.functions core parser modules]))
 
@@ -34,9 +34,33 @@
                                                   :align :left
                                                   :width "100%" :height "100%" :text-h-align :left
                                                   :text-v-align :top
-                                                  :wrap? true)))])
+                                                  :wrap? true)))
+                  (tab :id "source" :caption "Source"
+                       :background-color "#ffffff00"
+                       :width "100%"
+                       :height "100%"
+                       :control (scroll-panel
+                                  :background-color "#00000000"
+                                  :id "source-scroller"
+                                  :width "100%"
+                                  :set  {"horizontal" "false"}
+                                  :height "100%"
+                                  :style "nifty-listbox"
+                                  :control (label :text "Source Code"
+                                                  :id "source-label"
+                                                  :align :left
+                                                  :width "100%" :height "100%" :text-h-align :left
+                                                  :text-v-align :top
+                                                  :wrap? true)))
+
+                  ])
    :update! (fn [info f]
                   (let [scroll (select info "#nifty-scrollpanel-child-root")]
+                     (set-text! (select info "source-label") 
+                      (cond (nil? f) ""
+                            (implements? Sourceable f) (or (source-code f) "")
+                            :else "Source code is unavailable."))
+
                     (set-text! (select info "doc-label") 
                                (if f (docstring f)
                                      ""))

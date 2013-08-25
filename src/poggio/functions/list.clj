@@ -1,7 +1,7 @@
 (ns poggio.functions.list
   (:use [control assert]
         [data object]
-        [poggio.functions core value utilities]))
+        [poggio.functions core parser value utilities]))
 
 (def cons*
   (reify
@@ -37,46 +37,45 @@
 
 (def empty-list* (constantly* (list)))
 
-(def repeat* (seq->pog-fn "repeat" ["o"]
+(def repeat* (code-pog-fn ["o"]
                (docstr [["o" "a value"]]
                        "a list with the element o, over and over again.")
-               (list cons* (var* "o") (list (var* "repeat") (var* "o")))))
+               "cons o (repeat o)"))
 
-(def empty?* (fn->pog-fn empty? "empty?" ["xs"]))
+(def empty?* (fn->pog-fn empty? "empty?" ["xs"]
+                (docstr [["xs" "a list"]] 
+                        "true if xs is empty")))
 
-(def triple* (seq->pog-fn "triple" ["a" "b" "c"]
+(def triple* (code-pog-fn ["a" "b" "c"]
                 (docstr [["a" "a value"] ["b" "a value"] ["c" "a value"]]
                         "a list with the elements a, b, and c")
-                (list cons* (var* "a")
-                      (list cons* (var* "b")
-                            (list cons* (var* "c") empty-list*)))))
+                "cons a (cons b (cons c nil))"))
 
-(def reduce* (seq->pog-fn "reduce" ["f" "xs" "init"]
-                (list if* (list empty?* (var* "xs"))
-                      (var* "init")
-                      (list (var* "f") (list head* (var* "xs"))
-                                (list (var* "reduce") (var* "f")
-                                               (list tail* (var* "xs"))
-                                               (var* "init"))))))
+(def reduce* (code-pog-fn ["f" "xs" "init"]
+                (docstr [["f" "a binary function"]
+                         ["xs" "a list"]
+                         ["init" "an initial value"]]
+                  "the result of f (head xs) (reduce f (tail xs) init)")
+"if (empty? xs)
+  init
+  (f (head xs) (reduce f (tail xs) init))"))
 
-
-(def concat* (seq->pog-fn "concat" ["xs" "ys"]
+(def concat* (code-pog-fn ["xs" "ys"]
                 (docstr [["xs" "a list"] ["ys" "a list"]]
                         "a list of xs's elements, followed by ys's elements")
-                (list if* (list empty?* (var* "xs"))
-                      (var* "ys")
-                      (list cons* (list head* (var* "xs"))
-                                  (list (var* "concat") 
-                                        (list tail* (var* "xs"))
-                                                 (var* "ys"))))))
+"if (empty? xs)
+  ys
+ (cons (head xs) (concat (tail xs) ys))"))
 
-(def flatten* (seq->pog-fn "flatten" ["xs"]
+(def flatten* (code-pog-fn ["xs"]
                 (docstr [["xs" "a list of lists"]]
                         "a list of xs's lists joined together")
-                (list reduce* concat* (var* "xs") empty-list*)))
+                "reduce concat xs nil"))
 
-(def map* (seq->pog-fn "map" ["f" "xs"]
-            (list if* (list empty?* (var* "xs"))
-                  empty-list*
-                  (list cons* (list (var* "f") (list head* (var* "xs")))
-                              (list (var* "map") (var* "f") (list tail* (var* "xs")))))))
+(def map* (code-pog-fn ["f" "xs"]
+            (docstr [["f" "a unary function"]
+                     ["xs" "a list"]]
+             "a list with f applied to each element in xs")
+"if (empty? xs)
+  nil
+  (cons (f (head xs)) (map f (tail xs)))"))

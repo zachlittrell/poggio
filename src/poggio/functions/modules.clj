@@ -1,4 +1,5 @@
 (ns poggio.functions.modules
+  (:use [poggio.functions core list number color value])
   (:require [clojure.string :as str]))
 
 (defn path [module name]
@@ -15,3 +16,24 @@
    if it exists. Else, returns nil."
   (get-in fn-map (path-components path)))
 
+(def core-modules  
+  {"Logic" {"if" if*}
+   "List" {"cons" cons*
+           "nil"  empty-list*
+           "tail" tail*
+           "head" head*
+           "empty?" empty?*
+           "repeat" repeat*
+           "triple" triple*
+           "reduce" reduce*
+           "flatten" flatten*
+           "map" map*}
+   "Color" {"red" red*
+            "green" green*
+            "blue" blue*
+            "color" color*
+            "r-value" red-value*
+            "g-value" green-value*
+            "b-value" blue-value*}
+   "Value" {"id" id*}
+   "User" {}})

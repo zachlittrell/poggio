@@ -1,5 +1,8 @@
 (ns poggio.functions.value
-  (:use [poggio.functions core]))
+  (:use [poggio.functions core parser utilities]))
 
-(def id* (seq->pog-fn "id" ["x"] (var* "x")))
+(def id* (code-pog-fn ["x"]
+                (docstr [["x" "a value"]]
+                        "x")
+            "x"))
 (def equals* (fn->pog-fn = "equals" ["o1" "o2"]))

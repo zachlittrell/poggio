@@ -9,7 +9,7 @@
   (:use [data coll]
         [nifty-clj builders]
         [poggio level]
-        [poggio.functions core color list gui scenegraph]
+        [poggio.functions core color modules list gui scenegraph]
         [jme-clj collision light material physics physics-providers 
          physics-control]
         [seesaw [core :only [input]]]))
@@ -103,23 +103,15 @@
     (let [[display nifty] (nifty this true)
           {:keys [set-current-function!
                   function-screen]} (function-screen nifty
-                                       {"List" {"[]" empty-list*
-                                                "cons" cons*
-                                                "flatten" flatten*
-                                                "concat"  concat*
-                                                "repeat"  repeat*
-                                                "triple"  triple*}
-                                        "Color" {"red" red*
-                                                 "green" green*
-                                                 "blue" blue*}
-                                        "User"  
-                                       {"BAD" (fn->pog-fn 
-                                                (fn [foo]
-                                                  (Thread/sleep 6000)
-                                                  [red*])
-                                                "bad"
-                                                ["foo"]
-                                                (apply str (repeat 100 "str")))}})]
+                                        (assoc core-modules
+                                          "TEST" 
+                                          {"BAD" (fn->pog-fn 
+                                                   (fn [foo]
+                                                     (Thread/sleep 6000)
+                                                     [red*])
+                                                   "bad"
+                                                   ["foo"]
+                                                   (apply str (repeat 100 "str")))}))]
         (.addScreen nifty "function-screen" function-screen)
         (.gotoScreen nifty "function-screen")
 

@@ -1,19 +1,39 @@
 (ns poggio.functions.number
-  (:use [poggio.functions core]))
+  (:use [poggio.functions core parser utilities]))
 
-(def add* (fn->pog-fn +' "add" ["n1" "n2"]))
-(def subtract* (fn->pog-fn -' "subtract" ["n1" "n2"]))
-(def multiply* (fn->pog-fn *' "multiply" ["n1" "n2"]))
-(def divide* (fn->pog-fn / "divide" ["n1" "n2"]))
+(def add* (fn->pog-fn +' "add" ["x" "y"]
+            (docstr [["x" "a number"] ["y" "a number"]]
+                    "x + y")))
+(def subtract* (fn->pog-fn -' "subtract" 
+                  ["x" "y"]
+                (docstr [["x" "a number"] ["y" "a number"]]
+                    "x - y")))
+(def multiply* (fn->pog-fn *' "multiply"
+                  ["x" "y"]
+                (docstr [["x" "a number"] ["y" "a number"]]
+                    "x * y")))
+(def divide* (fn->pog-fn / "divide" ["x" "y"]
+                (docstr [["x" "a number"] ["y" "a number"]]
+                  "x / y")))
 
-(def inc* (seq->pog-fn "inc" ["n"]
-              (list add* (var* "n") (constantly* 1))))
+(def inc* (code-pog-fn ["n"]
+              (docstr [["n" "a number"]]
+                      "n + 1")
+              "add n 1"))
 
-(def dec* (seq->pog-fn "dec" ["n"]
-              (list subtract* (var* "n") (constantly* 1))))
+(def dec* (code-pog-fn ["n"]
+              (docstr [["n" "a number"]]
+                  "n - 1")
+              "subtract n 1"))
 
 (def less-than* (fn->pog-fn < "less-than?"
-                      ["n1" "n2"]))
+                      ["x" "y"]
+                 (docstr [["x" "a number"]
+                          ["y" "a number"]]
+                   "true if x < y")))
 
 (def greater-than* (fn->pog-fn < "greater-than?"
-                      ["n1" "n2"]))
+                      ["x" "y"]
+                      (docstr [["x" "a number"]
+                               ["y" "a number"]]
+                        "true if x > y")))

@@ -34,14 +34,14 @@
                         (.mult (quaternion->direction-vector dir)
                                vel))))
 
-(defn cannon-timer [app spatial state nozzle-loc dir velocity mass balls]
+(defn cannon-timer [app spatial state nozzle-loc dir velocity mass balls env]
   (let [*balls* (atom balls)]
     (control-timer spatial 0.5 false
       (fn []
           (let [timer (computation-timer spatial
                         5
                         (fn []
-                          (let [balls (value @*balls* {})]
+                          (let [balls (value @*balls* env)]
                             (assert! (implements? clojure.lang.Seqable balls))
                             (assert! (not-empty balls))
                             (let [[ball & more-balls] balls]
@@ -53,7 +53,8 @@
                           (swap! *balls* (constantly more-balls))
                           (let [timer (cannon-timer app spatial state
                                                     nozzle-loc dir
-                                                    velocity mass more-balls)]
+                                                    velocity mass more-balls
+                                                    env)]
                             (swap! state (constantly {:timer timer
                                                       :state :active}))
                             (start! timer)))
@@ -79,8 +80,10 @@
                 :local-translation loc
                 :local-rotation dir
                 :controls [control]
-                :pog-fn (fn->pog-fn
-                          (fn [player balls]
+                :pog-fn (reify
+                          LazyPogFn
+                          (lazy-invoke [_ env {player "player"
+                                             balls "colors"}]
                             (let [state* @*state*]
                                 (when (= (:state state*) :active)
                                   (stop! (:timer state*)))
@@ -91,18 +94,20 @@
                                                           dir
                                                           (float velocity)
                                                           (float mass)
-                                                          balls)]
+                                                          balls
+                                                          env)]
                                 (swap! *state* (constantly {:state :active
                                                           :timer timer}))
                                  (start! timer))))
-
-                         "cannon"
-                         [{:name "player"
+                         PogFn
+                         (parameters [_]
+                          [{:name "player"
                             :type Warpable}
                            {:name "colors"
-                           :type clojure.lang.Seqable}]
+                           :type clojure.lang.Seqable}])
+                          (docstring [_]
                           (docstr [["colors" "a list of colors"]]
-                                  "Spits out a colored globule for each color in colors.")
+                                  "Spits out a colored globule for each color in colors."))
  
                           )
                 :children [cannon])))

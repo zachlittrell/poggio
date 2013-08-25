@@ -6,8 +6,12 @@
 (defn pog-fn->node [name pog-fn]
   "Returns a Node that implements PogFn protocol, and delegates
    its implementation to pog-fn."
-  (proxy [Node poggio.functions.core.PogFn] [name]
+  ;;TODO This will be replaced with using getUserData
+  (proxy [Node poggio.functions.core.PogFn poggio.functions.core.LazyPogFn] 
+    [name]
      (parameters [] (parameters pog-fn))
+     (lazy_invoke [env args]
+          (invoke* pog-fn env args))
      (invoke [args] 
              (invoke* pog-fn {} args))
      (docstring [] (docstring pog-fn))))

@@ -13,6 +13,23 @@
   (seq->pog-fn "" [] 
     (list f (code-pog-fn [] "" (lines (first-entry fn-pad))))))
 
+(defn invalidate! 
+  ([screen module fn-name]
+   (invalidate! screen module fn-name false))
+  ([screen module fn-name add-back?]
+    (let [modules (nifty-control (select screen "pog-mods-drop") :drop-down)
+          functions (nifty-control (select screen "pog-fns-drop") :drop-down)]
+      (.removeItem functions fn-name)
+      (when (and add-back? (some #(= fn-name %) (.getItems functions)))
+                 ((.addItem functions fn-name))))))
+    
+(defn modfn [screen]
+  (let [modules (nifty-control (select screen "pog-mods-drop") :drop-down)
+        functions (nifty-control (select screen "pog-fns-drop") :drop-down)]
+    (when (and (> (.getSelectedIndex modules) 1)
+               (> (.getSelectedIndex functions) 0))
+      [(.getSelection modules) (.getSelection functions)])))
+
 (defn function-info []
   {:info (tabs
            :width "100%"
@@ -85,8 +102,9 @@
                     (panel :id "pog-fns-info"
                            :child-layout :vertical
                            :control info)])
-        fn-map (into {} modules)]
-  {:fn-map fn-map
+        fn-map (into {} modules)
+        *fn-map* (atom fn-map)]
+  {:*fn-map* *fn-map*
    :fn-box box
    :selected-fn! (fn [nifty screen]
                    (let [modules (-> screen
@@ -110,6 +128,10 @@
                    (.addItem modules "Search...")
                    (.addAllItems modules
                                  (sort (keys fn-map))))
+                  (.addAllItems (-> screen
+                                  (select , "fn-build-modules")
+                                  (nifty-control :drop-down))
+                                (sort (keys fn-map)))
                   (subscribe! nifty "pog-mods-drop" :drop-down-select
                     (fn [topic data]
                       (cond
@@ -139,7 +161,7 @@
                           (.clear functions)
                           (.addItem functions "Functions")
                           (.addAllItems functions
-                                       (sort (map first (fn-map module)))))))))
+                                       (sort (map first (@*fn-map* module)))))))))
 
                   (subscribe! nifty "pog-fns-drop" :drop-down-select
                     (fn [topic data]
@@ -155,14 +177,14 @@
                                   (path-components (.getSelection data))
                                   [(.getSelection modules)
                                    (.getSelection data)])
-                              f ((fn-map module) fn-name)
+                              f ((@*fn-map* module) fn-name)
                               info-pane (select screen "pog-fns-info")]
                          (update! (first (.getElements info-pane)) f))))))
 
                   (subscribe! nifty "pog-fns-search" :text-field-change
                     (fn [topic data]
                       (let [text (str/lower-case (.getText data))
-                            matches (for [[module functions] fn-map
+                            matches (for [[module functions] @*fn-map*
                                           [function _] functions
                                           :when (< -1 
                                                    (.indexOf (str/lower-case function)
@@ -181,11 +203,16 @@
 
 
 (defn function-screen [nifty & modules]
-  (let [{:keys[fn-map fn-box initialize! clean!
+  (let [{:keys[*fn-map* fn-box initialize! clean!
                selected-fn!]} (apply function-box modules)
         {initialize2! :initialize!
-         textfieldx :textfieldx} (textfieldx :id "fn-pad")
-        *fn-map* (atom fn-map)
+         pad-textfieldx :textfieldx} (textfieldx :id "fn-pad")
+        {initialize3! :initialize!
+         build-pad-textfieldx :textfieldx} (textfieldx :id "fn-pad2"
+                                                       :height "30%")
+        {initialize4! :initialize!
+         build-docstring :textfieldx} (textfieldx :id "build-docstring"
+                                                  :height "20%")
         *current-f* (atom nil)
         made-screen
           (build-screen nifty
@@ -193,13 +220,66 @@
              :controller (proxy [DefaultScreenController] []
                            (onStartScreen [] 
                               (initialize! nifty (.getCurrentScreen nifty))
-                              (initialize2! nifty)))
+                              (initialize2! nifty)
+                              (initialize3! nifty)
+                              (initialize4! nifty)))
               :layer
               (layer
-                :align :right
-                :child-layout :center
+                :align :left
+                :child-layout :horizontal
                 :id "fn-layer"
-                :panel
+                :panels
+                [(panel :id "dummy"
+                        :width "*")
+                 (panel :id "fn-build-pad"
+                        :visible? false
+                        :on-show-effect
+                          (effect :effect-name "move"
+                                  :inherit? true
+                                  :effect-parameters
+                                  {"mode" "in"
+                                   "direction" "right"}
+                                  :length 1000
+                                  :start-delay 0)
+                        :on-hide-effect
+                          (effect :effect-name "move"
+                                  :inherit? true
+                                  :effect-parameters
+                                  {"mode" "out"
+                                   "direction" "right"}
+                                  :length 1000
+                                  :start-delay 0)
+                        :child-layout :vertical
+                        :height "100%"
+                        :width "40%"
+                        :align :right
+                        :controls
+                        [(label :text "Module Name"
+                                :color "#000")
+                         (drop-down :id "fn-build-modules"
+                                    :width "100%")
+                         (label :text "Function Name"
+                                :color "#000")
+                         (text-field :id "fn-build-name"
+                                 :width "100%")
+                         (label :text "Parameters"
+                                :color "#000")
+                         (text-field :id "fn-build-params"
+                                     :width "100%")
+                         (label :text "Code"
+                                :color "#000")
+                         build-pad-textfieldx
+                         (label :text "Docs"
+                                :color "#000")
+                         build-docstring
+                         ]
+                        :panel
+                         (panel :child-layout :horizontal
+                                :controls
+                                [(button :label "Save"
+                                         :id "fn-build-save")
+                                 (button :label "Close"
+                                         :id "fn-build-close")]))
                 (panel
                   :id "fn-panels"
                   :child-layout :vertical
@@ -213,22 +293,130 @@
                                             :width "100%"
                                             :text ""
                                             :color "#000")
-                                     textfieldx]
-                          :padding "2px")
-                   (panel :id "fn-controls"
-                          :child-layout :vertical
-                          :height "60%"
-                          :align :right 
-                          :panels [(doto fn-box (.align (keyword->align :left))
-                                                (.height "100%"))])
+                                     pad-textfieldx]
+                          )
                    (panel
                      :height "10%"
                      :child-layout :center
                      :align :left
                      :control
                         (button :label "Send"
-                                  :id "compute"))]))))]
+                                  :id "compute"))
+                   (panel :id "fn-controls"
+                          :child-layout :vertical
+                          :height "50%"
+                          :align :right 
+                          :panels [(doto fn-box (.align (keyword->align :left))
+                                                (.height "100%"))])
+                   (panel :height "10%"
+                          :child-layout :horizontal
+                          :align :center
+                          :controls
+                          [(button :label "New" :id "fn-new"
+                                   :width "33%")
+                           (button :label "Edit" :id "fn-edit"
+                                   :width "33%")
+                           (button :label "Delete" :id "fn-delete"
+                                   :width "33%")])
+                   ])])))
+        set-bench! (fn [module fn-name fn-map]
+                     (-> (select made-screen "fn-build-modules")
+                         (nifty-control :drop-down)
+                         (.selectItem module))
+                     (-> (select made-screen "fn-build-name")
+                         (nifty-control :text-field)
+                         (.setText fn-name))
+                     (if (not= "" fn-name)
+                       (let [f (get-in fn-map [module fn-name])]
+                         (-> (select made-screen "fn-build-params")
+                             (nifty-control :text-field)
+                             (.setText (str/join " " (map name*
+                                                          (parameters f)))))
+                             (set-lines! nifty
+                                         (select made-screen "fn-pad2")
+                                         (source-code f))
+                             (when (extends? Sourceable)
+                             (set-lines! nifty
+                                         (select made-screen "build-docstring")
+                                         (or (docstring f) "")))
+                             
+
+                         )
+                       (do
+                         (-> (select made-screen "fn-build-params")
+                             (nifty-control :text-field)
+                             (.setText ""))
+                             (set-lines! nifty (select made-screen "fn-pad2")
+                                               "")
+                             (set-lines! nifty (select made-screen "build-docstring")
+                                               "")
+
+
+                         )))
+
+                             
+        ]
     (apply-interactions made-screen
+      :fn-new {:on-left-click 
+                 #(let [build-pad (select made-screen "fn-build-pad")]
+                    (.setVisible build-pad true)
+                    (set-bench! "User" "" @*fn-map*))}
+      :fn-edit {:on-left-click
+                #(when-let [[module fn-name] (modfn made-screen)]
+                   (if (not (is-core-fn? module fn-name))
+                     (do 
+                       (.setVisible (select made-screen "fn-build-pad")
+                                    true)
+                       (set-bench! module fn-name @*fn-map*))))}
+      :fn-delete {:on-left-click
+                  #(when-let [[module fn-name] (modfn made-screen)]
+                     (if (not (is-core-fn? module fn-name))
+                       (do
+                         (swap! *fn-map* (fn [m] 
+                                           (assoc m module
+                                              (dissoc (m module)
+                                                      fn-name))))
+                         (invalidate! made-screen module fn-name))))}
+      :fn-build-close {:on-left-click
+                  #(let [build-pad (select made-screen "fn-build-pad")]
+                    (.setVisible build-pad false))}
+      :fn-build-save {:on-left-click
+                      #(let [build-pad (select made-screen "fn-build-pad")
+                             module (-> (select made-screen "fn-build-modules")
+                                        (nifty-control :drop-down)
+                                        (.getSelection))
+                             fn-name (-> (select made-screen "fn-build-name")
+                                         (nifty-control :text-field)
+                                         (.getText))
+                             param-text (str/trim
+                                          (text-field-text
+                                            (select build-pad "fn-build-params")))
+                             params (if (= "" param-text) []
+                                      (str/split param-text #"\s+"))
+                             code (lines (first-entry 
+                                           (select build-pad
+                                                   "fn-pad2")))
+                             docstring (lines (first-entry
+                                                (select build-pad
+                                                        "build-docstring")))
+                             ]
+                         (cond
+                            (not (is-var-name? fn-name))
+                           (println "NEED VALID VAR NAME")
+                           (is-core-fn? module fn-name)
+                           (println "CAN'T OVERRIDE CORE-FN")
+                           (not (every? is-var-name? params))
+                           (println "PARAMS NEED VALID VAR NAMES")
+                           (not= (count params) (count (distinct params)))
+                           (println "PARAMS NEED TO BE UNIQUE")
+                           :else
+                           (let [pog-fn (code-pog-fn params docstring
+                                          code)]
+                             (swap! *fn-map* assoc-in [module fn-name]
+                                             pog-fn)
+                             (invalidate! made-screen module fn-name true))))}
+
+
       :compute {:on-left-click #(-> (get-pog-fn (select made-screen "fn-pad")
                                                   @*current-f*
                                                   @*fn-map*)
@@ -236,7 +424,8 @@
                                                  (for [[module, fs] @*fn-map*
                                                        f fs]
                                                    f))
-                                              []))})
+                                              []))}
+                        )
     {:set-current-function! 
        (fn [pog-fn]
          (swap! *current-f* (constantly pog-fn))

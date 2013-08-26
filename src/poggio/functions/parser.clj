@@ -5,6 +5,9 @@
 
 (def var-pattern "[^\\(\\).\\s0-9][^\\(\\).\\s]*")
 
+(defn is-var-name? [var-name]
+  (re-matches (re-pattern var-pattern) var-name))
+
 (def code-cfg
   (format "<EXPR> = <OWS> VAR <OWS>
                   | <OWS> NUM <OWS>

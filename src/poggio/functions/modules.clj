@@ -37,3 +37,6 @@
             "b-value" blue-value*}
    "Value" {"id" id*}
    "User" {}})
+
+(defn is-core-fn? [module name]
+  (get-in core-modules [module name]))

@@ -18,6 +18,7 @@
                                                        :id (genstr "textbox")
                                                        :width "100%")])
                          (if (nil? tail) nil (list tail))))))
+  
 
 (defn textfield [textfield-entry]
   (-> textfield-entry
@@ -183,6 +184,24 @@
            (when (not (zero? (line-number entry)))
              (swap-cursors! entry (parent entry)))
         nil))))
+
+(defn set-lines! [nifty textfieldx text]
+  (let [[line & lines] (str/split-lines text)
+        entry (first-entry textfieldx)
+        add-rest #(loop [lines lines
+                         entry entry
+                         index 1]
+                    (when-let [[line & lines] (seq lines)]
+                      (recur lines
+                             (build nifty entry (textfield-entry 1 line))
+                             (inc index))))]
+    (.setText (nifty-control (textfield entry) :text-field) line)
+    (if-let [t (tail entry)]
+      (.markForRemoval t
+        (reify de.lessvoid.nifty.EndNotify
+          (perform [_] (add-rest))))
+      (add-rest))))
+
 
 
 (defn textfieldx [& opts]

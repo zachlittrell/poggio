@@ -21,7 +21,7 @@
           functions (nifty-control (select screen "pog-fns-drop") :drop-down)]
       (.removeItem functions fn-name)
       (when (and add-back? (some #(= fn-name %) (.getItems functions)))
-                 ((.addItem functions fn-name))))))
+                 (.addItem functions fn-name)))))
     
 (defn modfn [screen]
   (let [modules (nifty-control (select screen "pog-mods-drop") :drop-down)
@@ -238,7 +238,7 @@
                                   :inherit? true
                                   :effect-parameters
                                   {"mode" "in"
-                                   "direction" "right"}
+                                   "direction" "top"}
                                   :length 1000
                                   :start-delay 0)
                         :on-hide-effect
@@ -246,7 +246,7 @@
                                   :inherit? true
                                   :effect-parameters
                                   {"mode" "out"
-                                   "direction" "right"}
+                                   "direction" "top"}
                                   :length 1000
                                   :start-delay 0)
                         :child-layout :vertical
@@ -332,13 +332,13 @@
                              (nifty-control :text-field)
                              (.setText (str/join " " (map name*
                                                           (parameters f)))))
+                             (when (implements? Sourceable f)
                              (set-lines! nifty
                                          (select made-screen "fn-pad2")
-                                         (source-code f))
-                             (when (extends? Sourceable)
+                                         (or (source-code f) "")))
                              (set-lines! nifty
                                          (select made-screen "build-docstring")
-                                         (or (docstring f) "")))
+                                          (docstring f))
                              
 
                          )

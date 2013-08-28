@@ -144,7 +144,9 @@
    :visible?          [:simple
                          :replace [#"\?$" ""]]
    :visible-to-mouse? [:simple
-                           :replace [#"\?$" ""]]})
+                           :replace [#"\?$" ""]]
+   :on-show-effects [:do-seq
+                      :replace [#"s$" ""]]})
 
 (defmacro def-element-builder 
   "This macro creates a function similar to 

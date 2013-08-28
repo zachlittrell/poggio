@@ -3,8 +3,17 @@
   (:require [clojure.string :as str]
             [nifty-clj [builders :as builders]]) 
   (:use [data coll object]
-        [nifty-clj [builders :exclude [text]] elements events popup textfieldx]
+        [nifty-clj [builders :exclude [text]] elements events textfieldx]
         [poggio.functions core parser modules]))
+
+(defn alert! [screen text]
+  (let [alert-panel (select screen "alert-panel")
+        alert-text (select screen "alert-text")]
+    (.setVisible alert-panel false)
+    (set-text! alert-text (str text "\nClick to close"))
+    (.layoutElements (.getParent alert-panel))
+    ;(.setHeight alert-panel (.getHeight alert-text))
+    (.setVisible alert-panel true)))
 
 (defn set-pog-fn! [fn-pad-param nifty f]
   (set-text! fn-pad-param (name* (first (parameters f)))))
@@ -223,14 +232,45 @@
                               (initialize2! nifty)
                               (initialize3! nifty)
                               (initialize4! nifty)))
-              :layer
+              :layers
+              [
               (layer
                 :align :left
                 :child-layout :horizontal
                 :id "fn-layer"
                 :panels
-                [(panel :id "dummy"
-                        :width "*")
+                [(panel :id "alert-panel"
+                        :child-layout :center
+                        :style "nifty-panel-bright"
+                        :valign :top
+                        :width "*"
+                        :visible? false
+                        :visible-to-mouse? true
+                        :control (label :valign :top
+                                        :align :left
+                                        :padding "0%"
+                                        :wrap? true
+                                        :color "#000"
+                                        :width "100%"
+                                        :id "alert-text")
+                        :on-click-effect (effect :effect-name "hide"
+                                                 :effect-parameters
+                                                 {"targetElement" "alert-panel"})
+                        :on-hide-effect (effect :effect-name "move"
+                                                :inherit? true
+                                                :effect-parameters
+                                                {"mode" "out"
+                                                 "direction" "top"}
+                                                :length 500
+                                                :start-delay 0)
+                        :on-show-effect (effect :effect-name "move"
+                                                :inherit? true
+                                                :effect-parameters
+                                                {"mode" "in"
+                                                 "direction" "top"}
+                                                :length 500
+                                                :start-delay 0))
+
                  (panel :id "fn-build-pad"
                         :visible? false
                         :on-show-effect
@@ -318,7 +358,9 @@
                                    :width "33%")
                            (button :label "Delete" :id "fn-delete"
                                    :width "33%")])
-                   ])])))
+                   ])])
+               ]))
+        my-alert! (partial alert! made-screen)
         set-bench! (fn [module fn-name fn-map]
                      (-> (select made-screen "fn-build-modules")
                          (nifty-control :drop-down)
@@ -381,7 +423,8 @@
                   #(let [build-pad (select made-screen "fn-build-pad")]
                     (.setVisible build-pad false))}
       :fn-build-save {:on-left-click
-                      #(let [build-pad (select made-screen "fn-build-pad")
+                      #(try
+                        (let [build-pad (select made-screen "fn-build-pad")
                              module (-> (select made-screen "fn-build-modules")
                                         (nifty-control :drop-down)
                                         (.getSelection))
@@ -402,19 +445,23 @@
                              ]
                          (cond
                             (not (is-var-name? fn-name))
-                           (println "NEED VALID VAR NAME")
-                           (is-core-fn? module fn-name)
-                           (println "CAN'T OVERRIDE CORE-FN")
-                           (not (every? is-var-name? params))
-                           (println "PARAMS NEED VALID VAR NAMES")
-                           (not= (count params) (count (distinct params)))
-                           (println "PARAMS NEED TO BE UNIQUE")
+                           (my-alert! "Function name is invalid.")
+                            (is-core-fn? module fn-name)
+                           (my-alert! "Can't override a core-function.")
+                            (not (every? is-var-name? params))
+                           (my-alert! "Invalid parameter name.")
+                            (not= (count params) (count (distinct params)))
+                           (my-alert! "Parameter names must be unique.")
                            :else
                            (let [pog-fn (code-pog-fn params docstring
                                           code)]
                              (swap! *fn-map* assoc-in [module fn-name]
                                              pog-fn)
-                             (invalidate! made-screen module fn-name true))))}
+                             (invalidate! made-screen module fn-name true))))
+                         (catch Exception e
+                           (my-alert! (str "Code error on line " 
+                                           (.getMessage e)))
+                           ))}
 
 
       :compute {:on-left-click #(-> (get-pog-fn (select made-screen "fn-pad")

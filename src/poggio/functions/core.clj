@@ -26,6 +26,13 @@
   (source-code [f] "Returns the source code as a string, or nil if there is no
                     source code."))
 
+(defn source* [f]
+  "Returns the source code of f, if it has any. Else, it returns the empty
+   string."
+  (if (implements? Sourceable f)
+    (or (source-code f) "")
+    ""))
+
 (defprotocol PogFnParameter
   "Protocol for parameters of a PogFn."
   (name* [param] "Returns the name of the parameter" )

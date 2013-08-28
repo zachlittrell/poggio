@@ -195,7 +195,6 @@
                       (recur lines
                              (build nifty entry (textfield-entry 1 line))
                              (inc index))))]
-    (println "HEEY" text line lines)
     (.setText (nifty-control (textfield entry) :text-field) line)
     (if-let [t (tail entry)]
       (.markForRemoval t

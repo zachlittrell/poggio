@@ -479,9 +479,9 @@
                         )
     {:set-current-function! 
        (fn [pog-fn]
-         (swap! *current-f* (constantly (partial* pog-fn 
-                                            {(name* (first (parameters pog-fn)))
-                                              my-alert!})))
+         (let [f (partial* pog-fn {(name* (first (parameters pog-fn)))
+                                   my-alert!})]
+         (swap! *current-f* (constantly f))
          (set-pog-fn! (select made-screen "fn-pad-param")
-                      nifty pog-fn))
+                      nifty f)))
      :function-screen made-screen}))

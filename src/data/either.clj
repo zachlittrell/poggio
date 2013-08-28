@@ -19,11 +19,11 @@
 
 (defn try-right [f]
   "Returns the result of computing f in a Right object,
-   or the error message of the resulting exception in a Left object."
+   or the resulting exception in a Left object."
   (try
     (right (f))
     (catch Exception e
-      (left (.getMessage e)))))
+      (left e))))
 
 (defn on-either [either right-fn left-fn]
   "Returns the result of applying the value of either to right-fn

@@ -55,7 +55,7 @@
                                                              input-manager)
                                                            clickable)]
           (when-let [pog-fn (pog-fn-node-from (.getGeometry collision))]
-            (when (and (<= 2 (count (parameters pog-fn)))
+            (when (and (== 3 (count (parameters pog-fn)))
                        (pog-implements? (first (parameters pog-fn)) player))
               (set-current-function! (partial* pog-fn
                                                {(name* (first (parameters

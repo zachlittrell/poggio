@@ -34,7 +34,7 @@
                         (.mult (quaternion->direction-vector dir)
                                vel))))
 
-(defn cannon-timer [app spatial state nozzle-loc dir velocity mass balls env]
+(defn cannon-timer [app spatial state nozzle-loc dir velocity mass balls env on-error!]
   (let [*balls* (atom balls)]
     (control-timer spatial 0.5 false
       (fn []
@@ -54,14 +54,15 @@
                           (let [timer (cannon-timer app spatial state
                                                     nozzle-loc dir
                                                     velocity mass more-balls
-                                                    env)]
+                                                    env
+                                                    on-error!)]
                             (swap! state (constantly {:timer timer
                                                       :state :active}))
                             (start! timer)))
                           ;;Failure
                           (fn [error]
                             ;;TODO Properly handle error.
-                            (println "Error:" error)
+                            (on-error! error)
                             (swap! state (constantly {:state :inactive}))))]
             (swap! state (constantly {:state :active
                                       :timer timer}))
@@ -83,7 +84,8 @@
                 :pog-fn (reify
                           LazyPogFn
                           (lazy-invoke [_ env {player "player"
-                                             balls "colors"}]
+                                               on-error! "on-error!"
+                                               balls "colors"}]
                             (let [state* @*state*]
                                 (when (= (:state state*) :active)
                                   (stop! (:timer state*)))
@@ -95,7 +97,8 @@
                                                           (float velocity)
                                                           (float mass)
                                                           balls
-                                                          env)]
+                                                          env
+                                                          on-error!)]
                                 (swap! *state* (constantly {:state :active
                                                           :timer timer}))
                                  (start! timer))))
@@ -103,6 +106,8 @@
                          (parameters [_]
                           [{:name "player"
                             :type Warpable}
+                           {:name "on-error!"
+                            :type clojure.lang.IFn}
                            {:name "colors"
                            :type clojure.lang.Seqable}])
                           (docstring [_]

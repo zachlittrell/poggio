@@ -8,7 +8,8 @@
 
 (defn alert! [screen text]
   (let [alert-panel (select screen "alert-panel")
-        alert-text (select screen "alert-text")]
+        alert-text (select screen "alert-text")
+        text (if (string? text) text (.getMessage text))]
     (.setVisible alert-panel false)
     (set-text! alert-text (str text "\nClick to close"))
     (.layoutElements (.getParent alert-panel))
@@ -464,18 +465,23 @@
                            ))}
 
 
-      :compute {:on-left-click #(-> (get-pog-fn (select made-screen "fn-pad")
+      :compute {:on-left-click #(try
+                                  (-> (get-pog-fn (select made-screen "fn-pad")
                                                   @*current-f*
                                                   @*fn-map*)
-                                     (invoke* , (into {}
-                                                 (for [[module, fs] @*fn-map*
-                                                       f fs]
-                                                   f))
-                                              []))}
+                                       (invoke* , (into {}
+                                                   (for [[module, fs] @*fn-map*
+                                                         f fs]
+                                                     f))
+                                                []))
+                                  (catch Exception e
+                                    (my-alert! e)))}
                         )
     {:set-current-function! 
        (fn [pog-fn]
-         (swap! *current-f* (constantly pog-fn))
+         (swap! *current-f* (constantly (partial* pog-fn 
+                                            {(name* (first (parameters pog-fn)))
+                                              my-alert!})))
          (set-pog-fn! (select made-screen "fn-pad-param")
                       nifty pog-fn))
      :function-screen made-screen}))

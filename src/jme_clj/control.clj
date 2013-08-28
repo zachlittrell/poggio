@@ -64,7 +64,7 @@
               (.removeControl (.getSpatial this) this))
             (when (>= now time-out)
               (future-cancel computation)
-              (fail "Computation timed out.")
+              (fail (Exception. "Computation timed out."))
               (.removeControl (.getSpatial this) this))))))))
 
 (defn computation-timer

@@ -6,6 +6,8 @@
         [nifty-clj [builders :exclude [text]] events elements]))
 
 (defn textfield-entry 
+  "Creates a textfield-entry with line-number, line, and an optional 
+   tail textfield entry (which must be a builder)."
   ([line-number line]
    (textfield-entry line-number line nil))
   ([line-number line tail]
@@ -21,6 +23,7 @@
   
 
 (defn textfield [textfield-entry]
+  "Returns the actual textfield."
   (-> textfield-entry
       (.getElements)
       (first)
@@ -28,14 +31,17 @@
       (second)))
      
 (defn parent [textfield-entry]
+  "Returns the previous element before textfield-entry."
   (.getParent textfield-entry))
 
 (defn tail [textfield-entry]
+  "Returns the next element."
   (let [elems (.getElements textfield-entry)]
     (when (== 2 (count elems))
       (second elems))))
 
 (defn line-number [textfield-entry]
+  "Returns the line-number."
   (-> textfield-entry
       (.getElements)
       first
@@ -45,6 +51,7 @@
       (Integer/parseInt)))
 
 (defn set-line-number! [textfield-entry f]
+  "Sets the line-number to be (f (line-number textfield-entry))"
   (let [label (-> textfield-entry
                   (.getElements)
                   first
@@ -53,6 +60,7 @@
     (set-text! label (str (f (Integer/parseInt (text label)))))))
 
 (defn line-text [textfield-entry]
+  "Returns the text of the entry."
   (-> textfield-entry
       (.getElements)
       (first)
@@ -113,6 +121,8 @@
                       (set-line-number! entry* inc)))))))))
 
 (defn lines [entry]
+  "Returns the text of this entry and every subsequent
+   entry, separated by \n."
   (let [buffer (StringBuilder.)]
     (do-entries [entry* entry]
       (.append buffer (line-text entry*))
@@ -128,6 +138,7 @@
     (scroll-panel :id id
                  :width width
                  :height height
+                :set {"horizontal" "false"}
                 :style "nifty-listbox"
                 :panels 
                 [(panel :child-layout :vertical
@@ -146,6 +157,7 @@
                             prev)))])))
 
 (defn first-entry [textfieldx]
+  "Returns the first entry of the textfieldx."
   (-> textfieldx
       (select , "textfield-entries")
       (.getElements)
@@ -186,6 +198,7 @@
         nil))))
 
 (defn set-lines! [nifty textfieldx text]
+  "Sets the text of this textfieldx."
   (let [[line & lines] (or (seq (str/split-lines text)) [""])
         entry (first-entry textfieldx)
         add-rest #(loop [lines lines
@@ -205,6 +218,9 @@
 
 
 (defn textfieldx [& opts]
+  "Returns a map, with :textfieldx mapping to the actual textfieldx,
+   and :initialize! mapping to a function that takes a nifty instance
+   and initializes this textfield."
   (let [{:keys [id] :as opts-map} opts]
     {:textfieldx (apply textfieldx-component opts)
      :initialize! (fn [nifty]

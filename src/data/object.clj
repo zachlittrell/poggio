@@ -49,8 +49,22 @@
 (defmethod type-str :default [type]
   (general-type-str type))
 
-(defn obj-type-str [obj]
-  (type-str (type obj)))
+(defprotocol ObjTypeStringable
+  (obj-type-str [obj]))
+
+(extend-protocol ObjTypeStringable
+  Object
+  (obj-type-str [obj] (type-str (type obj))))
+
+(defmethod type-str clojure.lang.Seqable [_]
+  "list")
+
+(defmethod type-str BigDecimal [_]
+  "number")
+
+(defmethod type-str Boolean [_]
+  "boolean")
+
 
 (defmethod error-message implements? [f [type child]]
   (format "Expected type %s. Received type %s"

@@ -60,6 +60,9 @@
     (and (is-pog-fn? obj)
          (== arity (count (parameters obj))))))
 
+(defn fn->str [f]
+  (str (count (parameters f)) "-parameter function."))
+
 (defrecord PogFnType [parameter-count]
   Implementable
   (implements? [p child]
@@ -75,7 +78,10 @@
   ([parameters invoke-fn]
    (pog-fn parameters "" invoke-fn))
   ([parameters docstring invoke-fn]
-    (reify PogFn
+    (reify 
+      ObjTypeStringable
+      (obj-type-str [f] (fn->str))
+      PogFn
       (docstring [f] docstring)
       (parameters [f] parameters)
       (invoke [f env] (invoke-fn f env)))))
@@ -86,7 +92,10 @@
   ([parameters invoke-fn]
    (basic-pog-fn parameters "" invoke-fn))
   ([parameters docstring  invoke-fn]
-    (reify PogFn
+    (reify 
+      ObjTypeStringable
+      (obj-type-str [f] (fn->str f))
+      PogFn
       (docstring [f] docstring)
       (parameters [f] parameters)
       (invoke [f env] 
@@ -139,6 +148,8 @@
   "Partially applies a Pog function using args-map, which
    maps applied parameters to their values."
   (reify
+    ObjTypeStringable
+    (obj-type-str [f] (fn->str f))
     LazyPogFn
     (lazy-invoke [_ env args]
       (invoke* f env (map (comp (merge args args-map)
@@ -184,6 +195,8 @@
           f* (seq->partial-pog-fn f)
           args* (map seq->partial-pog-fn args)]
       (reify 
+        ObjTypeStringable
+        (obj-type-str [f] (fn->str f))
         LazyPogFn
         (lazy-invoke [f env args]
           (invoke* f* env args*))
@@ -216,6 +229,8 @@
    (seq->pog-fn name params docstring seq nil))
   ([name params docstring seq source]
    (reify
+     ObjTypeStringable
+     (obj-type-str [f] (fn->str f))
      PogFn
      (parameters [_] params)
      (docstring [_] docstring)
@@ -228,6 +243,8 @@
 
 (def if* 
  (reify 
+   ObjTypeStringable
+   (obj-type-str [f] (fn->str f))
    LazyPogFn
    (lazy-invoke [f env {pred "predicate" true-fn "true-fn" false-fn "false-fn"
                         :as args}]
@@ -250,6 +267,8 @@
 
 (def let* 
   (reify
+    ObjTypeStringable
+    (obj-type-str [f] (fn->str f))
     LazyPogFn
     (lazy-invoke [_ env args]
       (value (env "function") (assoc env (:name (args "var"))

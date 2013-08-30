@@ -5,6 +5,8 @@
 
 (def cons*
   (reify
+    ObjTypeStringable
+    (obj-type-str [f] (fn->str f))
     PogFn
     (parameters [_] ["head" "tail"])
     (docstring [_] (docstr [["head" "a value"] ["tail" "a list"]]

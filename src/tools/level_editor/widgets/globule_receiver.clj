@@ -22,21 +22,22 @@
        dir (angle->quaternion direction :y)
        control (RigidBodyControl. 0.0)
        hoop (model :asset-manager app
-                 :controls [control]
-                 :model-name "Models/PowerSource/PowerSource.scene")]
-   (pog-fn-node :name id
-                :local-translation (.subtract loc (.mult dir 
+;                 :controls [control]
+                 :model-name "Models/PowerSource/PowerSource.scene"
+                 :name id
+                 :local-translation (.subtract loc (.mult dir 
                                                           (Vector3f. 0 0 8)))
                 :local-rotation dir
-                :controls [control]
-                :pog-fn (fn->pog-fn 
+                :controls [control])]
+   (doto hoop
+     (attach-pog-fn!*  (fn->pog-fn 
                          (partial process-globule!
                                  (comp (partial = [[0.0 0.0 1.0]
                                                    [0.0 1.0 0.0]
                                                    [1.0 0.0 0.0]])
                                        lifo)
                                  #(when-let [target (select app target-id)]
-                                    (invoke* target [false]))
+                                    (invoke* (spatial-pog-fn target) [false]))
                                  (atom (ring-buffer 3)))
                           "receiver"
                           ["ball"]
@@ -45,9 +46,7 @@
                                  " once it receives a red,"
                                  " green, and blue globule."))
                                        
-                                    )
-                :children [hoop])))
-
+                                    )))))
 
 (def globule-receiver-template
   {:image (image-pad [100 100]

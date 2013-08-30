@@ -28,12 +28,12 @@
    KeyInput/KEY_D [(atom false) :cam-left :negate]})
 
 (defn set-up-collisions! [app]
-  (on-pred-collision! app [#(pog-fn-node-from % 1)
-                           #(pog-fn-node-from % 0)]
+  (on-pred-collision! app [#(and % (is-pog-fn-spatial? % 1) %)
+                           #(and % (is-pog-fn-spatial? % 0) %)]
       [this f input e]
       (when (and (.getParent f) (.getParent input))
         (try
-        (invoke* f {} [input])
+        (invoke* (spatial-pog-fn f) {} [(spatial-pog-fn input)])
         (catch Exception e
           (.printStackTrace e))))))
 
@@ -54,7 +54,7 @@
                                                            (.getCursorPosition
                                                              input-manager)
                                                            clickable)]
-          (when-let [pog-fn (pog-fn-node-from (.getGeometry collision))]
+          (when-let [pog-fn (spatial-pog-fn (.getGeometry collision))]
             (when (and (== 3 (count (parameters pog-fn)))
                        (pog-implements? (first (parameters pog-fn)) player))
               (set-current-function! (partial* pog-fn

@@ -18,18 +18,18 @@
         globule (geom :shape globule-shape
                       :material (material :asset-manager app
                                           :color {"Color" color})
+                      :local-translation loc
+                      :local-rotation dir
                       :controls [globule-phys*])]
+                      
     (attach! app
-             (pog-fn-node 
-                :local-translation loc
-                :pog-fn (reify PogFn
+             (doto globule
+               (attach-pog-fn!
+                       (reify PogFn
                           (parameters [f] [])
                           (invoke [f env]
-                            {:globule (.getParent globule)
-                             :value (constantly* (color->triple color))}))
-                :local-rotation dir
-                :children [globule]
-                :controls [globule-phys*]))
+                            {:globule globule
+                             :value (constantly* (color->triple color))})))))
     (.setLinearVelocity globule-phys*
                         (.mult (quaternion->direction-vector dir)
                                vel))))
@@ -75,13 +75,13 @@
        control (RigidBodyControl. 0.0)
        *state* (atom {:state :inactive})
        cannon (model :asset-manager app
-                :controls [control]
-                    :model-name "Models/Laser/Laser.scene")]
-   (pog-fn-node :name id
+                :model-name "Models/Laser/Laser.scene"
+                :name id
                 :local-translation loc
                 :local-rotation dir
-                :controls [control]
-                :pog-fn (reify
+                     :controls [control])]
+   (doto cannon
+     (attach-pog-fn!* (reify
                           LazyPogFn
                           (lazy-invoke [_ env {player "player"
                                                on-error! "on-error!"
@@ -114,8 +114,7 @@
                           (docstr [["colors" "a list of colors"]]
                                   "Spits out a colored globule for each color in colors."))
  
-                          )
-                :children [cannon])))
+                          )))))
  
 (def function-cannon-template
   {:image (image-pad [100 100]

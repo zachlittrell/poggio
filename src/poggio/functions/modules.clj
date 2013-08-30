@@ -19,6 +19,7 @@
 (def core-modules  
   {"Logic" {"if" if*}
    "List" {"cons" cons*
+           "concat" concat*
            "nil"  empty-list*
            "tail" tail*
            "head" head*

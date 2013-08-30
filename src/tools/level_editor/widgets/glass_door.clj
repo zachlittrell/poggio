@@ -80,16 +80,18 @@
         control (RigidBodyControl. 1.0)
         state (atom {:state :closed})
         door (geom :shape (Box. 8 8 0.25)
+                   :name id
+                   :local-translation loc
+                   :local-rotation dir
                    :controls [control]
                    :material (material :asset-manager app
                                        :texture {"ColorMap"
                                                  (texture :asset-manager app
                                                           :texture-key "Textures/water1.png")}))]
-    [(pog-fn-node :children [(transparent! door)]
-                 :name id
-                 :pog-fn (fn->pog-fn (fn [open?]
+    [(doto (transparent! door)
+       (attach-pog-fn! (fn->pog-fn (fn [open?]
                                        (if (instance? Boolean open?)
-                                       (toggle-door! (.getParent door) 
+                                       (toggle-door! door
                                                      state
                                                      loc
                                                      open? 
@@ -99,10 +101,7 @@
                                                      time app)))
                                      ""
                                      [{:name "open?"
-                                       :type Boolean}])
-                 :local-translation loc
-                 :local-rotation dir
-                 :controls [control])
+                                       :type Boolean}])))
      :kinematic? true]))
 
 (def glass-door-template

@@ -65,9 +65,11 @@
 
 
 (defn set-up-room! [app level nifty]
+  (pause-physics! app)
   (let [root (.getRootNode app)]
     (when-not (zero? (.getQuantity root))
       (.detachChildAt root 0)))
+  (future
     (let [space (physics-space app)]
       (let [level (load-level (basic-level level)
                               app
@@ -79,8 +81,9 @@
       (.enqueue app
         (fn []
            (.attachChild (.getRootNode app) level)
+           (start-physics! app)
            (.gotoScreen nifty  "function-screen")))
-    )))
+    ))))
 
 (defn make-app [level]
   (proxy [SimpleApplication][]

@@ -15,6 +15,18 @@
                            (.getState BulletAppState)
                            (.getPhysicsSpace))))
 
+(defn pause-physics! [app]
+  (-> app
+     (.getStateManager)
+     (.getState BulletAppState)
+     (.setEnabled false)))
+
+(defn start-physics! [app]
+  (-> app
+     (.getStateManager)
+     (.getState BulletAppState)
+     (.setEnabled true)))
+
 (defprotocol PhysicsCollisionListenerProvider
   (physics-collision-listener [this]))
 

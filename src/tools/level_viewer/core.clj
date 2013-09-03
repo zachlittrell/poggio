@@ -8,7 +8,7 @@
   (:require [jme-clj.input :as input])
   (:use [data coll]
         [nifty-clj builders]
-        [poggio level]
+        [poggio level loading-gui quotes]
         [poggio.functions core color modules list gui scenegraph]
         [jme-clj collision light material physics physics-providers 
          physics-control]
@@ -37,6 +37,11 @@
         (catch Exception e
           (.printStackTrace e))))))
 
+(defn loading-screen! [nifty]
+  (let [{:keys [author quote]} (random quotes)]
+    (set-headers! (.getScreen nifty "loading-screen")
+                  :header author :subheader quote)
+    (.gotoScreen nifty "loading-screen")))
 
 (defn set-up-keys! [nifty set-current-function! input-manager camera clickable]
   (input/on-key!* input-manager :action KeyInput/KEY_SPACE
@@ -69,6 +74,7 @@
   (let [root (.getRootNode app)]
     (when-not (zero? (.getQuantity root))
       (.detachChildAt root 0)))
+  (loading-screen! nifty)
   (future
     (let [space (physics-space app)]
       (let [level (load-level (basic-level level)
@@ -126,16 +132,18 @@
                                                    (apply str (repeat 100 "str")))}))]
         (.addScreen nifty "function-screen" function-screen)
       ;;  (.gotoScreen nifty "function-screen")
-
+        (.addScreen nifty "loading-screen" (build-screen nifty (loading-gui)))
  
             (doto (.getStateManager this)
-        (.attach (BulletAppState.)))
+             (.attach (BulletAppState.)))
         (set-up-keys! nifty set-current-function!
                       (.getInputManager this)
                       (.getCamera this) (.getRootNode this))
             (doto (.getFlyByCamera this)
         (.setDragToRotate true))
+       ; (loading-screen! nifty)
       (doto this
+      
         (set-up-room! level nifty)
         (set-up-collisions!))
 

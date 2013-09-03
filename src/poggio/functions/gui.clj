@@ -216,13 +216,14 @@
   (let [{:keys[*fn-map* fn-box initialize! clean!
                selected-fn!]} (apply function-box modules)
         {initialize2! :initialize!
-         pad-textfieldx :textfieldx} (textfieldx :id "fn-pad")
+         pad-textfieldx :textfieldx} (textfieldx :id "fn-pad"
+                                                 :height "60%")
         {initialize3! :initialize!
          build-pad-textfieldx :textfieldx} (textfieldx :id "fn-pad2"
-                                                       :height "30%")
+                                                       :height "25%")
         {initialize4! :initialize!
          build-docstring :textfieldx} (textfieldx :id "build-docstring"
-                                                  :height "20%")
+                                                  :height "25%")
         *current-f* (atom nil)
         made-screen
           (build-screen nifty
@@ -292,7 +293,7 @@
                                   :start-delay 0)
                         :child-layout :vertical
                         :height "100%"
-                        :width "40%"
+                        :width "33%"
                         :align :right
                         :controls
                         [(label :text "Module Name"
@@ -325,7 +326,7 @@
                   :id "fn-panels"
                   :child-layout :vertical
                   :height "100%"
-                  :width "40%"
+                  :width "33%"
                   :align :right
                   :panels
                   [(panel :child-layout :vertical
@@ -345,7 +346,7 @@
                                   :id "compute"))
                    (panel :id "fn-controls"
                           :child-layout :vertical
-                          :height "50%"
+                          :height "45%"
                           :align :right 
                           :panels [(doto fn-box (.align (keyword->align :left))
                                                 (.height "100%"))])

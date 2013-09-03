@@ -64,14 +64,23 @@
         )))))
 
 
-(defn set-up-room! [app level]
-  (doto (.getRootNode app)
-    (.addLight (ambient-light :color (.mult ColorRGBA/White 1.3))))
-  (.add (physics-space app) player)
-  (load-level (basic-level level)
-              app
-              [(.getCamera app) player]
-              [(.getCamera app)]))
+(defn set-up-room! [app level nifty]
+  (let [root (.getRootNode app)]
+    (when-not (zero? (.getQuantity root))
+      (.detachChildAt root 0)))
+    (let [space (physics-space app)]
+      (let [level (load-level (basic-level level)
+                              app
+                              [(.getCamera app) player]
+                              [(.getCamera app)])]
+        (doto level
+          (.addLight (ambient-light :color (.mult ColorRGBA/White 1.3))))
+       (.add space player)
+      (.enqueue app
+        (fn []
+           (.attachChild (.getRootNode app) level)
+           (.gotoScreen nifty  "function-screen")))
+    )))
 
 (defn make-app [level]
   (proxy [SimpleApplication][]
@@ -113,7 +122,7 @@
                                                    ["foo"]
                                                    (apply str (repeat 100 "str")))}))]
         (.addScreen nifty "function-screen" function-screen)
-        (.gotoScreen nifty "function-screen")
+      ;;  (.gotoScreen nifty "function-screen")
 
  
             (doto (.getStateManager this)
@@ -124,7 +133,7 @@
             (doto (.getFlyByCamera this)
         (.setDragToRotate true))
       (doto this
-        (set-up-room! level)
+        (set-up-room! level nifty)
         (set-up-collisions!))
 
                      

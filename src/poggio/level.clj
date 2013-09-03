@@ -10,6 +10,7 @@
   (:use [data quaternion]
         [jme-clj assets
                  geometry
+                 node
                  material
                  physics
                  transform]))
@@ -21,7 +22,8 @@
   [loc dir wall-bounds wall-mat widgets]
   Level
   (load-level [this app warpables rotatables]
-    (let [[x z :as init] loc
+    (let [level-node (node*)
+          [x z :as init] loc
           wall-mat (textured-material (asset-manager app) wall-mat)
           floor-rot  (angle->quaternion FastMath/PI :x)
           ceiling-rot (angle->quaternion 0 :x)
@@ -37,7 +39,7 @@
         (when-let [[[x z :as p] & more] (seq places)]
           (if (not (seen p))
             (do 
-              (attach! app
+              (attach!* app level-node
                        (geom :shape quad
                              :material wall-mat
                              :local-translation (Vector3f. (- (* x 16) 8) 
@@ -63,14 +65,15 @@
       ;;Build the walls
       (let [collision-shape (BoxCollisionShape. (Vector3f. 8 8 8))]
         (doseq [[x z] wall-bounds]
-          (attach! app
+          (attach!* app level-node
                    (geom :shape (Box. 8 8 8)
                          :material wall-mat
                          :move (Vector3f. (* x 16) -8 (* 16 z))
                          :controls [(RigidBodyControl. collision-shape
                                                        0)]))))
       ;;Build widgets
-      (apply attach! app (for [widget widgets] (widget app))))))
+      (apply attach!* app level-node (for [widget widgets] (widget app)))
+      level-node)))
 
 (defn basic-level 
   ([m]

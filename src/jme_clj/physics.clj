@@ -3,13 +3,14 @@
   (:use [control bindings]
         [jme-clj node physics-providers]))
 
-(defn attach! [physics-node & children]
+(defn attach!*
   "Attaches the children to the node and physics-space provided by 
    physics-node. children can be either a spatial or a vector
    with a spatial and keyword-arguments. Currently only supported
    argument is :kinematic?."
-  (let [physics-space (physics-space physics-node)
-        node (node physics-node)]
+ ([physics node* & children]
+  (let [physics-space (physics-space physics)
+        node (node node*)]
     (doseq [child children]
       (let-weave (vector? child)
         [[child & args] child]
@@ -19,7 +20,11 @@
         [args] :>> (let [{:as args-map} args]
                      (when (contains? args-map :kinematic?)
                        (.setKinematic (.getControl child PhysicsControl)
-                                      (:kinematic? args-map))))))))
+                                      (:kinematic? args-map)))))))))
+
+(defn attach! [physics-node & children]
+  (apply attach!* physics-node physics-node children))
+
 
 (defn detach! [& spatials]
   "Detaches the children from both the scenegraph and the physics-space."

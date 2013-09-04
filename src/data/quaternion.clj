@@ -14,3 +14,15 @@
 (defn quaternion->direction-vector [quaternion]
   "Returns the direction of the quaternion."
   (.getRotationColumn quaternion 2))
+
+(defn clamp-angle [angle]
+  (let [[_ angle] (apply min-key first (for [angle* [0 
+                                               FastMath/HALF_PI
+                                               FastMath/PI
+                                               (- FastMath/HALF_PI)
+                                               (- FastMath/PI)]
+                                             :let [[ang1 ang2] (sort [angle
+                                                                      angle*])]]
+                                   [(Math/abs (- ang1 ang2))
+                                    angle*]))]
+    angle))

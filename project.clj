@@ -1,6 +1,5 @@
 (defproject poggio "1.0.0-SNAPSHOT"
   :description "FIXME: write description"
-  :main poggio.core
   :repositories {"oss-sonatype" "https://oss.sonatype.org/content/repositories/snapshots/"}
   :profiles {:dev {:dependencies 
                    [[lein-autodoc "0.9.0"]

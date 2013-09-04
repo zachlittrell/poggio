@@ -58,8 +58,8 @@
   (let [this (.getSource e)
         width (.getWidth this)
         height (.getHeight this)
-        center-x (+ 3 (/ (- width 6) 2))
-        center-y (+ 3 (/ (- height 6) 2))]
+        center-x (+ 3 (/ (- width 6) 2.0))
+        center-y (+ 3 (/ (- height 6) 2.0))]
   (swap! angle-atom
          (constantly (- (Math/atan2 
                           (- (.getY e)

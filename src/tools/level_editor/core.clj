@@ -7,7 +7,7 @@
         [seesaw core]
         [seesawx core]
         [tools.level-editor.widgets function-cannon globule-receiver
-                                      glass-door]
+                                      glass-door text-screen]
         [tools.level-viewer [core :only [view-level]]]))
 ;  (:gen-class))
 
@@ -30,7 +30,8 @@
 (def widget-templates
   [function-cannon-template
    globule-receiver-template
-   glass-door-template])
+   glass-door-template
+   text-screen-template])
 
 
 (defn template->item-icon [template]

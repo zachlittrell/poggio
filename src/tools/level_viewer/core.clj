@@ -20,6 +20,7 @@
                                 :fall-speed 30
                                 :gravity 30
                                 :physics-location (Vector3f. 0 0 0)))
+
 (def walk-dir (Vector3f. 0 0 0))
 (def key-ops
   {KeyInput/KEY_W [(atom false) :cam-dir]
@@ -73,7 +74,7 @@
   (pause-physics! app)
   (let [root (.getRootNode app)]
     (when-not (zero? (.getQuantity root))
-      (.detachChildAt root 0)))
+      (.detachChildAt root (dec (.getQuantity root)))))
   (loading-screen! nifty)
   (future
     (let [space (physics-space app)]
@@ -153,7 +154,7 @@
 
 (defn view-level [level]
   (cond (string? level) (recur (eval (read-string level)))
-        (map? level) (send (agent (make-app level)) #(.start %))))
+        (map? level) (send-off (agent (make-app level)) #(.start %))))
 
 (defn -main [& args]
   (let [level (if (empty? args)

@@ -3,7 +3,7 @@
   (:use [data either]
         [poggio.functions core]))
 
-(def var-pattern "[^\\(\\).\\s0-9][^\\(\\).\\s]*")
+(def var-pattern "[^\\(\\).\\s0-9-][^\\(\\).\\s]*")
 
 (defn is-var-name? [var-name]
   (re-matches (re-pattern var-pattern) var-name))
@@ -15,7 +15,7 @@
                   | <OWS> CHAIN <OWS>
            PGROUP = <LP> EXPR <RP>
            <CHAIN> = EXPR EXPR+
-           NUM = #'[0-9]+(\\.[0-9]+)?'
+           NUM = #'-?[0-9]+(\\.[0-9]+)?'
            VAR = #'%s'
            WS = #'\\s+'
            OWS = WS | EPSILON

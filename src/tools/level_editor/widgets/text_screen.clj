@@ -12,6 +12,7 @@
         [seesawx core]))
 
 (defn build-text-screen [x z id direction text target-id app]
+  (try
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
        control (RigidBodyControl. 0.0)
@@ -22,7 +23,8 @@
                     :local-translation (Vector3f. -8 0 0.01)
                     
                     )
-       text* (bitmap-text :font (bitmap-font :asset-manager app)
+       text* (bitmap-text :font (bitmap-font :asset-manager app
+                                             :font-name "Fonts/DejaVuSansMono.fnt")
                           :text text
                           :size 0.5 
                           :box (Rectangle. -8 16 16 16)
@@ -38,7 +40,11 @@
    (.updateLogicalState text* 0)
    (if (empty? target-id)
      node
-     node)))
+     node))
+    
+   (catch Exception e
+     (.printStackTrace e)))
+    )
 
 (def text-screen-template
   {:image (image-pad [100 100]

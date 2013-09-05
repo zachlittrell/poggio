@@ -6,7 +6,8 @@
            [com.jme3.math ColorRGBA Vector3f]
            [com.jme3.system AppSettings])
   (:require [jme-clj.input :as input])
-  (:use [data coll]
+  (:use [control io]
+        [data coll]
         [nifty-clj builders]
         [poggio level loading-gui quotes]
         [poggio.functions core color modules list gui scenegraph]
@@ -22,6 +23,7 @@
                                 :physics-location (Vector3f. 0 0 0)))
 
 (def walk-dir (Vector3f. 0 0 0))
+
 (def key-ops
   {KeyInput/KEY_W [(atom false) :cam-dir]
    KeyInput/KEY_S [(atom false) :cam-dir :negate]
@@ -85,6 +87,8 @@
         (doto level
           (.addLight (ambient-light :color (.mult ColorRGBA/White 1.3))))
        (.add space player)
+        ;;This is to make sure the loading screen is done fading in
+       (Thread/sleep 1000)
       (.enqueue app
         (fn []
            (.attachChild (.getRootNode app) level)
@@ -142,9 +146,7 @@
                       (.getCamera this) (.getRootNode this))
             (doto (.getFlyByCamera this)
         (.setDragToRotate true))
-       ; (loading-screen! nifty)
       (doto this
-      
         (set-up-room! level nifty)
         (set-up-collisions!))
 
@@ -153,9 +155,12 @@
                    ))))
 
 (defn view-level [level]
-  (cond (string? level) (recur (eval (read-string level)))
-        (map? level) (send-off (agent (make-app level)) #(.start %))))
-
+  (cond (string? level) (future (doto (make-app (eval (read-string level)))
+                                      (.start)))
+        (map? level) 
+          (future (doto (make-app level)
+                        (.start)))))
+        
 (defn -main [& args]
   (let [level (if (empty? args)
                 (eval (read-string (input "Enter level map")))

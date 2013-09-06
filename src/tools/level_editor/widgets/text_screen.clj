@@ -11,12 +11,22 @@
         [poggio.functions core scenegraph parser color utilities]
         [seesawx core]))
 
+(defn add-text! [bitmap-text new-text]
+  (let [*letters* (atom (seq new-text))]
+    (start!
+    (control-timer bitmap-text 0.3 true
+      (fn []
+        (when-let [[letter & letters] @*letters*]
+          (.setText bitmap-text (str (.getText bitmap-text)  letter))
+          (swap! *letters* (constantly letters))))))))
+
+
 (defn build-text-screen [{:keys [x z id direction text target-id app success? parameter docstring success-text error-text]}]
   (try
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
        control (RigidBodyControl. 0.0)
-
+       *done?* (atom false)
        screen (geom :shape (Quad. 16 16)
                     :material (material :asset-manager app
                                         :color {"Color" ColorRGBA/Black})
@@ -58,13 +68,13 @@
                                   (fn []
                                     (invoke* success?* env [message]))
                                   (fn [succeed?]
-                                    (println succeed? error-text)
                                     (if-not succeed?
                                       (when-not (empty? error-text)
                                         (on-error! (Exception. error-text)))
-                                      (do
+                                      (when-not @*done?*
+                                        (swap! *done?* (constantly true))
                                         (when-not (empty? success-text)
-                                          (println success-text))
+                                          (add-text! text* success-text))
                                         (when-not (empty? target-id)
                                           (when-let [target (select app 
                                                                     target-id)]

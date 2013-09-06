@@ -11,7 +11,7 @@
         [poggio.functions core scenegraph parser color utilities]
         [seesawx core]))
 
-(defn build-text-screen [{:keys [x z id direction text target-id app success? parameter docstring]}]
+(defn build-text-screen [{:keys [x z id direction text target-id app success? parameter docstring success-text error-text]}]
   (try
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
@@ -57,8 +57,21 @@
                                   (computation-timer node 5
                                   (fn []
                                     (invoke* success?* env [message]))
-                                  (fn [arg]
-                                      (println arg))
+                                  (fn [succeed?]
+                                    (println succeed? error-text)
+                                    (if-not succeed?
+                                      (when-not (empty? error-text)
+                                        (on-error! (Exception. error-text)))
+                                      (do
+                                        (when-not (empty? success-text)
+                                          (println success-text))
+                                        (when-not (empty? target-id)
+                                          (when-let [target (select app 
+                                                                    target-id)]
+                                            (invoke* (spatial-pog-fn target )
+                                                            [false]))))
+
+                                          ))
                                   (fn [error]
                                     (on-error! error)))))))
         node 
@@ -73,14 +86,15 @@
    :questions [{:id :id :type :string :label "ID"}
                {:id :direction :type :direction :label "Direction"}
                {:id :text  :type [:string :multi-line? true] :label "Text"}
-               {:id :success? :type [:string :multi-line? true] :label "Success Check"}
+               {:id :success? :type [:string :multi-line? true] :label "Success Test"}
                {:id :parameter :type [:string :text "message"] :label "Parameter"}
                {:id :docstring :type [:string :multi-line? true] :label "Docstring"}
-               {:id :post-success-text :type [:string :multi-line? true] :label "Post-success Text"}
+               {:id :success-text :type [:string :multi-line? true] :label "Success Text"}
+               {:id :error-text :type [:string :multi-line? true] :label "Error Text"}
                {:id :target-id :type :string :label "Target"}]
    :prelude `(use '~'tools.level-editor.widgets.text-screen)
-   :build (fn [[x z] {:keys [id direction text target-id success? parameter docstring post-success-text]}]
+   :build (fn [[x z] {:keys [id direction text target-id success? parameter docstring success-text error-text]}]
             `(do
                (fn [app#]
-               (build-text-screen {:x ~x :z ~z :id ~id :direction ~direction :text ~text :target-id ~target-id :app app# :success? ~success? :parameter ~parameter :docstring ~docstring :post-success-text ~post-success-text}))))})
+               (build-text-screen {:x ~x :z ~z :id ~id :direction ~direction :text ~text :target-id ~target-id :app app# :success? ~success? :parameter ~parameter :docstring ~docstring :success-text ~success-text :error-text ~error-text}))))})
 

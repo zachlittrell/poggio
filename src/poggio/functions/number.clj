@@ -26,13 +26,13 @@
                   "n - 1")
               "subtract n 1"))
 
-(def less-than* (fn->pog-fn < "less-than?"
+(def less-than?* (fn->pog-fn < "less-than?"
                       ["x" "y"]
                  (docstr [["x" "a number"]
                           ["y" "a number"]]
                    "true if x < y")))
 
-(def greater-than* (fn->pog-fn < "greater-than?"
+(def greater-than?* (fn->pog-fn < "greater-than?"
                       ["x" "y"]
                       (docstr [["x" "a number"]
                                ["y" "a number"]]

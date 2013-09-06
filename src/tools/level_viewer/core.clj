@@ -79,22 +79,26 @@
       (.detachChildAt root (dec (.getQuantity root)))))
   (loading-screen! nifty)
   (future
-    (let [space (physics-space app)]
-      (let [level (load-level (basic-level level)
-                              app
-                              [(.getCamera app) player]
-                              [(.getCamera app)])]
-        (doto level
-          (.addLight (ambient-light :color (.mult ColorRGBA/White 1.3))))
-       (.add space player)
-        ;;This is to make sure the loading screen is done fading in
-       (Thread/sleep 1000)
-      (.enqueue app
-        (fn []
-           (.attachChild (.getRootNode app) level)
-           (start-physics! app)
-           (.gotoScreen nifty  "function-screen")))
-    ))))
+    (try
+      (let [space (physics-space app)]
+        (let [level (load-level (basic-level level)
+                                app
+                                [(.getCamera app) player]
+                                [(.getCamera app)])]
+          (doto level
+            (.addLight (ambient-light :color (.mult ColorRGBA/White 1.3))))
+         (.add space player)
+          ;;This is to make sure the loading screen is done fading in
+         (Thread/sleep 1000)
+        (.enqueue app
+          (fn []
+             (.attachChild (.getRootNode app) level)
+             (start-physics! app)
+             (.gotoScreen nifty  "function-screen")))))
+          (catch Exception e
+            (.printStackTrace e)
+            (System/exit -1))
+    )))
 
 (defn make-app [level]
   (proxy [SimpleApplication][]

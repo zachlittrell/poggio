@@ -5,4 +5,7 @@
                 (docstr [["x" "a value"]]
                         "x")
             "x"))
-(def equals* (fn->pog-fn = "equals" ["o1" "o2"]))
+(def equal?* (fn->pog-fn = "equal?" [{:name "o1"
+                                      :value BigDecimal}
+                                     {:name "o2"
+                                      :value BigDecimal}]))

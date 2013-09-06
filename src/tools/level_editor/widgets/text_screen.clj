@@ -6,12 +6,12 @@
            [com.jme3.scene.shape Box Quad]) 
   (:use [control timer]
         [data coll color ring-buffer quaternion]
-        [jme-clj animate bitmap-text geometry material model node physics physics-control selector]
+        [jme-clj animate bitmap-text control geometry material model node physics physics-control selector transform]
         [nifty-clj popup]
-        [poggio.functions core scenegraph color utilities]
+        [poggio.functions core scenegraph parser color utilities]
         [seesawx core]))
 
-(defn build-text-screen [{:keys [x z id direction text target-id app]}]
+(defn build-text-screen [{:keys [x z id direction text target-id app success? parameter docstring]}]
   (try
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
@@ -38,10 +38,31 @@
                     :children [screen text*])
        ]
    (.updateLogicalState text* 0)
-   (if (empty? target-id)
+   (if (empty? success?)
      node
-     node))
-    
+     ;node))
+     (let [success?* (code-pog-fn [parameter] docstring success?)]
+       (attach-pog-fn!* node (reify 
+                              PogFn
+                              (parameters [_]
+                                [{:name "player" :type Warpable}
+                                 "on-error!" 
+                                 parameter])
+                              (docstring [_] docstring)
+                              LazyPogFn
+                              (lazy-invoke [_ env {player "player"
+                                                   on-error! "on-error!"
+                                                   message parameter}]
+                                (start! 
+                                  (computation-timer node 5
+                                  (fn []
+                                    (invoke* success?* env [message]))
+                                  (fn [arg]
+                                      (println arg))
+                                  (fn [error]
+                                    (on-error! error)))))))
+        node 
+       )))
    (catch Exception e
      (.printStackTrace e)))
     )
@@ -52,10 +73,14 @@
    :questions [{:id :id :type :string :label "ID"}
                {:id :direction :type :direction :label "Direction"}
                {:id :text  :type [:string :multi-line? true] :label "Text"}
+               {:id :success? :type [:string :multi-line? true] :label "Success Check"}
+               {:id :parameter :type [:string :text "message"] :label "Parameter"}
+               {:id :docstring :type [:string :multi-line? true] :label "Docstring"}
+               {:id :post-success-text :type [:string :multi-line? true] :label "Post-success Text"}
                {:id :target-id :type :string :label "Target"}]
    :prelude `(use '~'tools.level-editor.widgets.text-screen)
-   :build (fn [[x z] {:keys [id direction text target-id]}]
+   :build (fn [[x z] {:keys [id direction text target-id success? parameter docstring post-success-text]}]
             `(do
                (fn [app#]
-               (build-text-screen {:x ~x :z ~z :id ~id :direction ~direction :text ~text :target-id ~target-id :app app#}))))})
+               (build-text-screen {:x ~x :z ~z :id ~id :direction ~direction :text ~text :target-id ~target-id :app app# :success? ~success? :parameter ~parameter :docstring ~docstring :post-success-text ~post-success-text}))))})
 

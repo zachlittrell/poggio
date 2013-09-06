@@ -29,6 +29,13 @@
            "reduce" reduce*
            "flatten" flatten*
            "map" map*}
+   "Number" {"add" add*
+             "subtract" subtract*
+             "multiply" multiply*
+             "divide" divide*
+             "less-than?" less-than?*
+             "greater-than?" greater-than?*
+             "equal?" equal?*}
    "Color" {"red" red*
             "green" green*
             "blue" blue*

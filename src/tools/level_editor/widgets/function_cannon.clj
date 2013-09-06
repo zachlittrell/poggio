@@ -69,7 +69,7 @@
             (start! timer))))))
 
 
-(defn build-function-cannon [x z id direction velocity mass app]
+(defn build-function-cannon [{:keys [x z id direction velocity mass app]}]
  (let [loc (Vector3f. (* x 16) -16 (* z 16))
        dir (angle->quaternion direction :y)
        control (RigidBodyControl. 0.0)
@@ -131,5 +131,5 @@
    :build     (fn [[x z] {:keys [id direction velocity mass]}]
                 `(do
                    (fn [app#] 
-                   (build-function-cannon ~x ~z ~id ~direction ~velocity ~mass app#))))})
+                   (build-function-cannon {:x ~x :z ~z :id  ~id :direction ~direction :velocity ~velocity :mass  ~mass :app app#}))))})
 

@@ -4,5 +4,3 @@
 
 (defn select [node-provider key]
   (.getChild (node node-provider) key))
-
-

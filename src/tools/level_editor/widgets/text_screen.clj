@@ -11,7 +11,7 @@
         [poggio.functions core scenegraph color utilities]
         [seesawx core]))
 
-(defn build-text-screen [x z id direction text target-id app]
+(defn build-text-screen [{:keys [x z id direction text target-id app]}]
   (try
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
@@ -57,5 +57,5 @@
    :build (fn [[x z] {:keys [id direction text target-id]}]
             `(do
                (fn [app#]
-               (build-text-screen ~x ~z ~id ~direction ~text ~target-id app#))))})
+               (build-text-screen {:x ~x :z ~z :id ~id :direction ~direction :text ~text :target-id ~target-id :app app#}))))})
 

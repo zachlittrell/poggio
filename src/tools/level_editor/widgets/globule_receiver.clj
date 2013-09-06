@@ -17,7 +17,7 @@
       (on-match))))
 
 
-(defn build-globule-receiver [x y z id direction target-id app]
+(defn build-globule-receiver [{:keys [x y z id direction target-id app]}]
  (let [loc (Vector3f. (* x 16) (+ -16 y) (* z 16))
        dir (angle->quaternion direction :y)
        control (RigidBodyControl. 0.0)
@@ -59,5 +59,5 @@
    :build (fn [[x z] {:keys [id direction y target-id]}]
             `(do
                (fn [app#]
-               (build-globule-receiver ~x ~y ~z ~id ~direction ~target-id app#))))})
+               (build-globule-receiver {:x ~x :y ~y :z ~z :id ~id :direction ~direction :target-id ~target-id :app app#}))))})
 

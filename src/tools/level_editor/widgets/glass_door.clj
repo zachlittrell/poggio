@@ -74,7 +74,7 @@
    :forward (Vector3f. 0 0 16)
    :backward (Vector3f. 0 0 -16)})
 
-(defn build-glass-door [x z id direction distance movement speed time app]
+(defn build-glass-door [{:keys [x z id direction distance movement speed time app]}]
   (let [loc (Vector3f. (* x 16) -8  (* z 16))
         dir (angle->quaternion direction :y)
         control (RigidBodyControl. 1.0)
@@ -120,5 +120,5 @@
    :build (fn [[x z] {:keys [id direction distance movement speed time]}]
            `(do
                  (fn [app#] 
-                 (build-glass-door ~x ~z ~id ~direction ~distance ~movement ~speed ~time app#))))})
+                 (build-glass-door {:x ~x :z ~z :id ~id :direction ~direction :distance ~distance :movement ~movement :speed ~speed :time ~time :app app#}))))})
 

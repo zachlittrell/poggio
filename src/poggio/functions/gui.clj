@@ -329,6 +329,7 @@
                             :effect-parameters {"mode" "in"
                                                 "direction" "right"})
                   :id "fn-panels"
+                  :visible? false
                   :child-layout :vertical
                   :height "100%"
                   :width "33%"
@@ -365,6 +366,11 @@
                                    :width "33%")
                            (button :label "Delete" :id "fn-delete"
                                    :width "33%")])
+                   (panel :height "10%"
+                          :child-layout :vertical
+                          :valign :bottom
+                          :control
+                          (button :label "Close" :id "main-close"))
                    ])])
                ]))
         my-alert! (partial alert! made-screen)
@@ -406,6 +412,9 @@
                              
         ]
     (apply-interactions made-screen
+      :main-close {:on-left-click
+                  #(doto (select made-screen "fn-panels")
+                     (.setVisible false))}
       :fn-new {:on-left-click 
                  #(let [build-pad (select made-screen "fn-build-pad")]
                     (.setVisible build-pad true)
@@ -425,7 +434,8 @@
                                            (assoc m module
                                               (dissoc (m module)
                                                       fn-name))))
-                         (invalidate! made-screen module fn-name))))}
+                         (invalidate! made-screen module fn-name))
+                       (my-alert! (Exception. "Cannot delete a core function."))))}
       :fn-build-close {:on-left-click
                   #(let [build-pad (select made-screen "fn-build-pad")]
                     (.setVisible build-pad false))}
@@ -489,5 +499,6 @@
                                    my-alert!})]
          (swap! *current-f* (constantly f))
          (set-pog-fn! (select made-screen "fn-pad-param")
-                      nifty f)))
+                      nifty f)
+         (.setVisible (select made-screen "fn-panels") true)))
      :function-screen made-screen}))

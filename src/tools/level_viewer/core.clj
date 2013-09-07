@@ -7,7 +7,7 @@
            [com.jme3.system AppSettings])
   (:require [jme-clj.input :as input])
   (:use [control io]
-        [data coll]
+        [data coll object]
         [nifty-clj builders]
         [poggio level loading-gui quotes]
         [poggio.functions core color modules list gui scenegraph]
@@ -100,7 +100,7 @@
             (System/exit -1))
     )))
 
-(defn make-app [level]
+(defn make-app [level-or-init]
   (proxy [SimpleApplication][]
     (simpleUpdate[tpf]
       (let [cam (.getCamera this)
@@ -140,7 +140,6 @@
                                                    ["foo"]
                                                    (apply str (repeat 100 "str")))}))]
         (.addScreen nifty "function-screen" function-screen)
-      ;;  (.gotoScreen nifty "function-screen")
         (.addScreen nifty "loading-screen" (build-screen nifty (loading-gui)))
  
             (doto (.getStateManager this)
@@ -151,11 +150,14 @@
             (doto (.getFlyByCamera this)
         (.setDragToRotate true))
       (doto this
-        (set-up-room! level nifty)
+        ;(set-up-room! level nifty)
         (set-up-collisions!))
+      ;;TODO I strongly suggest changing this check so that level-or-init
+      ;;should be a Level, not a map.
+      (if (map? level-or-init)
+        (set-up-room! this level-or-init nifty)
+        (level-or-init this nifty))
 
-                     
-                   
                    ))))
 
 (defn view-level [level]

@@ -4,8 +4,8 @@
            [com.jme3.font Rectangle]
            [com.jme3.math ColorRGBA FastMath Vector3f]
            [com.jme3.scene.shape Box Quad]) 
-  (:use [control timer]
-        [data coll color ring-buffer quaternion]
+  (:use [control assert timer]
+        [data coll color object ring-buffer quaternion]
         [jme-clj animate bitmap-text control geometry material model node physics physics-control selector transform]
         [nifty-clj popup]
         [poggio.functions core scenegraph parser color utilities]
@@ -66,7 +66,9 @@
                                 (start! 
                                   (computation-timer node 5
                                   (fn []
-                                    (invoke* success?* env [message]))
+                                    (let [b (invoke* success?* env [message])]
+                                      (assert! (implements? Boolean b))
+                                      b))
                                   (fn [succeed?]
                                     (if-not succeed?
                                       (when-not (empty? error-text)

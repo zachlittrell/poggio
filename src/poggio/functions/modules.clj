@@ -1,5 +1,5 @@
 (ns poggio.functions.modules
-  (:use [poggio.functions core list number color value])
+  (:use [poggio.functions boolean core list number color value])
   (:require [clojure.string :as str]))
 
 (defn path [module name]
@@ -17,7 +17,10 @@
   (get-in fn-map (path-components path)))
 
 (def core-modules  
-  {"Logic" {"if" if*}
+  {"Logic" {"if" if*
+            "true" true*
+            "false" false*
+            "not" not*}
    "List" {"cons" cons*
            "concat" concat*
            "nil"  empty-list*

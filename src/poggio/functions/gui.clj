@@ -323,10 +323,15 @@
                                  (button :label "Close"
                                          :id "fn-build-close")]))
                 (panel
-                  :on-start-screen-effect
+                  :on-show-effect
                     (effect :effect-name "move"
                             :inherit? true
                             :effect-parameters {"mode" "in"
+                                                "direction" "right"})
+                  :on-hide-effect
+                    (effect :effect-name "move"
+                            :inherit? true
+                            :effect-parameters {"mode" "out"
                                                 "direction" "right"})
                   :id "fn-panels"
                   :visible? false

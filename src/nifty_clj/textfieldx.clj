@@ -60,6 +60,9 @@
                   first)]
     (set-text! label (str (f (Integer/parseInt (text label)))))))
 
+(defn first-entry? [textfield-entry]
+  (== (line-number textfield-entry) 1))
+
 (defn line-text [textfield-entry]
   "Returns the text of the entry."
   (-> textfield-entry
@@ -92,7 +95,7 @@
 (declare swap-cursors!)
 (defn remove-entry! [entry]
   ;;Do not allow them to remove the very first line
-  (when (not (zero? (line-number entry)))
+  (when (not (first-entry? entry))
     (let [parent (parent entry)
           next-tail (tail entry)]
       (swap-cursors! entry parent :end)
@@ -147,7 +150,7 @@
                         :width "100%"
                         :panel
                         (loop [prev nil
-                               index (dec (count lines))
+                               index (count lines)
                                lines (rseq lines)
                                 ]
                           (if-let [[end & front] lines]
@@ -194,7 +197,7 @@
           (when-let [tail (tail entry)]
             (swap-cursors! entry tail))
         :move-cursor-up
-           (when (not (zero? (line-number entry)))
+           (when (not (first-entry? entry))
              (swap-cursors! entry (parent entry)))
         nil))))
 

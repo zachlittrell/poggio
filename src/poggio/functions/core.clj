@@ -285,8 +285,11 @@
    (invoke [f env]
       (lazy-invoke f env env))))
 
-(defn constantly* [obj]
-  (fn->pog-fn (constantly obj) "constant"  []))
+(defn constantly* 
+  ([obj]
+   (constantly* obj nil))
+  ([obj docstring]
+    (fn->pog-fn (constantly obj) "constant"  [] docstring)))
 
 (defn comp* [f1 f2]
   "Composes two PogFunctions."

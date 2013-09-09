@@ -19,6 +19,9 @@
 (defmethod nifty-control-class :scroll [_]
   ScrollPanel)
 
+(defmethod nifty-control-class :list-box [_]
+  de.lessvoid.nifty.controls.ListBox)
+
 (defmethod nifty-control-class :text-field [_]
   de.lessvoid.nifty.controls.TextField)
 

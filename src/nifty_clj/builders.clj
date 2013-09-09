@@ -257,6 +257,11 @@
   DropDownBuilder [id]
   {:id [:no-op]})
 
+(def-element-builder list-box
+  {:id ""}
+  de.lessvoid.nifty.controls.listbox.builder.ListBoxBuilder [id]
+  {:id [:no-op]})
+
 (def-opts-constructor effect
   [:simple]
   {:effect-name "fade"}

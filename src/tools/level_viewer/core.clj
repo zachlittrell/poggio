@@ -92,7 +92,6 @@
                                                 player})))
         )))))
 
-
 (defn set-up-room! [app level nifty]
   (pause-physics! app)
   (let [root (.getRootNode app)]
@@ -102,7 +101,8 @@
   (future
     (try
       (let [space (physics-space app)]
-        (let [level (load-level (basic-level level)
+        (let [level (load-level (basic-level 
+                                  (if (fn? level) (level) level))
                                 app
                                 [(.getCamera app) player]
                                 [(.getCamera app)])]

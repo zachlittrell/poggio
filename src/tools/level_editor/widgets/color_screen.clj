@@ -5,7 +5,7 @@
            [com.jme3.math ColorRGBA Vector3f]
            [com.jme3.scene.shape Box Quad])
   (:use [control bindings timer]
-        [data coll color ring-buffer quaternion]
+        [data coll color object ring-buffer quaternion]
         [jme-clj animate geometry material model physics physics-control selector]
         [nifty-clj popup]
         [poggio.functions core scenegraph color utilities]

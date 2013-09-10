@@ -1,5 +1,7 @@
 (ns poggio.main-menu
-  (:use [nifty-clj [builders :exclude [text]] elements events]))
+  (:require [tools.level-viewer.core :as level-viewer])
+  (:use [clojure.java io]
+        [nifty-clj [builders :exclude [text]] elements events]))
 
 (defn -button [& {:keys [label id]}]
   (button :id id
@@ -9,7 +11,7 @@
           :width "35%"
           :height "15%"))
 
-(defn main-menu [nifty]
+(defn main-menu [app nifty]
  (let [screen (build-screen nifty
                (screen
                  :layer
@@ -23,9 +25,13 @@
                                 :controls
                                 [(-button :id "new-game"
                                           :label "Start New Game")
+                                 (-button :id "sandbox"
+                                          :label "Sandbox Mode")
                                  (-button :id "credits"
                                           :label "Credits")])))
                 :new-game {:on-left-click #(println "Can't play right now.")}
-                :credits {:on-left-click #(println "Credit is due.")})
+                :credits
+                  {:on-left-click 
+                     (fn [] (level-viewer/set-up-room! app #(load-string (slurp (resource "Levels/credits.clj")))  nifty))})
                ]
 screen))

@@ -7,6 +7,9 @@
   (.addScreen nifty "main-menu" (main-menu nifty))
   (.gotoScreen nifty "main-menu"))
 
+(defn -end-level [app nifty]
+  (println "end level"))
+
 (defn -main [& args]
-  (doto (viewer/make-app -init)
+  (doto (viewer/make-app -init -end-level)
     (.start)))

@@ -4,6 +4,7 @@
            [com.jme3.font Rectangle]
            [com.jme3.math ColorRGBA FastMath Vector3f]
            [com.jme3.scene.shape Box Quad]) 
+  (:require [tools.level-viewer.core :as level-viewer])
   (:use [control assert timer]
         [data coll color object ring-buffer quaternion]
         [jme-clj animate bitmap-text control geometry material model node physics physics-control selector transform]
@@ -21,7 +22,7 @@
           (swap! *letters* (constantly letters))))))))
 
 
-(defn build-text-screen [{:keys [x z id direction text target-id app success? parameter docstring success-text error-text]}]
+(defn build-text-screen [{:keys [x z id direction text target-id end-level? app success? parameter docstring success-text error-text]}]
   (try
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
@@ -81,7 +82,10 @@
                                           (when-let [target (select app 
                                                                     target-id)]
                                             (invoke* (spatial-pog-fn target )
-                                                            [false]))))
+                                                            [false])))
+                                        (when end-level?
+                                          (level-viewer/end-level! app))
+                                        )
 
                                           ))
                                   (fn [error]
@@ -103,10 +107,11 @@
                {:id :docstring :type [:string :multi-line? true] :label "Docstring"}
                {:id :success-text :type [:string :multi-line? true] :label "Success Text"}
                {:id :error-text :type [:string :multi-line? true] :label "Error Text"}
-               {:id :target-id :type :string :label "Target"}]
+               {:id :target-id :type :string :label "Target"}
+               {:id :end-level? :type :boolean :label "End Level?"}]
    :prelude `(use '~'tools.level-editor.widgets.text-screen)
-   :build (fn [[x z] {:keys [id direction text target-id success? parameter docstring success-text error-text]}]
+   :build (fn [[x z] {:keys [id direction text target-id success? parameter docstring success-text error-text end-level?]}]
             `(do
                (fn [app#]
-               (build-text-screen {:x ~x :z ~z :id ~id :direction ~direction :text ~text :target-id ~target-id :app app# :success? ~success? :parameter ~parameter :docstring ~docstring :success-text ~success-text :error-text ~error-text}))))})
+               (build-text-screen {:x ~x :z ~z :id ~id :direction ~direction :text ~text :target-id ~target-id :app app# :success? ~success? :parameter ~parameter :docstring ~docstring :success-text ~success-text :error-text ~error-text :end-level? ~end-level?}))))})
 

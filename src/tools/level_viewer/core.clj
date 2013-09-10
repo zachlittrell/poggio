@@ -4,16 +4,37 @@
            [com.jme3.input KeyInput MouseInput]
            [com.jme3.material Material]
            [com.jme3.math ColorRGBA Vector3f]
+           [com.jme3.scene Spatial]
            [com.jme3.system AppSettings])
   (:require [jme-clj.input :as input])
   (:use [control io]
         [data coll object]
+        [jme-clj spatial]
         [nifty-clj builders]
         [poggio level loading-gui quotes]
         [poggio.functions core color modules list gui scenegraph]
         [jme-clj collision light material physics physics-providers 
          physics-control]
         [seesaw [core :only [input]]]))
+
+
+(def level-end-key "is-level-end?")
+
+(defn is-level-end? [spatial]
+  (get-user-data! spatial level-end-key))
+
+(defn level-end! [spatial]
+  (set-user-data! spatial level-end-key :level-end)
+  spatial)
+
+
+(def end-level-key "end-level!")
+
+(defn end-level! [app]
+  (if-let [end-level! (get-user-data! (.getRootNode app) end-level-key)]
+    (end-level!)
+    (.stop app)))
+
 
 
 (def player  (character-control :step-height (float 0.025)
@@ -100,7 +121,12 @@
             (System/exit -1))
     )))
 
-(defn make-app [level-or-init]
+(defn make-app 
+  ([level]
+   (make-app 
+     (fn [app nifty] (set-up-room! app level nifty))
+     (fn [app nifty] (.stop app))))
+  ([setup! end-level!]
   (proxy [SimpleApplication][]
     (simpleUpdate[tpf]
       (let [cam (.getCamera this)
@@ -152,13 +178,10 @@
       (doto this
         ;(set-up-room! level nifty)
         (set-up-collisions!))
-      ;;TODO I strongly suggest changing this check so that level-or-init
-      ;;should be a Level, not a map.
-      (if (map? level-or-init)
-        (set-up-room! this level-or-init nifty)
-        (level-or-init this nifty))
+      (setup! this nifty)
+      (set-user-data! (.getRootNode this) end-level-key (partial end-level! this nifty))
 
-                   ))))
+                   )))))
 
 (defn view-level [level]
   (cond (string? level) (future (doto (make-app (eval (read-string level)))

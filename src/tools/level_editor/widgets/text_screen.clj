@@ -55,7 +55,8 @@
    (.updateLogicalState text* 0)
    (if (empty? success?)
      node
-     (let [success?* (code-pog-fn [parameter] docstring success?)]
+     (let [success?* (code-pog-fn [parameter] docstring success?)
+           *computation* (atom nil)]
        (attach-pog-fn!* node (reify 
                               PogFn
                               (parameters [_]
@@ -67,30 +68,34 @@
                               (lazy-invoke [_ env {player "player"
                                                    on-error! "on-error!"
                                                    message parameter}]
-                                (start! 
-                                  (computation-timer node 5
-                                  (fn []
-                                    (let [b (invoke* success?* env [message])]
-                                      (assert! (implements? Boolean b))
-                                      b))
-                                  (fn [succeed?]
-                                    (if-not succeed?
-                                      (when-not (empty? error-text)
-                                        (on-error! (Exception. error-text)))
-                                      (when-not @*done?*
-                                        (swap! *done?* (constantly true))
-                                        (when-not (empty? success-text)
-                                          (add-text! text* success-text app end-level?))
-                                        (when-not (empty? target-id)
-                                          (when-let [target (select app 
-                                                                    target-id)]
-                                            (invoke* (spatial-pog-fn target )
-                                                            [false])))
-                                        )
+                                (when-not @*done?*
+                                  (when-let [timer @*computation*]
+                                    (stop! timer))
+                                  (start! (swap! *computation*
+                                    (constantly
+                                     (computation-timer node 5
+                                    (fn []
+                                      (let [b (invoke* success?* env [message])]
+                                        (assert! (implements? Boolean b))
+                                        b))
+                                    (fn [succeed?]
+                                      (if-not succeed?
+                                        (when-not (empty? error-text)
+                                          (on-error! (Exception. error-text)))
+                                        (do
+                                          (swap! *done?* (constantly true))
+                                          (when-not (empty? success-text)
+                                            (add-text! text* success-text app end-level?))
+                                          (when-not (empty? target-id)
+                                            (when-let [target (select app 
+                                                                      target-id)]
+                                              (invoke* (spatial-pog-fn target )
+                                                              [false])))
+                                          )
 
                                           ))
                                   (fn [error]
-                                    (on-error! error)))))))
+                                    (on-error! error))))))))))
         node 
        )))
    (catch Exception e

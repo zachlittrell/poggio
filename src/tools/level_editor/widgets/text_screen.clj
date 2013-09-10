@@ -55,7 +55,6 @@
    (.updateLogicalState text* 0)
    (if (empty? success?)
      node
-     ;node))
      (let [success?* (code-pog-fn [parameter] docstring success?)]
        (attach-pog-fn!* node (reify 
                               PogFn

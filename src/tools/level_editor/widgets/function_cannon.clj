@@ -29,7 +29,7 @@
                           (parameters [f] [])
                           (invoke [f env]
                             {:globule globule
-                             :value (constantly* (color->triple color))})))))
+                             :value (constantly* color)})))))
     (.setLinearVelocity globule-phys*
                         (.mult (quaternion->direction-vector dir)
                                vel))))

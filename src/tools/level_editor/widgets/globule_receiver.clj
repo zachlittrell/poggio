@@ -10,9 +10,9 @@
         [poggio.functions core scenegraph color utilities]
         [seesawx core]))
 
-(defn process-globule! [match? on-match previous globule]
+(defn process-globule! [match? on-match previous conj* globule]
   (detach! (:globule globule))
-  (let [results (swap! previous adjoin (value (:value globule) {}))]
+  (let [results (swap! previous conj* (value (:value globule) {}))]
     (when (match? results)
       (on-match))))
 
@@ -38,7 +38,8 @@
                                        lifo)
                                  #(when-let [target (select app target-id)]
                                     (invoke* (spatial-pog-fn target) [false]))
-                                 (atom (ring-buffer 3)))
+                                 (atom (ring-buffer 3))
+                                 (fn [coll x] (adjoin coll (color->triple x))))
                           "receiver"
                           ["ball"]
                           (docstr [["color" "A colored globule"]]

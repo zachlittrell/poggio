@@ -12,14 +12,18 @@
         [poggio.functions core scenegraph parser color utilities]
         [seesawx core]))
 
-(defn add-text! [bitmap-text new-text]
+(defn add-text! [bitmap-text new-text app end-level?]
   (let [*letters* (atom (seq new-text))]
     (start!
     (control-timer bitmap-text 0.3 true
       (fn []
-        (when-let [[letter & letters] @*letters*]
-          (.setText bitmap-text (str (.getText bitmap-text)  letter))
-          (swap! *letters* (constantly letters))))))))
+        (if-let [[letter & letters] @*letters*]
+          (do
+            (.setText bitmap-text (str (.getText bitmap-text)  letter))
+            (swap! *letters* (constantly letters))
+            true)
+          (when end-level?
+            (level-viewer/end-level! app))))))))
 
 
 (defn build-text-screen [{:keys [x z id direction text target-id end-level? app success? parameter docstring success-text error-text]}]
@@ -77,14 +81,12 @@
                                       (when-not @*done?*
                                         (swap! *done?* (constantly true))
                                         (when-not (empty? success-text)
-                                          (add-text! text* success-text))
+                                          (add-text! text* success-text app end-level?))
                                         (when-not (empty? target-id)
                                           (when-let [target (select app 
                                                                     target-id)]
                                             (invoke* (spatial-pog-fn target )
                                                             [false])))
-                                        (when end-level?
-                                          (level-viewer/end-level! app))
                                         )
 
                                           ))

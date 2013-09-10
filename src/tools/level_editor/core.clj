@@ -6,8 +6,11 @@
         [data string]
         [seesaw core]
         [seesawx core]
-        [tools.level-editor.widgets function-cannon globule-receiver
-                                      glass-door text-screen]
+        [tools.level-editor.widgets [function-cannon :only [function-cannon-template]]
+                                    [globule-receiver :only [globule-receiver-template]]
+                                    [glass-door :only [glass-door-template]]
+                                    [color-screen :only [color-screen-template]]
+                                    [text-screen :only [text-screen-template]]]
         [tools.level-viewer [core :only [view-level]]]))
 ;  (:gen-class))
 
@@ -31,7 +34,8 @@
   [function-cannon-template
    globule-receiver-template
    glass-door-template
-   text-screen-template])
+   text-screen-template
+   color-screen-template])
 
 
 (defn template->item-icon [template]

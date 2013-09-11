@@ -6,6 +6,13 @@
         [nifty-clj [builders :exclude [text]] elements events textfieldx]
         [poggio.functions core parser modules]))
 
+(defn clean-all! [screen nifty]
+  (.hideWithoutEffect (select screen "alert-panel")) 
+  (.hideWithoutEffect (select screen "fn-build-pad"))
+  (.hideWithoutEffect (select screen "fn-panels"))
+  (set-lines! nifty (select screen "fn-pad") ""))
+
+
 (defn alert! [screen text]
   (let [alert-panel (select screen "alert-panel")
         alert-text (select screen "alert-text")
@@ -230,10 +237,12 @@
             (screen
              :controller (proxy [DefaultScreenController] []
                            (onStartScreen [] 
+                              (clean-all! (.getCurrentScreen nifty) nifty)
                               (initialize! nifty (.getCurrentScreen nifty))
                               (initialize2! nifty)
                               (initialize3! nifty)
-                              (initialize4! nifty)))
+                              (initialize4! nifty)
+                                          ))
               :layers
               [
               (layer

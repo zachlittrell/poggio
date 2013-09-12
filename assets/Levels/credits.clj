@@ -22,6 +22,7 @@
       {:direction -1.5208379310729538,
        :text
        "POGGIO\n\nPROGRAMMED BY\nZACH LITTRELL\n\nTHANKS FOR PLAYING!",
+       :font-size 0.5,
        :parameter "message",
        :z 2,
        :x 5,
@@ -41,6 +42,7 @@
        :text
        "TECHNOLOGY\n==========\nGAME ENGINE - jMonkeyEngine\n\nPROGRAMMING LANGUAGE - Clojure\n\nBUILD TOOL - Leiningen\n\nEDITOR - Vim",
        :parameter "message",
+       :font-size 0.5,
        :z 2,
        :x 7,
        :success-text "",
@@ -58,6 +60,7 @@
       {:direction -3.0890095919788516,
        :text "LIBRARIES\n=========\ninstaparse\nseesaw",
        :parameter "message",
+       :font-size 0.5,
        :z 3,
        :x 7,
        :success-text "",
@@ -75,6 +78,7 @@
       {:direction -0.11710874456686428,
        :text "TESTERS\n=======\nYou're name here!",
        :parameter "message",
+       :font-size 0.5,
        :z 4,
        :x 4,
        :success-text "",
@@ -92,6 +96,7 @@
       {:direction 1.5707963267948966,
        :text
        "POGGIO INSTITUTE\n=================\n\nEXIT\n\n<=========\n<=========",
+       :font-size 0.5,
        :parameter "message",
        :z 6,
        :x 4,
@@ -109,6 +114,7 @@
      (tools.level-editor.widgets.text-screen/build-text-screen
       {:direction 1.5707963267948966,
        :text "POGGIO INSTITUTE\n=============\n\nTO EXIT, SEND true",
+       :font-size 0.5,
        :parameter "message",
        :z 6,
        :x 6,

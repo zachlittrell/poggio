@@ -26,7 +26,7 @@
             (level-viewer/end-level! app))))))))
 
 
-(defn build-text-screen [{:keys [x z id direction text target-id end-level? app success? parameter docstring success-text error-text]}]
+(defn build-text-screen [{:keys [x z id direction text target-id end-level? app success? parameter docstring success-text error-text font-size]}]
   (try
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
@@ -41,7 +41,7 @@
        text* (bitmap-text :font (bitmap-font :asset-manager app
                                              :font-name "Fonts/DejaVuSansMono.fnt")
                           :text text
-                          :size 0.5 
+                          :size font-size
                           :box (Rectangle. -8 16 16 16)
                           :alignment :left
                           :color (ColorRGBA. 0.5 1 0 1)
@@ -107,6 +107,7 @@
             (.drawString "¶" 49 49))
    :questions [{:id :id :type :string :label "ID"}
                {:id :direction :type :direction :label "Direction"}
+               {:id :font-size :type [:decimal :init 0.5] :label "Font Size"}
                {:id :text  :type [:string :multi-line? true] :label "Text"}
                {:id :success? :type [:string :multi-line? true] :label "Success Test"}
                {:id :parameter :type [:string :text "message"] :label "Parameter"}
@@ -116,8 +117,8 @@
                {:id :target-id :type :string :label "Target"}
                {:id :end-level? :type :boolean :label "End Level?"}]
    :prelude `(use '~'tools.level-editor.widgets.text-screen)
-   :build (fn [[x z] {:keys [id direction text target-id success? parameter docstring success-text error-text end-level?]}]
+   :build (fn [[x z] {:keys [id direction text target-id font-size success? parameter docstring success-text error-text end-level?]}]
             `(do
                (fn [app#]
-               (build-text-screen {:x ~x :z ~z :id ~id :direction ~direction :text ~text :target-id ~target-id :app app# :success? ~success? :parameter ~parameter :docstring ~docstring :success-text ~success-text :error-text ~error-text :end-level? ~end-level?}))))})
+               (build-text-screen {:x ~x :z ~z :id ~id :direction ~direction :text ~text :target-id ~target-id :app app# :success? ~success? :font-size ~font-size :parameter ~parameter :docstring ~docstring :success-text ~success-text :error-text ~error-text :end-level? ~end-level?}))))})
 

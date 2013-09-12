@@ -28,4 +28,7 @@
                        :type :string]}
               {:label "Age?"
                :id    :age
-               :type  :integer}))
+               :type  :integer}
+              {:label "Weight"
+               :id    :weight
+               :type  [:decimal :init 0.5]}))

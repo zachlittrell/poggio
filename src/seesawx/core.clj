@@ -151,10 +151,11 @@
    :color     color-selection-button
    :choice    combobox
    :list      listx
-   :integer   spinner
-   :decimal   (fn [& args]
-                (apply spinner :model (spinner-model 0.0 :by 0.1)
-                         args))})
+   :integer   (fn [& {:keys [id init] :or {init 0} }]
+                (spinner :id id :model init))
+   :decimal   (fn [& {:keys [id init] :or {init 0.0}}]
+                (apply spinner :id id :model (spinner-model init :by 0.1)
+                         []))})
 
 (defn get-values [& questions]
   "Creates a dialog which creates widgets for each pair in questions,

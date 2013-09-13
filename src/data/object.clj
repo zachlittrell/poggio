@@ -1,6 +1,7 @@
 (ns data.object
   (:use [control assert]
         [data.coll :only [zip zip-with distinct-by]])
+  (:require [clojure.string :as str])
   (:import [java.lang.reflect Method Modifier]))
 
 (defprotocol Implementable
@@ -12,17 +13,6 @@
   clojure.lang.PersistentArrayMap
   (implements? [p child] (extends? p (class child))))
 
-(defrecord UnionImpl
-  [types]
-  Implementable
-  (implements? [p child] (some #(implements? % child) types)))
-
-(defrecord IntersectionImpl
-  [types]
-  Implementable
-  (implements? [p child] (every? identity (zip-with implements?
-                                                    types
-                                                    (repeat child)))))
 
 (defn type-mismatches [types objs]
   "Returns either nil if all objects in objs 'implement' the corresponding
@@ -70,4 +60,22 @@
   (format "Expected type %s. Received type %s"
           (type-str type)
           (obj-type-str child)))
+
+
+
+
+(defrecord UnionImpl
+  [types]
+  Implementable
+  (implements? [p child] (some #(implements? % child) types)))
+
+(defn union-impl [& types]
+  (UnionImpl. types))
+
+(defrecord IntersectionImpl
+  [types]
+  Implementable
+  (implements? [p child] (every? identity (zip-with implements?
+                                                    types
+                                                    (repeat child)))))
 

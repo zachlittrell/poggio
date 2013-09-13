@@ -12,15 +12,23 @@
 
 (def globule-shape (Sphere. 32 32 (float 0.4)))
 
-(defn shoot-globule! [app loc dir vel mass color]
+(defprotocol Ballable
+  (modify-ball! [val app ball]))
+(extend-protocol Ballable
+  ColorRGBA
+  (modify-ball! [color app ball]
+    (.setMaterial ball 
+       (material :asset-manager app
+                 :color {"Color" color}))))
+
+(defn shoot-globule! [app loc dir vel mass ball]
   (let [globule-phys (RigidBodyControl. mass)
         globule-phys* (RigidBodyControl. mass)
         globule (geom :shape globule-shape
-                      :material (material :asset-manager app
-                                          :color {"Color" color})
                       :local-translation loc
                       :local-rotation dir
                       :controls [globule-phys*])]
+    (modify-ball! ball app globule)
                       
     (attach! app
              (doto globule
@@ -29,11 +37,11 @@
                           (parameters [f] [])
                           (invoke [f env]
                             {:globule globule
-                             :value (constantly* color)})))))
+                             :value (constantly* ball)})))))
     (.setLinearVelocity globule-phys*
                         (.mult (quaternion->direction-vector dir)
                                vel))))
-
+(def valid-input-type (union-impl RGBA BigDecimal))
 (defn cannon-timer [app spatial state nozzle-loc dir velocity mass balls env on-error!]
   (let [*balls* (atom balls)]
     (control-timer spatial 0.5 false
@@ -45,7 +53,7 @@
                             (assert! (implements? clojure.lang.Seqable balls))
                             (assert! (not-empty balls))
                             (let [[ball & more-balls] balls]
-                              (assert! (implements? RGBA ball))
+                              (assert! (implements? valid-input-type ball))
                               [ball more-balls])))
                         ;;Success
                         (fn [[ball more-balls]]

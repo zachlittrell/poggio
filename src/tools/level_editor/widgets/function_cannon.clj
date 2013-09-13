@@ -1,48 +1,68 @@
 (ns tools.level-editor.widgets.function-cannon
   (:import [com.jme3.bullet.util CollisionShapeFactory]
+           [com.jme3.bullet.collision.shapes SphereCollisionShape]
            [com.jme3.bullet.control RigidBodyControl]
+           [com.jme3.font Rectangle]
            [com.jme3.math ColorRGBA Vector3f]
            [com.jme3.scene.shape Box Sphere])
+  (:require [clojure.string :as str])
   (:use [control assert timer]
         [data coll color object ring-buffer quaternion]
-        [jme-clj animate control geometry material model physics physics-control selector transform]
+        [jme-clj animate bitmap-text control geometry material model node physics physics-control selector transform]
         [nifty-clj popup]
         [poggio.functions core scenegraph color utilities]
         [seesawx core]))
 
 (def globule-shape (Sphere. 32 32 (float 0.4)))
+(def num-ball-color (ColorRGBA. 1 1 1 0.5))
+(def num-font-color (ColorRGBA. 0 0 0 0.5))
 
 (defprotocol Ballable
-  (modify-ball! [val app ball]))
+  (modify-ball! [val app font ball-node ball]))
 (extend-protocol Ballable
   ColorRGBA
-  (modify-ball! [color app ball]
+  (modify-ball! [color app ball-font ball-node ball]
     (.setMaterial ball 
        (material :asset-manager app
-                 :color {"Color" color}))))
+                 :color {"Color" color})))
+  BigDecimal
+  (modify-ball! [num app ball-font ball-node ball]
+    (.setMaterial ball
+        (material :asset-manager app
+                  :color {"Color" (ColorRGBA. 1 1 1 0.5)}))
+    (.attachChild ball-node 
+                              (bitmap-text 
+                                    :size 0.5
+                                    :font ball-font
+                                    :box (Rectangle. -0.3 0.3 0.3 0.3)
+                                    :color num-font-color
+                                    :text  (str num)))
+    (transparent! ball)
+                ))
 
-(defn shoot-globule! [app loc dir vel mass ball]
-  (let [globule-phys (RigidBodyControl. mass)
-        globule-phys* (RigidBodyControl. mass)
-        globule (geom :shape globule-shape
-                      :local-translation loc
-                      :local-rotation dir
-                      :controls [globule-phys*])]
-    (modify-ball! ball app globule)
-                      
-    (attach! app
-             (doto globule
-               (attach-pog-fn!
-                       (reify PogFn
-                          (parameters [f] [])
-                          (invoke [f env]
-                            {:globule globule
-                             :value (constantly* ball)})))))
+(defn shoot-globule! [app font loc dir vel mass ball]
+  (let [
+        globule-phys* (RigidBodyControl. (SphereCollisionShape. 0.4) mass)
+        globule (geom :shape globule-shape)
+        globule* (node* :local-translation loc
+                        :local-rotation dir
+                        :children [globule]
+                        :controls [globule-phys*])]
+    (modify-ball! ball app font globule* globule)
+    (doto globule*
+      (attach-pog-fn!*
+              (reify PogFn
+                 (parameters [f] [])
+                 (invoke [f env]
+                   {:globule globule*
+                    :value (constantly* ball)}))))
+    (attach! app globule*)
     (.setLinearVelocity globule-phys*
                         (.mult (quaternion->direction-vector dir)
                                vel))))
+
 (def valid-input-type (union-impl RGBA BigDecimal))
-(defn cannon-timer [app spatial state nozzle-loc dir velocity mass balls env on-error!]
+(defn cannon-timer [app font spatial state nozzle-loc dir velocity mass balls env on-error!]
   (let [*balls* (atom balls)]
     (control-timer spatial 0.5 false
       (fn []
@@ -57,9 +77,9 @@
                               [ball more-balls])))
                         ;;Success
                         (fn [[ball more-balls]]
-                          (shoot-globule! app nozzle-loc dir velocity mass ball)
+                          (shoot-globule! app font nozzle-loc dir velocity mass ball)
                           (swap! *balls* (constantly more-balls))
-                          (let [timer (cannon-timer app spatial state
+                          (let [timer (cannon-timer app font spatial state
                                                     nozzle-loc dir
                                                     velocity mass more-balls
                                                     env
@@ -80,6 +100,7 @@
 (defn build-function-cannon [{:keys [x z id direction velocity mass app]}]
  (let [loc (Vector3f. (* x 16) -16 (* z 16))
        dir (angle->quaternion direction :y)
+       ball-font (render-back! (bitmap-font :asset-manager app))
        control (RigidBodyControl. 0.0)
        *state* (atom {:state :inactive})
        cannon (model :asset-manager app
@@ -97,7 +118,7 @@
                             (let [state* @*state*]
                                 (when (= (:state state*) :active)
                                   (stop! (:timer state*)))
-                                (let [timer (cannon-timer app cannon *state*
+                                (let [timer (cannon-timer app ball-font cannon *state*
                                                            (.add loc 
                                                              (.mult dir 
                                                                     (Vector3f. 0 4 2.1)))

@@ -23,3 +23,10 @@
   `(.loadFont (asset-manager ~'asset-manager) ~'font-name)
   {:asset-manager [:no-op]
    :font-name [:no-op]})
+
+(defn render-back! [^BitmapFont font]
+  (dotimes [i (.getPageSize font)]
+    (-> (.getPage font i)
+        (.getAdditionalRenderState)
+        (.setFaceCullMode com.jme3.material.RenderState$FaceCullMode/Off)))
+  font)

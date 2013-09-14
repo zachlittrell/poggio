@@ -31,7 +31,9 @@
            "triple" triple*
            "reduce" reduce*
            "flatten" flatten*
-           "map" map*}
+           "map" map*
+           "single" single*
+           "pair" pair*}
    "Number" {"add" add*
              "subtract" subtract*
              "multiply" multiply*

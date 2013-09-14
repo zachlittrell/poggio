@@ -48,6 +48,16 @@
                 (docstr [["xs" "a list"]] 
                         "true if xs is empty")))
 
+(def single* (code-pog-fn ["a"]
+                  (docstr [["a" "a value"]]
+                          "a list whose only element is a")
+                  "cons a nil"))
+
+(def pair (code-pog-fn ["a" "b"]
+                (docstr [["a" "a value"] ["b" "a value"]]
+                  "a list with the elements a and b")
+                "cons a (cons b nil)"))
+
 (def triple* (code-pog-fn ["a" "b" "c"]
                 (docstr [["a" "a value"] ["b" "a value"] ["c" "a value"]]
                         "a list with the elements a, b, and c")
@@ -81,3 +91,5 @@
 "if (empty? xs)
   nil
   (cons (f (head xs)) (map f (tail xs)))"))
+
+

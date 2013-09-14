@@ -59,3 +59,4 @@
    and multiple entries of whitespace turned into a single space."
   (-> s
      (str/replace #"\s+" " ")))
+

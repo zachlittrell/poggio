@@ -53,7 +53,7 @@
                           "a list whose only element is a")
                   "cons a nil"))
 
-(def pair (code-pog-fn ["a" "b"]
+(def pair* (code-pog-fn ["a" "b"]
                 (docstr [["a" "a value"] ["b" "a value"]]
                   "a list with the elements a and b")
                 "cons a (cons b nil)"))

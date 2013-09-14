@@ -117,9 +117,11 @@
         widget (keyword->widget type)
         grid  (proxy [javax.swing.JPanel seesaw.value.Value] []
                 (container_QMARK__STAR_ [] false)
-                (value_STAR_ [] (for-grid-panel [[r c component] this
-                                                 :when (zero? c)]
-                                  (value component))))
+                (value_STAR_ [] 
+                  (vec
+                    (for-grid-panel [[r c component] this
+                                     :when (zero? c)]
+                      (value component)))))
         revalidate! (fn [] (.setRows (.getLayout grid) 
                                      (/ (.getComponentCount grid) 2))
                            (.setSize grid (.getPreferredSize grid))

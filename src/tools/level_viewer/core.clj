@@ -67,7 +67,7 @@
                   :header author :subheader quote)
     (.gotoScreen nifty "loading-screen")))
 
-(defn set-up-keys! [nifty set-current-function! input-manager camera clickable]
+(defn set-up-keys! [nifty alert! set-current-function! input-manager camera clickable]
   (input/on-key!* input-manager :action KeyInput/KEY_SPACE
       [_ name is-pressed? tpf]
         (when is-pressed?
@@ -76,6 +76,18 @@
     (input/on-key!* input-manager :action key
       [_ name is-pressed? tpf]
       (swap! atom (constantly is-pressed?))))
+  (input/on-mouse-button!* input-manager :action MouseInput/BUTTON_RIGHT
+      [_ name is-pressed? tpf]
+      (when is-pressed?
+        (when-let [collision (closest-collision-from-point camera
+                                                      (.getCursorPosition
+                                                        input-manager)
+                                                      clickable)]
+          (when-let [pog-fn (spatial-pog-fn (.getGeometry collision))]
+            (let [docstr (docstring pog-fn)]
+              (when-not (empty docstr)
+                (alert! (Exception. docstr))))))))
+
   (input/on-mouse-button!* input-manager :action MouseInput/BUTTON_LEFT
       [_ name is-pressed? tpf]
       (when is-pressed?
@@ -155,7 +167,8 @@
           (.detachAllChildren))
     (let [[display nifty] (nifty this true)
           {:keys [set-current-function!
-                  function-screen]} (function-screen nifty
+                  function-screen
+                  alert!]} (function-screen nifty
                                         (assoc core-modules
                                           "TEST" 
                                           {"BAD" (fn->pog-fn 
@@ -170,7 +183,7 @@
  
             (doto (.getStateManager this)
              (.attach (BulletAppState.)))
-        (set-up-keys! nifty set-current-function!
+        (set-up-keys! nifty alert! set-current-function!
                       (.getInputManager this)
                       (.getCamera this) (.getRootNode this))
             (doto (.getFlyByCamera this)

@@ -515,4 +515,5 @@
          (set-pog-fn! (select made-screen "fn-pad-param")
                       nifty f)
          (.setVisible (select made-screen "fn-panels") true)))
-     :function-screen made-screen}))
+     :function-screen made-screen
+     :alert! my-alert!}))

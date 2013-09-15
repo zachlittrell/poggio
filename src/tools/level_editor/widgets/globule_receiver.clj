@@ -21,15 +21,15 @@
     (when (match? results)
       (on-match))))
 
-(defn pass-globule! [app hoop target-id globule]
+(defn pass-globule! [app hoop target-id  globule]
   (detach! (:globule globule))
   (when-let [target (select app target-id)]
   (let [val (value (:value globule) {})]
      (when (implements? ColorRGBA val)
       (.setColor (.getMaterial hoop) "Color" val) )
      (invoke*  (spatial-pog-fn target) 
-               ;;Note, this should send just the value, not in a list
-               [nil nil (list val)]))))
+               [nil (:on-error! globule) 
+                        (list val)]))))
 
 
 (defn str->encoding [^String s]
@@ -48,7 +48,7 @@
   ColorRGBA
   (encode [c] [:color (red c) (green c) (blue c)]))
 
-(defn build-globule-receiver [{:keys [x y z id direction target-id protocol pattern app]}]
+(defn build-globule-receiver [{:keys [x y z id direction target-id  protocol pattern app]}]
  (let [loc (Vector3f. (* x 16) (+ -16 y) (* z 16))
        dir (angle->quaternion direction :y)
        control (RigidBodyControl. 0.0)

@@ -5,11 +5,11 @@
            [com.jme3.math ColorRGBA FastMath Vector3f]
            [com.jme3.scene.shape Box Quad]) 
   (:require [tools.level-viewer.core :as level-viewer])
-  (:use [control assert timer]
+  (:use [control assert bindings timer]
         [data coll color object ring-buffer quaternion]
         [jme-clj animate bitmap-text control geometry material model node physics physics-control selector transform]
         [nifty-clj popup]
-        [poggio.functions core scenegraph parser color utilities]
+        [poggio.functions core scenegraph parser color utilities value]
         [seesawx core]))
 
 (defn add-text! [bitmap-text new-text app end-level?]
@@ -26,12 +26,11 @@
             (level-viewer/end-level! app))))))))
 
 
-(defn build-text-screen [{:keys [x z id direction text target-id end-level? app success? parameter docstring success-text error-text font-size]}]
+(defn build-text-screen [{:keys [x z id direction text target-id end-level? app success? parameter docstring success-text error-text font-size protocol]}]
   (try
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
        control (RigidBodyControl. 0.0)
-       *done?* (atom false)
        screen (geom :shape (Quad. 16 16)
                     :material (material :asset-manager app
                                         :color {"Color" ColorRGBA/Black})
@@ -46,58 +45,83 @@
                           :alignment :left
                           :color (ColorRGBA. 0.5 1 0 1)
                           :local-translation (Vector3f. 0 0 0.02))
-       node (node*
+       node (node*  :name id
                     :local-translation (.subtract loc (.mult dir
                                                              (Vector3f. 0 0 8)))
                     :local-rotation dir
                     :children [screen text*])
        ]
    (.updateLogicalState text* 0)
-   (if (empty? success?)
-     node
-     (let [success?* (code-pog-fn [parameter] docstring success?)
-           *computation* (atom nil)]
-       (attach-pog-fn!* node (reify 
-                              PogFn
-                              (parameters [_]
-                                [{:name "player" :type Warpable}
-                                 "on-error!" 
-                                 parameter])
-                              (docstring [_] docstring)
-                              LazyPogFn
-                              (lazy-invoke [_ env {player "player"
-                                                   on-error! "on-error!"
-                                                   message parameter}]
-                                (when-not @*done?*
-                                  (when-let [timer @*computation*]
-                                    (stop! timer))
-                                  (start! (swap! *computation*
-                                    (constantly
-                                     (computation-timer node 5
-                                    (fn []
-                                      (let [b (invoke* success?* env [message])]
-                                        (assert! (implements? Boolean b))
-                                        b))
-                                    (fn [succeed?]
-                                      (if-not succeed?
-                                        (when-not (empty? error-text)
-                                          (on-error! (Exception. error-text)))
-                                        (do
-                                          (swap! *done?* (constantly true))
-                                          (when-not (empty? success-text)
-                                            (add-text! text* success-text app end-level?))
-                                          (when-not (empty? target-id)
-                                            (when-let [target (select app 
-                                                                      target-id)]
-                                              (invoke* (spatial-pog-fn target )
-                                                              [false])))
-                                          )
+   (case protocol
+     :none node
+     :hold (let [*transformer* (atom {:transform id*
+                                      :on-error! nil
+                                      :env {}})]
+             (attach-pog-fn!* node
+              (reify PogFn
+                    (parameters [_] [{:name "player" :type Warpable}
+                                    "on-error" parameter])
+                    (docstring [_] docstring)
+                Transform
+                (transform [_ obj]
+                  (let [{:keys [transform on-error! env]} @*transformer*]
+                      (invoke* transform env [obj])
+                    ))
+                (on-bad-transform! [_]
+                    (reset! *transformer* {:transform id* :env {}}))
+                LazyPogFn
+                (lazy-invoke [_ env {player "player"
+                                     on-error! "on-error!"
+                                     message parameter}]
+                  (reset! *transformer* {:transform message
+                                         :on-error! on-error!
+                                         :env env})
+                             )))
+             node)
+     :open (let [success?* (code-pog-fn [parameter] docstring success?)
+                *computation* (atom nil)
+                 *done?* (atom false)]
+            (attach-pog-fn!* node (reify 
+                                   PogFn
+                                   (parameters [_]
+                                     [{:name "player" :type Warpable}
+                                      "on-error!" 
+                                      parameter])
+                                   (docstring [_] docstring)
+                                   LazyPogFn
+                                   (lazy-invoke [_ env {player "player"
+                                                        on-error! "on-error!"
+                                                        message parameter}]
+                                     (when-not @*done?*
+                                       (when-let [timer @*computation*]
+                                         (stop! timer))
+                                       (start! (swap! *computation*
+                                         (constantly
+                                          (computation-timer node 5
+                                         (fn []
+                                           (let [b (invoke* success?* env [message])]
+                                             (assert! (implements? Boolean b))
+                                             b))
+                                         (fn [succeed?]
+                                           (if-not succeed?
+                                             (when-not (empty? error-text)
+                                               (on-error! (Exception. error-text)))
+                                             (do
+                                               (swap! *done?* (constantly true))
+                                               (when-not (empty? success-text)
+                                                 (add-text! text* success-text app end-level?))
+                                               (when-not (empty? target-id)
+                                                 (when-let [target (select app 
+                                                                           target-id)]
+                                                   (invoke* (spatial-pog-fn target )
+                                                                   [false])))
+                                               )
 
-                                          ))
-                                  (fn [error]
-                                    (on-error! error))))))))))
-        node 
-       )))
+                                               ))
+                                       (fn [error]
+                                         (on-error! error))))))))))
+             node 
+            )))
    (catch Exception e
      (.printStackTrace e)))
     )
@@ -109,6 +133,8 @@
                {:id :direction :type :direction :label "Direction"}
                {:id :font-size :type [:decimal :init 0.5] :label "Font Size"}
                {:id :text  :type [:string :multi-line? true] :label "Text"}
+               {:id :protocol :type [:choice
+                                     :model [:none :open :hold]] :label "Protocol"}
                {:id :success? :type [:string :multi-line? true] :label "Success Test"}
                {:id :parameter :type [:string :text "message"] :label "Parameter"}
                {:id :docstring :type [:string :multi-line? true] :label "Docstring"}
@@ -117,8 +143,8 @@
                {:id :target-id :type :string :label "Target"}
                {:id :end-level? :type :boolean :label "End Level?"}]
    :prelude `(use '~'tools.level-editor.widgets.text-screen)
-   :build (fn [[x z] {:keys [id direction text target-id font-size success? parameter docstring success-text error-text end-level?]}]
+   :build (fn [[x z] {:keys [id direction text target-id font-size success? parameter docstring success-text error-text end-level? protocol]}]
             `(do
                (fn [app#]
-               (build-text-screen {:x ~x :z ~z :id ~id :direction ~direction :text ~text :target-id ~target-id :app app# :success? ~success? :font-size ~font-size :parameter ~parameter :docstring ~docstring :success-text ~success-text :error-text ~error-text :end-level? ~end-level?}))))})
+               (build-text-screen {:x ~x :z ~z :id ~id :direction ~direction :text ~text :target-id ~target-id :app app# :success? ~success? :font-size ~font-size :parameter ~parameter :docstring ~docstring :success-text ~success-text :error-text ~error-text :end-level? ~end-level? :protocol ~protocol}))))})
 

@@ -17,6 +17,12 @@
   (parameters [_] [])
   (invoke [f env] f))
 
+(defprotocol Transform
+  "Protocol for 1 parameter functions. This is a workaround for 
+   transformers."
+  (on-bad-transform! [f])
+  (transform [f obj]))
+
 (defprotocol LazyPogFn
   "Protocol for functions that take their arguments outside of the scope."
   (lazy-invoke [f env args]))

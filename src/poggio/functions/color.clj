@@ -11,16 +11,16 @@
                                  ["b" "a number between 0-255"]]
                                 "a color whose red, green, and blue values are r, g, and b")))
 
-(def red-value* (fn->pog-fn red "red-value" 
+(def red-value* (fn->pog-fn (fn [c] (* (red c) 255)) "red-value" 
                             [{:name "c"
                               :type RGBA}]
                            (docstr [["c" "a color"]] "the red value of c")))
-(def green-value* (fn->pog-fn green "green-value" 
+(def green-value* (fn->pog-fn (fn [c] (* (green c) 255)) "green-value" 
                               [{:name "c"
                                 :type RGBA}]
                            (docstr [["c" "a color"]] "the green value of c")))
 
-(def blue-value* (fn->pog-fn blue "blue-value" 
+(def blue-value* (fn->pog-fn (fn [c] (* (blue c) 255)) "blue-value" 
                              [{:name "c"
                                :type RGBA}]
                            (docstr [["c" "a color"]] "the green value of c")))

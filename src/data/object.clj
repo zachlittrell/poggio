@@ -1,6 +1,7 @@
 (ns data.object
   (:use [control assert]
-        [data.coll :only [zip zip-with distinct-by]])
+        [data.coll :only [zip zip-with distinct-by]]
+        [data color])
   (:require [clojure.string :as str])
   (:import [java.lang.reflect Method Modifier]))
 
@@ -28,11 +29,11 @@
 (defprotocol GeneralTypeStringable
   (general-type-str [type]))
 
-(extend-protocol GeneralTypeStringable
-  Class
-  (general-type-str [c] (.getSimpleName c))
-  clojure.lang.PersistentArrayMap
-  (general-type-str [p] (:name (meta (:var p)))))
+(defrecord UnionImpl
+  [types]
+  Implementable
+  (implements? [p child] (some #(implements? % child) types)))
+
 
 (defmulti type-str identity)
 
@@ -49,11 +50,22 @@
 (defmethod type-str clojure.lang.Seqable [_]
   "list")
 
-(defmethod type-str BigDecimal [_]
+(defmethod type-str Number [_]
   "number")
 
 (defmethod type-str Boolean [_]
   "boolean")
+
+(defmethod type-str RGBA [_]
+  "color")
+
+(extend-protocol GeneralTypeStringable
+  UnionImpl
+  (general-type-str [u] (str/join " or " (map type-str (:types u))))
+  Class
+  (general-type-str [c] (.getSimpleName c))
+  clojure.lang.PersistentArrayMap
+  (general-type-str [p] (:name (meta (:var p)))))
 
 
 (defmethod error-message implements? [f [type child]]
@@ -61,12 +73,6 @@
           (type-str type)
           (obj-type-str child)))
 
-(defrecord UnionImpl
-  [types]
-  GeneralTypeStringable
-  (general-type-str [u] (str/join " or " (map type-str types)))
-  Implementable
-  (implements? [p child] (some #(implements? % child) types)))
 
 (defn union-impl [& types]
   (UnionImpl. types))

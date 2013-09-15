@@ -25,7 +25,7 @@
     (.setMaterial ball 
        (material :asset-manager app
                  :color {"Color" color})))
-  BigDecimal
+  Number
   (modify-ball! [num app ball-font ball-node ball]
     (let [num-str (str num)]
       (.setMaterial ball
@@ -64,7 +64,7 @@
                         (.mult (quaternion->direction-vector dir)
                                vel))))
 
-(def valid-input-type (union-impl RGBA BigDecimal))
+(def valid-input-type (union-impl RGBA Number))
 (defn cannon-timer [app *queue* transform cannon-error! font spatial state nozzle-loc dir velocity mass balls env on-error!]
   (let [*balls* (atom balls)]
     (control-timer spatial 0.5 false

@@ -33,9 +33,10 @@
                     :color {"Color" (ColorRGBA. 1 1 1 0.5)}))
       (.attachChild ball-node 
                                 (bitmap-text 
-                                      :size (/ 1 (count num-str))
+                                      :size (/ 1.0 (count num-str) 2.0)
                                       :font ball-font
                                       :box (Rectangle. -0.3 0.3 0.3 0.3)
+                                      :alignment :center
                                       :color num-font-color
                                       :text  num-str))
       (transparent! ball)
@@ -79,9 +80,6 @@
                               [ball more-balls]))))
                         ;;Success
                         (fn [result]
-                          (println @*queue* "HI" (nil? result)
-                                            (when-let [[ball & _] result]
-                                              ball))
                           (let-weave result
                             [ball (first result)
                              more-balls (second result)]

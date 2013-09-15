@@ -21,6 +21,14 @@
     (when (match? results)
       (on-match))))
 
+(defn pass-globule! [app target-id globule]
+  (detach! (:globule globule))
+  (when-let [target (select app target-id)]
+    (invoke*  (spatial-pog-fn target) 
+             ;;Note, this should send just the value, not in a list
+             [nil nil (list (value (:value globule) {}))])))
+
+
 (defn str->encoding [^String s]
   (condp re-matches s
     #"-?(\d+)(.\d+)?" [:num (bigdec s)]
@@ -37,7 +45,7 @@
   ColorRGBA
   (encode [c] [:color (red c) (green c) (blue c)]))
 
-(defn build-globule-receiver [{:keys [x y z id direction target-id pattern app]}]
+(defn build-globule-receiver [{:keys [x y z id direction target-id protocol pattern app]}]
  (let [loc (Vector3f. (* x 16) (+ -16 y) (* z 16))
        dir (angle->quaternion direction :y)
        control (RigidBodyControl. 0.0)
@@ -52,25 +60,35 @@
    (.setMaterial hoop-ball (material :asset-manager app
                                      :color {"Color" ColorRGBA/White}))
    (doto hoop
-     (attach-pog-fn!*  (fn->pog-fn 
-                         (partial process-globule!
-                                  hoop-ball
-                                 (comp (partial = (map str->encoding
-                                                       (rseq pattern)))
-                                       lifo)
-                                 #(when-let [target (select app target-id)]
-                                    (invoke* (spatial-pog-fn target) [false]))
-                                 (atom (ring-buffer (count pattern)))
-                                 (fn [coll x] 
-                                   (adjoin coll (encode x))))
-                          "receiver"
-                          ["ball"]
-                          (docstr [["globule" "A globule"]]
-                            (format "Actives %s once it receives %s."
-                                target-id
-                                (str/join ", " pattern)))
-                                       
-                                    )))))
+     (attach-pog-fn!*  
+       (case protocol
+         :pass
+           (fn->pog-fn
+             (partial pass-globule! app target-id)
+             "receiver"
+             ["ball"]
+             (docstr [["globule" "a globule"]]
+                 (str "Passes globules to " target-id)))
+         :open
+           (fn->pog-fn 
+            (partial process-globule!
+                     hoop-ball
+                    (comp (partial = (map str->encoding
+                                          (rseq pattern)))
+                          lifo)
+                    #(when-let [target (select app target-id)]
+                       (invoke* (spatial-pog-fn target) [false]))
+                    (atom (ring-buffer (count pattern)))
+                    (fn [coll x] 
+                      (adjoin coll (encode x))))
+             "receiver"
+             ["ball"]
+             (docstr [["globule" "a globule"]]
+               (format "Activates %s once it receives %s."
+                   target-id
+                   (str/join ", " pattern)))
+                          
+                       ))))))
 
 (def globule-receiver-template
   {:image (image-pad [100 100]
@@ -79,10 +97,13 @@
                {:id :direction :type :direction :label "Direction"}
                {:id :y  :type :integer :label "Height"}
                {:id :target-id :type :string :label "Target"}
+               {:id :protocol :type [:choice
+                                     :model [:open
+                                             :pass]] :label "Protocol"}
                {:id :pattern :type [:list :type :string] :label "Matches"}]
    :prelude `(use '~'tools.level-editor.widgets.globule-receiver)
-   :build (fn [[x z] {:keys [id direction y target-id pattern]}]
+   :build (fn [[x z] {:keys [id direction y target-id pattern protocol]}]
             `(do
                (fn [app#]
-               (build-globule-receiver {:x ~x :y ~y :z ~z :id ~id :direction ~direction :target-id ~target-id :pattern ~pattern :app app#}))))})
+               (build-globule-receiver {:x ~x :y ~y :z ~z :id ~id :direction ~direction :target-id ~target-id :pattern ~pattern :app app# :protocol ~protocol}))))})
 

@@ -6,7 +6,7 @@
            [com.jme3.math ColorRGBA Vector3f]
            [com.jme3.scene.shape Box Sphere])
   (:require [clojure.string :as str])
-  (:use [control assert timer]
+  (:use [control assert bindings timer]
         [data coll color object ring-buffer quaternion]
         [jme-clj animate bitmap-text control geometry material model node physics physics-control selector transform]
         [nifty-clj popup]
@@ -27,18 +27,19 @@
                  :color {"Color" color})))
   BigDecimal
   (modify-ball! [num app ball-font ball-node ball]
-    (.setMaterial ball
-        (material :asset-manager app
-                  :color {"Color" (ColorRGBA. 1 1 1 0.5)}))
-    (.attachChild ball-node 
-                              (bitmap-text 
-                                    :size 0.5
-                                    :font ball-font
-                                    :box (Rectangle. -0.3 0.3 0.3 0.3)
-                                    :color num-font-color
-                                    :text  (str num)))
-    (transparent! ball)
-                ))
+    (let [num-str (str num)]
+      (.setMaterial ball
+          (material :asset-manager app
+                    :color {"Color" (ColorRGBA. 1 1 1 0.5)}))
+      (.attachChild ball-node 
+                                (bitmap-text 
+                                      :size (/ 1 (count num-str))
+                                      :font ball-font
+                                      :box (Rectangle. -0.3 0.3 0.3 0.3)
+                                      :color num-font-color
+                                      :text  num-str))
+      (transparent! ball)
+                  )))
 
 (defn shoot-globule! [app font loc dir vel mass ball]
   (let [
@@ -62,7 +63,7 @@
                                vel))))
 
 (def valid-input-type (union-impl RGBA BigDecimal))
-(defn cannon-timer [app font spatial state nozzle-loc dir velocity mass balls env on-error!]
+(defn cannon-timer [app *queue* font spatial state nozzle-loc dir velocity mass balls env on-error!]
   (let [*balls* (atom balls)]
     (control-timer spatial 0.5 false
       (fn []
@@ -71,25 +72,41 @@
                         (fn []
                           (let [balls (value @*balls* env)]
                             (assert! (implements? clojure.lang.Seqable balls))
-                            (assert! (not-empty balls))
-                            (let [[ball & more-balls] balls]
+                            (when-not (empty? balls)
+                            (let [ball (first balls)
+                                  more-balls (rest balls)]
                               (assert! (implements? valid-input-type ball))
-                              [ball more-balls])))
+                              [ball more-balls]))))
                         ;;Success
-                        (fn [[ball more-balls]]
-                          (shoot-globule! app font nozzle-loc dir velocity mass ball)
-                          (swap! *balls* (constantly more-balls))
-                          (let [timer (cannon-timer app font spatial state
+                        (fn [result]
+                          (println @*queue* "HI" (nil? result)
+                                            (when-let [[ball & _] result]
+                                              ball))
+                          (let-weave result
+                            [ball (first result)
+                             more-balls (second result)]
+                            [queue @*queue*
+                             more-balls queue]
+                          [ball] :>> 
+                             (do
+                               (shoot-globule! app font nozzle-loc dir velocity mass ball)
+                               (swap! *balls* (constantly more-balls)))
+                          [queue] :>>
+                            (do
+                              (reset! *balls* queue)
+                              (reset! *queue* [])
+                              (if (empty? queue)
+                                (reset! state {:state :inactive})))
+                           (let [timer (cannon-timer app *queue* font spatial state
                                                     nozzle-loc dir
                                                     velocity mass more-balls
                                                     env
                                                     on-error!)]
                             (swap! state (constantly {:timer timer
                                                       :state :active}))
-                            (start! timer)))
+                            (start! timer))))
                           ;;Failure
                           (fn [error]
-                            ;;TODO Properly handle error.
                             (on-error! error)
                             (swap! state (constantly {:state :inactive}))))]
             (swap! state (constantly {:state :active
@@ -97,12 +114,14 @@
             (start! timer))))))
 
 
-(defn build-function-cannon [{:keys [x z id direction velocity mass app]}]
+(defn build-function-cannon [{:keys [x z id direction velocity mass app
+                                     queue?]}]
  (let [loc (Vector3f. (* x 16) -16 (* z 16))
        dir (angle->quaternion direction :y)
        ball-font (render-back! (bitmap-font :asset-manager app))
        control (RigidBodyControl. 0.0)
        *state* (atom {:state :inactive})
+       *queue* (atom [])
        cannon (model :asset-manager app
                 :model-name "Models/Laser/Laser.scene"
                 :name id
@@ -117,8 +136,13 @@
                                                balls "colors"}]
                             (let [state* @*state*]
                                 (when (= (:state state*) :active)
-                                  (stop! (:timer state*)))
-                                (let [timer (cannon-timer app ball-font cannon *state*
+                                  (if queue?
+                                    (swap! *queue* concat balls)
+                                    (stop! (:timer state*))))
+                              (when-not (and (= (:state state*) :active)
+                                             queue?)
+                                (let [timer (cannon-timer app *queue*
+                                                    ball-font cannon *state*
                                                            (.add loc 
                                                              (.mult dir 
                                                                     (Vector3f. 0 4 2.1)))
@@ -130,7 +154,7 @@
                                                           on-error!)]
                                 (swap! *state* (constantly {:state :active
                                                           :timer timer}))
-                                 (start! timer))))
+                                 (start! timer)))))
                          PogFn
                          (parameters [_]
                           [{:name "player"
@@ -154,11 +178,15 @@
            (.drawLine 40 30 50 40))
    :questions [{:id :id        :type :string    :label "ID"}
                {:id :direction :type :direction :label "Direction"}
-               {:id :velocity  :type :decimal   :label "Velocity"}
-               {:id :mass      :type :decimal   :label "Mass"}]
+               {:id :velocity  :type [:decimal
+                                      :init 75] :label "Velocity"}
+               {:id :mass      :type [:decimal
+                                      :init 0.5] :label "Mass"}
+               {:id :queue?    :type :boolean    :label "Queue?"}]
    :prelude `(use '~'tools.level-editor.widgets.function-cannon)
-   :build     (fn [[x z] {:keys [id direction velocity mass]}]
+   :build     (fn [[x z] {:keys [id direction velocity mass
+                                 queue?]}]
                 `(do
                    (fn [app#] 
-                   (build-function-cannon {:x ~x :z ~z :id  ~id :direction ~direction :velocity ~velocity :mass  ~mass :app app#}))))})
+                   (build-function-cannon {:x ~x :z ~z :id  ~id :direction ~direction :velocity ~velocity :mass  ~mass :app app# :queue? ~queue?}))))})
 

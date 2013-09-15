@@ -61,11 +61,10 @@
           (type-str type)
           (obj-type-str child)))
 
-
-
-
 (defrecord UnionImpl
   [types]
+  GeneralTypeStringable
+  (general-type-str [u] (str/join " or " (map type-str types)))
   Implementable
   (implements? [p child] (some #(implements? % child) types)))
 

@@ -141,6 +141,9 @@
   ([setup! end-level!]
     (doto
   (proxy [SimpleApplication][]
+    (stop []
+      (proxy-super stop)
+      (shutdown-agents))
     (simpleUpdate[tpf]
    
       (let [cam (.getCamera this)

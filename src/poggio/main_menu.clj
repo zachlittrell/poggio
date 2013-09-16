@@ -34,8 +34,8 @@
                                 :controls
                                 [(-button :id "new-game"
                                           :label "Start New Game")
-                                 (-button :id "sandbox"
-                                          :label "Sandbox Mode")
+                         ;;        (-button :id "sandbox"
+                         ;;                 :label "Sandbox Mode")
                                  (-button :id "credits"
                                           :label "Credits")])))
                 :new-game {:on-left-click (partial load-level! "Levels/level1.clj")}

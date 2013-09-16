@@ -202,7 +202,7 @@
                                       :init 0.5] :label "Mass"}
                {:id :transform-id :type :string :label "Transformer"}
                {:id :queue?    :type :boolean    :label "Queue?"}
-               {:id :contraint :type :string  :label "Constraint"}]
+               {:id :constraint :type :string  :label "Constraint"}]
    :prelude `(use '~'tools.level-editor.widgets.function-cannon)
    :build     (fn [[x z] {:keys [id direction velocity mass
                                  queue? transform-id constraint]}]

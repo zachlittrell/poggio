@@ -9,7 +9,7 @@
         [data coll color object ring-buffer quaternion]
         [jme-clj animate bitmap-text control geometry material model node physics physics-control selector transform]
         [nifty-clj popup]
-        [poggio.functions core scenegraph parser color utilities value]
+        [poggio.functions core scenegraph parser modules color utilities value]
         [seesawx core]))
 
 (defn add-text! [bitmap-text new-text app end-level?]
@@ -26,7 +26,7 @@
             (level-viewer/end-level! app))))))))
 
 
-(defn build-text-screen [{:keys [x z id direction text target-id end-level? app success? parameter docstring success-text error-text font-size protocol]}]
+(defn build-text-screen [{:keys [x z id direction text target-id end-level? app transform-param transform success? parameter docstring success-text error-text font-size protocol]}]
   (try
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
@@ -73,9 +73,9 @@
                   (fn [error]
                     (on-error! error))))))))
 
-     :hold (let [*transformer* (atom {:transform id*
-                                      :on-error! nil
-                                      :env {}})]
+     :hold (let [default-transform {:transform (code-pog-fn [transform-param] "" transform)
+                                    :env core-env}
+                 *transformer* (atom  default-transform)]
              (attach-pog-fn!* node
               (reify PogFn
                     (parameters [_] [{:name "player" :type Warpable}
@@ -87,7 +87,7 @@
                       (invoke* transform env [obj])
                     ))
                 (on-bad-transform! [_]
-                    (reset! *transformer* {:transform id* :env {}}))
+                    (reset! *transformer* default-transform))
                 LazyPogFn
                 (lazy-invoke [_ env {player "player"
                                      on-error! "on-error!"
@@ -156,6 +156,8 @@
                                   :multi-line? true] :label "Text"}
                {:id :protocol :type [:choice
                                      :model [:none :open :pass :hold]] :label "Protocol"}
+               {:id :transform-param :type [:string :text "x"] :label "Transform Param"}
+               {:id :transform :type [:string :text "x" :multi-line? true] :label "Transform"}
                {:id :success? :type [:string :multi-line? true] :label "Success Test"}
                {:id :parameter :type [:string :text "message"] :label "Parameter"}
                {:id :docstring :type [:string :multi-line? true] :label "Docstring"}
@@ -164,8 +166,8 @@
                {:id :target-id :type :string :label "Target"}
                {:id :end-level? :type :boolean :label "End Level?"}]
    :prelude `(use '~'tools.level-editor.widgets.text-screen)
-   :build (fn [[x z] {:keys [id direction text target-id font-size success? parameter docstring success-text error-text end-level? protocol]}]
+   :build (fn [[x z] {:keys [id direction text target-id font-size transform-param transform success? parameter docstring success-text error-text end-level? protocol]}]
             `(do
                (fn [app#]
-               (build-text-screen {:x ~x :z ~z :id ~id :direction ~direction :text ~text :target-id ~target-id :app app# :success? ~success? :font-size ~font-size :parameter ~parameter :docstring ~docstring :success-text ~success-text :error-text ~error-text :end-level? ~end-level? :protocol ~protocol}))))})
+               (build-text-screen {:x ~x :z ~z :id ~id :direction ~direction :text ~text :target-id ~target-id :app app# :transform-param ~transform-param :transform ~transform :success? ~success? :font-size ~font-size :parameter ~parameter :docstring ~docstring :success-text ~success-text :error-text ~error-text :end-level? ~end-level? :protocol ~protocol}))))})
 

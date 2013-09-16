@@ -145,7 +145,7 @@
       {:direction -1.5841288700890424,
        :protocol :hold,
        :text
-       "POGGIO INSTITUTE\n================\n\nSEND A FUNCTION TO THIS CONSOLE\nTHAT NUMBERS TO COLORS.",
+       "POGGIO INSTITUTE\n================\n\nSEND A FUNCTION TO THIS CONSOLE\nTHAT CONVERTS NUMBERS TO COLORS.",
        :parameter "message",
        :z 20,
        :x 22,

@@ -24,5 +24,7 @@
   {:asset-manager [:no-op]
    :name [:no-op]
    :buffered? [:no-op]
+   :looping? [:setter
+              :replace [#"^(.*)\?$","$1"]]
    :positional? [:setter
                  :replace [#"^(.*)\?$","$1"]]})

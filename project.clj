@@ -1,6 +1,7 @@
-(defproject poggio "1.0.0-SNAPSHOT"
+(defproject poggio "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :repositories {"oss-sonatype" "https://oss.sonatype.org/content/repositories/snapshots/"}
+  :main poggio.core
   :profiles {:dev {:dependencies 
                    [[lein-autodoc "0.9.0"]
                    [com.jme3/jME3-testdata "3.0.0.20121220-SNAPSHOT"]]}}

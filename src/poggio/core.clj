@@ -3,7 +3,8 @@
         [nifty-clj [builders :exclude [text]] elements events]
         [poggio main-menu]
         [poggio.functions gui])
-  (:require [tools.level-viewer.core :as viewer]))
+  (:require [tools.level-viewer.core :as viewer])
+  (:gen-class))
 
 (defn -init [app nifty]
   (.setDisplayFps app false)

@@ -11,7 +11,7 @@
         [poggio.functions core scenegraph color utilities]
         [seesawx core]))
 
-(defn process-globule! [screen color]
+(defn process-color! [screen color]
   (let-weave (map? color)
     [color (:value color)]
     []
@@ -35,14 +35,11 @@
        ]
    (doto screen
      (attach-pog-fn!*  (fn->pog-fn 
-                         (partial process-globule! screen)
+                         (partial process-color! screen)
                           "color screen"
                           ["color"]
-                          (docstr [["color" "A colored globule"]]
-                            (str "Activates " target-id 
-                                 " once it receives a red,"
-                                 " green, and blue globule."))
-                                       
+                          (docstr [["color" "A color"]]
+                                "Changes its color to color.") 
                                     )))
     ))
 

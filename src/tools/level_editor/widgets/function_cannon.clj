@@ -148,7 +148,11 @@
                           LazyPogFn
                           (lazy-invoke [_ env {player "player"
                                                on-error! "on-error!"
-                                               balls "colors"}]
+                                               balls "globules"}]
+                            (if (and player (< 16
+                                               (.distance (.getPhysicsLocation player)
+                                                       (.getWorldTranslation cannon))))
+                              (on-error! (Exception. "You must be closer to interact with this."))
                             (let [state* @*state*]
                                 (when (= (:state state*) :active)
                                   (if queue?
@@ -172,7 +176,7 @@
                                                           on-error!)]
                                 (swap! *state* (constantly {:state :active
                                                           :timer timer}))
-                                 (start! timer)))))
+                                 (start! timer))))))
                          PogFn
                          (parameters [_]
                           [{:name "player"
@@ -182,8 +186,10 @@
                            {:name "colors"
                            :type clojure.lang.Seqable}])
                           (docstring [_]
-                          (docstr [["colors" "a list of colors"]]
-                                  "Spits out a colored globule for each color in colors."))
+                          (docstr [["globules" "a list of values"]]
+                                  (str "Spits out a globule for each values in globules."
+                                       " Globules can be " (if (empty? constraint)
+                                                             "numbers or colors" constraint)))
  
                           )))))
  

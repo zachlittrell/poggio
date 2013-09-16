@@ -51,5 +51,12 @@
    "Value" {"id" id*}
    "User" {}})
 
+(def core-env
+  (into {}
+    (for [[module fs] core-modules
+          f fs]
+      f))) 
+
+
 (defn is-core-fn? [module name]
   (get-in core-modules [module name]))

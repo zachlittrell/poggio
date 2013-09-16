@@ -76,7 +76,7 @@
 
 (defn build-glass-door [{:keys [x z id direction distance movement speed time app]}]
   (let [loc (Vector3f. (* x 16) -8  (* z 16))
-        dir (angle->quaternion direction :y)
+        dir (angle->quaternion (clamp-angle direction) :y)
         control (RigidBodyControl. 1.0)
         state (atom {:state :closed})
         door (geom :shape (Box. 8 8 0.25)

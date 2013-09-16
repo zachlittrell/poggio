@@ -54,13 +54,32 @@
    (.updateLogicalState text* 0)
    (case protocol
      :none node
+     :pass (doto node
+           (attach-pog-fn!* 
+            (reify PogFn
+             (parameters [_] [{:name "player" :type Warpable}
+                              "on-error!" parameter])
+             (docstring [_] docstring)
+            LazyPogFn
+            (lazy-invoke [_ env {player "player" on-error! "on-error!"
+                                 message parameter}]
+              (start!
+                (computation-timer node 5
+                  (fn []
+                    (invoke* message env []))
+                  (fn [result]
+                    (when-let [t (select app target-id)]
+                      (invoke* (spatial-pog-fn t) {} [result])))
+                  (fn [error]
+                    (on-error! error))))))))
+
      :hold (let [*transformer* (atom {:transform id*
                                       :on-error! nil
                                       :env {}})]
              (attach-pog-fn!* node
               (reify PogFn
                     (parameters [_] [{:name "player" :type Warpable}
-                                    "on-error" parameter])
+                                    "on-error!" parameter])
                     (docstring [_] docstring)
                 Transform
                 (transform [_ obj]
@@ -131,10 +150,12 @@
             (.drawString "¶" 49 49))
    :questions [{:id :id :type :string :label "ID"}
                {:id :direction :type :direction :label "Direction"}
-               {:id :font-size :type [:decimal :init 0.5] :label "Font Size"}
-               {:id :text  :type [:string :multi-line? true] :label "Text"}
+               {:id :font-size :type [:decimal :init 0.6] :label "Font Size"}
+               {:id :text  :type [:string 
+                                  :text "POGGIO INSTITUTE\n================\n"
+                                  :multi-line? true] :label "Text"}
                {:id :protocol :type [:choice
-                                     :model [:none :open :hold]] :label "Protocol"}
+                                     :model [:none :open :pass :hold]] :label "Protocol"}
                {:id :success? :type [:string :multi-line? true] :label "Success Test"}
                {:id :parameter :type [:string :text "message"] :label "Parameter"}
                {:id :docstring :type [:string :multi-line? true] :label "Docstring"}

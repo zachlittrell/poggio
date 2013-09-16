@@ -64,8 +64,7 @@
                         (.mult (quaternion->direction-vector dir)
                                vel))))
 
-(def valid-input-type (union-impl RGBA Number))
-(defn cannon-timer [app *queue* transform cannon-error! font spatial state nozzle-loc dir velocity mass balls env on-error!]
+(defn cannon-timer [app *queue* transform cannon-error! valid-input-type font spatial state nozzle-loc dir velocity mass balls env on-error!]
   (let [*balls* (atom balls)]
     (control-timer spatial 0.5 false
       (fn []
@@ -98,6 +97,7 @@
                                 (reset! state {:state :inactive})))
                            (let [timer (cannon-timer app *queue* transform
                                                      cannon-error!
+                                                     valid-input-type
                                                     font spatial state
                                                     nozzle-loc dir
                                                     velocity mass more-balls
@@ -118,6 +118,7 @@
 
 (defn build-function-cannon [{:keys [x z id direction velocity mass app
                                      queue?
+                                     constraint
                                      transform-id]}]
  (let [loc (Vector3f. (* x 16) -16 (* z 16))
        dir (angle->quaternion direction :y)
@@ -125,6 +126,9 @@
        control (RigidBodyControl. 0.0)
        *state* (atom {:state :inactive})
        *queue* (atom [])
+       valid-input-type (cond (empty? constraint) (union-impl RGBA Number)
+                           (= constraint "color") RGBA
+                           (= constraint "number") Number)
        [cannon-error!
         transformer] (if (empty? transform-id) [(constantly nil) identity]
                        [(fn []
@@ -155,6 +159,7 @@
                                 (let [timer (cannon-timer app *queue*
                                                     transformer
                                                           cannon-error!
+                                                          valid-input-type
                                                     ball-font cannon *state*
                                                            (.add loc 
                                                              (.mult dir 
@@ -196,11 +201,12 @@
                {:id :mass      :type [:decimal
                                       :init 0.5] :label "Mass"}
                {:id :transform-id :type :string :label "Transformer"}
-               {:id :queue?    :type :boolean    :label "Queue?"}]
+               {:id :queue?    :type :boolean    :label "Queue?"}
+               {:id :contraint :type :string  :label "Constraint"}]
    :prelude `(use '~'tools.level-editor.widgets.function-cannon)
    :build     (fn [[x z] {:keys [id direction velocity mass
-                                 queue? transform-id]}]
+                                 queue? transform-id constraint]}]
                 `(do
                    (fn [app#] 
-                   (build-function-cannon {:x ~x :z ~z :id  ~id :direction ~direction :velocity ~velocity :mass  ~mass :app app# :queue? ~queue? :transform-id ~transform-id}))))})
+                   (build-function-cannon {:x ~x :z ~z :id  ~id :direction ~direction :velocity ~velocity :mass  ~mass :constraint ~constraint :app app# :queue? ~queue? :transform-id ~transform-id}))))})
 

@@ -6,6 +6,6 @@
                         "x")
             "x"))
 (def equal?* (fn->pog-fn = "equal?" [{:name "o1"
-                                      :value BigDecimal}
+                                      :type Number}
                                      {:name "o2"
-                                      :value BigDecimal}]))
+                                      :type Number}]))

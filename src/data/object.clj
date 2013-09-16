@@ -59,6 +59,9 @@
 (defmethod type-str RGBA [_]
   "color")
 
+(defmethod type-str com.jme3.math.ColorRGBA [_]
+  "color")
+
 (extend-protocol GeneralTypeStringable
   UnionImpl
   (general-type-str [u] (str/join " or " (map type-str (:types u))))

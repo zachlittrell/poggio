@@ -182,8 +182,12 @@
 (defn fn-invoke [f parameters args]
   "Invokes clojure function f on args, reducing any nullary
    PogFn into its output."
-  (apply f (for [param (map name* parameters)]
-             (value (args param)))))
+  (let [args* (for [param (map name* parameters)]
+               (value (args param)))]
+    (doseq [[type arg] (zip (map type* parameters)
+                            args*)]
+      (assert! (implements? type arg)))
+    (apply f args*)))
 
 (defn fn->pog-fn 
   "Returns a PogFn wrapping around a Clojure function."

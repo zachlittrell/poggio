@@ -9,4 +9,6 @@
    :model-name    nil}
   `(.loadModel (assets/asset-manager ~'asset-manager) ~'model-name)
   {:asset-manager [:no-op]
+   :children [:do-seq
+              :replace [#"^(.*)$" "attach-child"]]
    :model-name          [:no-op]})

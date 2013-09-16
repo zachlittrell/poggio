@@ -43,7 +43,7 @@
   (encode [o]))
 
 (extend-protocol Encodable
-  BigDecimal
+  Number
   (encode [d] [:num d])
   ColorRGBA
   (encode [c] [:color (red c) (green c) (blue c)]))

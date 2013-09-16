@@ -45,6 +45,8 @@
         functions (nifty-control (select screen "pog-fns-drop") :drop-down)]
     (when (and (> (.getSelectedIndex modules) 1)
                (> (.getSelectedIndex functions) 0))
+      ;;TODO
+      ;;allow searched functions to be editted
       [(.getSelection modules) (.getSelection functions)])))
 
 (defn function-info []

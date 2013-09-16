@@ -139,8 +139,10 @@
      (fn [app nifty] (set-up-room! app level nifty))
      (fn [app nifty] (.stop app))))
   ([setup! end-level!]
+    (doto
   (proxy [SimpleApplication][]
     (simpleUpdate[tpf]
+   
       (let [cam (.getCamera this)
             cam-dir (-> cam
                         (.getDirection)
@@ -194,7 +196,9 @@
       (setup! this nifty)
       (set-user-data! (.getRootNode this) end-level-key (partial end-level! this nifty))
 
-                   )))))
+                   )))
+      (.setSettings  (doto (AppSettings. true)
+             (.setSettingsDialogImage "Textures/splashscreen.png"))))))
 
 (defn view-level [level]
   (cond (string? level) (future (doto (make-app (eval (read-string level)))
@@ -208,6 +212,4 @@
                 (eval (read-string (input "Enter level map")))
                 (load-string (slurp (first args))))]
     (let [app (make-app level)]
-      (.setSettings app (doto (AppSettings. true)
-                          (.setSettingsDialogImage "Textures/splashscreen.png")))
-      (.start app))))
+            (.start app))))

@@ -14,8 +14,8 @@
         [tools.level-viewer [core :only [view-level]]]))
 ;  (:gen-class))
 
-(def max-x 13)
-(def max-y 13)
+(def max-x 33)
+(def max-y 33)
 
 (def default-image (image-icon-pad [100 100] {}))
 

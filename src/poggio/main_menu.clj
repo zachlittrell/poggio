@@ -12,7 +12,16 @@
           :height "15%"))
 
 (defn main-menu [app nifty]
- (let [screen (build-screen nifty
+ (let [load-level! (fn [level-path]
+                     (level-viewer/set-up-room!
+                       app
+                       #(-> level-path
+                            resource
+                            slurp
+                            load-string)
+                       nifty))
+
+       screen (build-screen nifty
                (screen
                  :layer
                  (layer :id "main-layer"
@@ -29,9 +38,8 @@
                                           :label "Sandbox Mode")
                                  (-button :id "credits"
                                           :label "Credits")])))
-                :new-game {:on-left-click #(println "Can't play right now.")}
+                :new-game {:on-left-click (partial load-level! "Levels/level1.clj")}
                 :credits
-                  {:on-left-click 
-                     (fn [] (level-viewer/set-up-room! app #(load-string (slurp (resource "Levels/credits.clj")))  nifty))})
+                  {:on-left-click (partial load-level! "Levels/credits.clj")})
                ]
 screen))

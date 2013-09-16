@@ -183,13 +183,13 @@
                             :type Warpable}
                            {:name "on-error!"
                             :type clojure.lang.IFn}
-                           {:name "colors"
+                           {:name "globules"
                            :type clojure.lang.Seqable}])
                           (docstring [_]
                           (docstr [["globules" "a list of values"]]
                                   (str "Spits out a globule for each values in globules."
                                        " Globules can be " (if (empty? constraint)
-                                                             "numbers or colors" constraint)))
+                                                             "numbers or colors" constraint))))
  
                           )))))
  

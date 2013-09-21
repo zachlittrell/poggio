@@ -71,8 +71,9 @@
 (defn wheel [& options]
   "Returns a wheel component with a directed arrow whose value is the angle
    the arrow points to."
-  (let [angle (atom (/ Math/PI 2.0))
-        {:keys [id]} options]
+  (let [{:keys [id init]
+         :or {init (/ Math/PI 2.0)}} options
+        angle (atom init)]
     (doto
     (proxy [JComponent seesaw.value.Value][]
       (container_QMARK__STAR_ [] false)
@@ -111,9 +112,10 @@
   "Creates a widget that allows the user to build up a list.
    Accepts a type option, which can be one of the widget keywords
    used by get-values (the :string type is used if omitted)."
-  (let [{:keys [type id]
+  (let [{:keys [type id init]
          :or
-         {type :string}} opts
+         {type :string
+          init []}} opts
         widget (keyword->widget type)
         grid  (proxy [javax.swing.JPanel seesaw.value.Value] []
                 (container_QMARK__STAR_ [] false)
@@ -135,6 +137,9 @@
                                     (revalidate!))))]
     (id-of! grid id)
     (.setLayout grid (grid-layout 0 2))
+    (doseq [item init]
+      (let [w (widget)]
+        (add! grid w (remove w))))
     (border-panel :center (scrollable grid)
                   :size [30 :by 200]
                   :north (action :name "Add"
@@ -146,12 +151,24 @@
                                            (remove w))
                                      (revalidate!)))))))
 
+(defn add-init! [f init-key]
+  (fn [& opts]
+    (let [{:as opts-map} opts]
+      (if (contains? opts-map :init)
+        (apply f init-key (:init opts-map)
+               (flatten (dissoc opts-map :init)))
+        (apply f opts)))))
+
 (def keyword->widget
   {:direction wheel
-   :string    text
-   :boolean   checkbox
-   :color     color-selection-button
-   :choice    combobox
+   :string    (add-init! text :text)
+   :boolean   (add-init! checkbox :selected?)
+   :color     (add-init! color-selection-button :selection)
+   :choice    (fn [& {:as opts-map}]
+                (if (contains? opts-map :init)
+                  (doto (apply combobox (flatten (dissoc opts-map :init)))
+                    (selection! (:init opts-map)))
+                  (apply combobox (flatten opts-map))))
    :list      listx
    :integer   (fn [& {:keys [id init] :or {init 0} }]
                 (spinner :id id :model init))

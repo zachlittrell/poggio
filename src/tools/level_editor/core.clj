@@ -4,7 +4,7 @@
            [javax.swing ImageIcon])
   (:use [clojure pprint]
         [data string]
-        [seesaw core]
+        [seesaw chooser core]
         [seesawx core]
         [tools.level-editor templates]
         [tools.level-viewer [core :only [view-level]]]))
@@ -13,18 +13,19 @@
 (def max-x 33)
 (def max-y 33)
 
-(def default-image (image-icon-pad [100 100] {}))
+(def default-image (image-icon-pad* [100 100] {}))
 
 (def default-item-icons
-  {:wall (image-icon-pad [100 100] {}
+  {:wall (image-icon-pad* [100 100] {}
            (.drawRect 0 0 99 99)
            (.drawLine 0 0 99 99))
-   :player (image-icon-pad [100 100] 
+   :player (image-icon-pad* [100 100] 
                       {:questions [{:id      :direction 
                                     :type    :direction 
                                     :label   "Enter Direction"}]}
              (.drawString  "☺" 49 49))
    :blank  default-image})
+
 
 
        
@@ -47,9 +48,40 @@
                                 (conj type :init answer)))))))
   )
 
+(defn- config-loc! [grid x z template answers]
+  (config! (get-grid-component grid x z)
+           :icon (image-icon* 
+                   (:image template)
+                    (assoc template
+                           :answers answers))))
+                                   
+
+
+(defn load-level! [{:keys [loc dir walls widgets]} grid]
+  ;;Clean out the place first!
+  (doall 
+    (for-grid-panel [[row column c] grid]
+       (config! c
+          :icon (:blank default-item-icons))))
+  ;;Place the player
+  (config-loc! grid (second loc) (first loc) 
+               (meta (:player default-item-icons))
+               {:direction dir})
+  ;;Place the walls
+  (doseq [[x z] walls]
+    (config-loc! grid z x  (meta (:wall default-item-icons)) {}))
+  ;;Place the widgets
+  (doseq [{:keys [name answers]} widgets]
+    (config-loc! grid (:z answers) (:x answers)
+                 (assoc (keyword->widget-template name)
+                        :name name)
+                 answers)))
+
+  
+
 (defn item-panel []
   (listbox :model (concat (vals default-item-icons)
-                          (map template->item-icon keyword->widget-templates))))
+                          (map template->item-icon keyword->widget-template))))
 
 (defn update-selected! [item-box e]
   (config! (.getComponent e)
@@ -122,13 +154,12 @@
       ;;                         :when prelude]
       ;;          prelude)
         ]
-    (list 'do
           ;(list* 'do prelude)
           {:loc loc
            :dir dir
            :walls walls
            :wall-mat "Textures/paper1.jpg"
-           :widgets widgets})))
+           :widgets widgets}))
      
 
 (defn view-button [map-panel]
@@ -144,12 +175,21 @@
             (config! output-panel :text
                      (object->pretty-printed-string (code map-panel))))))
 
+(defn load-button [map-panel]
+  (action :name "Load" 
+          :handler
+          (fn [_]
+             (choose-file 
+               :success-fn (fn [_ file]
+                             (load-level! (read-string (slurp file)) map-panel))))))
+
 
 
 (defn make-gui []
   (let [item-box (item-panel)
         map-panel  (map-panel item-box)
         output-panel (output-panel map-panel)
+        load-button (load-button map-panel)
         build-button (build-button map-panel output-panel)
         view-button (view-button map-panel)]
   (frame :title "Poggio Level Editor"
@@ -161,9 +201,11 @@
                                           (scrollable output-panel)
                                           :divider-location 0.5)
                                 :north (flow-panel 
-                                         :items [build-button
+                                         :items [ load-button
+                                                  build-button
                                                   view-button])))))
 
 (defn -main [& args]
   (-> (make-gui)
       (show!)))
+

@@ -6,7 +6,7 @@
          [color-screen :only [color-screen-template]]
          [text-screen :only [text-screen-template]]]))
 
-(def keyword->widget-templates
+(def keyword->widget-template
   (array-map
    :function-cannon function-cannon-template
    :globule-receiver globule-receiver-template
@@ -20,5 +20,5 @@
   (assoc level-map :widgets
     (for [{:keys [name answers]} (:widgets level-map)]
       (fn [app]
-        ((:build (keyword->widget-templates name))
+        ((:build (keyword->widget-template name))
          (assoc answers :app app))))))

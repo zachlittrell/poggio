@@ -8,6 +8,10 @@
 
 (declare keyword->widget)
 
+(defn get-grid-component [grid-panel row column]
+  (let [grid (.getLayout grid-panel)]
+    (.getComponent grid-panel (+ (* row (.getColumns grid)) column))))
+
 (defmacro for-grid-panel [[[row column component] panel & opts] & body]
   "A for-loop that loops through each child of the grid panel, 
    binding the current row, column, and component to the given variables."
@@ -52,7 +56,9 @@
    and applies body to the graphics of the image."
   `(image-icon* (image-pad [~width ~height] ~@body) ~image-meta))
 
-
+(defmacro image-icon-pad* [size image-meta & body]
+  `(let [img# (image-pad ~size ~@body)]
+     (image-icon* img# (assoc ~image-meta :image img#))))
 
 (defn- wheel-drag [angle-atom e [dx dy]]
   (let [this (.getSource e)

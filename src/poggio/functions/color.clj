@@ -3,7 +3,7 @@
   (:use [data color]
         [poggio.functions core utilities parser utilities]))
 
-(def color* (fn->pog-fn #(ColorRGBA. (/ %1 255) (/ %2 255) (/ %3 255) 1)
+(def color* (fn->pog-fn #(ColorRGBA. (/ %1 255.0) (/ %2 255.0) (/ %3 255.0) 1)
                         "color"
                         ["r" "g" "b"]
                         (docstr [["r" "a number between 0-255"] 

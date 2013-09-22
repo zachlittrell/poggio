@@ -40,7 +40,7 @@
 
 (defmacro image-pad [[width height] & body]
   "Returns an image with width and height
-   and applies body to the graphics of the image."
+1d   and applies body to the graphics of the image."
   `(let [img# (BufferedImage. ~width ~height BufferedImage/TYPE_INT_ARGB)]
           (doto (.createGraphics img#)
                    (.setColor Color/BLACK)
@@ -138,8 +138,9 @@
     (id-of! grid id)
     (.setLayout grid (grid-layout 0 2))
     (doseq [item init]
-      (let [w (widget)]
+      (let [w  (widget :init item)]
         (add! grid w (remove w))))
+    (.setRows (.getLayout grid) (/ (count init) 2))
     (border-panel :center (scrollable grid)
                   :size [30 :by 200]
                   :north (action :name "Add"
@@ -151,27 +152,26 @@
                                            (remove w))
                                      (revalidate!)))))))
 
-(defn add-init! [f init-key]
+(defn- add-init! [f init]
   (fn [& opts]
     (let [{:as opts-map} opts]
       (if (contains? opts-map :init)
-        (apply f init-key (:init opts-map)
-               (flatten (dissoc opts-map :init)))
+        (let [args (apply concat (seq (dissoc opts-map :init)))]
+          (if (keyword? init)
+            (apply f init (:init opts-map) args)
+            (doto (apply f args)
+              (init (:init opts-map)))))
         (apply f opts)))))
 
 (def keyword->widget
   {:direction wheel
-   :string    (add-init! text :text)
+   :string    (add-init! text text!)
    :boolean   (add-init! checkbox :selected?)
    :color     (add-init! color-selection-button :selection)
-   :choice    (fn [& {:as opts-map}]
-                (if (contains? opts-map :init)
-                  (doto (apply combobox (flatten (dissoc opts-map :init)))
-                    (selection! (:init opts-map)))
-                  (apply combobox (flatten opts-map))))
+   :choice    (add-init! combobox selection!)
    :list      listx
    :integer   (fn [& {:keys [id init] :or {init 0} }]
-                (spinner :id id :model init))
+                (spinner :id id :model (spinner-model init :by 1)))
    :decimal   (fn [& {:keys [id init] :or {init 0.0}}]
                 (apply spinner :id id :model (spinner-model init :by 0.1)
                          []))})
@@ -195,5 +195,4 @@
                    :content (scrollable panel)
                    :size [400 :by 400]
                    :success-fn (fn [_] (value panel))))))
-
 

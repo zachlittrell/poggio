@@ -138,12 +138,13 @@
    (make-app 
      (fn [app nifty] (set-up-room! app level nifty))
      (fn [app nifty] (.stop app))))
-  ([setup! end-level!]
+  ([setup! end-level! & {:as opts-map}]
     (doto
   (proxy [SimpleApplication][]
     (stop []
       (proxy-super stop)
-      (shutdown-agents))
+      (if (:shutdown? opts-map)
+        (shutdown-agents)))
     (simpleUpdate[tpf]
    
       (let [cam (.getCamera this)

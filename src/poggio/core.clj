@@ -26,5 +26,5 @@
 (defn -main [& args]
   (.setLevel (java.util.logging.Logger/getLogger "com.jme3") 
              java.util.logging.Level/SEVERE)
-  (doto (viewer/make-app -init -end-level)
+  (doto (viewer/make-app -init -end-level :shutdown? true)
     (.start)))

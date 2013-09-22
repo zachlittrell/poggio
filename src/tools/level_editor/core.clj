@@ -42,20 +42,46 @@
   (let [{:keys [image]} template]
     (image-icon* image template)))
 
-(defn item-panel []
- (listbox :model (concat (vals default-item-icons)
-                         (map template->item-icon widget-templates))))
+(defn answer-questions [questions answers]
+  (for [{:keys [id type] :as question} questions
+        :let [answer (answers id)]]
+    (do
+    (assoc question :type (if (keyword? type)
+                            ;;If type was a keyword, we add the init key
+                            [type :init answer]
+                            (let [index (.indexOf type :init)]
+                              (if (< -1 index)
+                                ;;If there is already an init, replace it
+                                (assoc type (inc index) answer)
+                                ;;Else, add the init key.
+                                (conj type :init answer)))))))
+  )
 
+(defn item-panel []
+  (listbox :model (concat (vals default-item-icons)
+                          (map template->item-icon widget-templates))))
 
 (defn update-selected! [item-box e]
   (config! (.getComponent e)
-      :icon (let [icon (selection item-box)
-                  m (meta icon)
-                  questions (:questions m)]
-              (image-icon* (.getImage icon)
-                           (assoc m :answers (if questions
-                                               (apply get-values questions)
-                                               nil))))))
+      :icon (condp == (.getButton e)
+              java.awt.event.MouseEvent/BUTTON3
+              (let [icon (.getIcon (.getComponent e))
+                    m (meta icon)
+                    answers (:answers m)]
+                (if answers
+                  (image-icon* (.getImage icon)
+                     (assoc m :answers (apply get-values
+                                              (answer-questions (:questions m)
+                                                          answers))))
+                  icon))
+              java.awt.event.MouseEvent/BUTTON1
+              (let [icon (selection item-box)
+                     m (meta icon)
+                     questions (:questions m)]
+                 (image-icon* (.getImage icon)
+                              (assoc m :answers (if questions
+                                                  (apply get-values questions)
+                                               nil)))))))
 (defn map-panel [item-box]
   (let [items (for [n (range (* max-x max-y))]
                 (label 

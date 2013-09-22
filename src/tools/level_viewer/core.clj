@@ -5,8 +5,10 @@
            [com.jme3.material Material]
            [com.jme3.math ColorRGBA Vector3f]
            [com.jme3.scene Spatial]
-           [com.jme3.system AppSettings])
-  (:require [jme-clj.input :as input])
+           [com.jme3.system AppSettings]
+           [tools.level_viewer.context LevelContext])
+  (:require [jme-clj.input :as input]
+            [tools.level-editor.templates :as templates])
   (:use [control io]
         [data coll object]
         [jme-clj spatial]
@@ -34,8 +36,6 @@
   (if-let [end-level! (get-user-data! (.getRootNode app) end-level-key)]
     (end-level!)
     (.stop app)))
-
-
 
 (def player  (character-control :step-height (float 0.025)
                                 :jump-speed 20
@@ -113,8 +113,9 @@
   (future
     (try
       (let [space (physics-space app)]
-        (let [level (load-level (basic-level 
-                                  (if (fn? level) (level) level))
+        (let [level (load-level (basic-level
+                                  (templates/eval-level
+                                  (if (fn? level) (level) level)))
                                 app
                                 [(.getCamera app) player]
                                 [(.getCamera app)])]
@@ -140,7 +141,8 @@
      (fn [app nifty] (.stop app))))
   ([setup! end-level! & {:as opts-map}]
     (doto
-  (proxy [SimpleApplication][]
+  (proxy [SimpleApplication LevelContext][]
+    (end_level! [] (end-level! this))
     (stop []
       (proxy-super stop)
       (if (:shutdown? opts-map)

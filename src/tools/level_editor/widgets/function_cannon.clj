@@ -209,10 +209,12 @@
                {:id :transform-id :type :string :label "Transformer"}
                {:id :queue?    :type :boolean    :label "Queue?"}
                {:id :constraint :type :string  :label "Constraint"}]
-   :prelude `(use '~'tools.level-editor.widgets.function-cannon)
-   :build     (fn [[x z] {:keys [id direction velocity mass
-                                 queue? transform-id constraint]}]
-                `(do
-                   (fn [app#] 
-                   (build-function-cannon {:x ~x :z ~z :id  ~id :direction ~direction :velocity ~velocity :mass  ~mass :constraint ~constraint :app app# :queue? ~queue? :transform-id ~transform-id}))))})
+   :build build-function-cannon
+  ;; :prelude `(use '~'tools.level-editor.widgets.function-cannon)
+  ;; :build     (fn [[x z] {:keys [id direction velocity mass
+  ;;                               queue? transform-id constraint]}]
+  ;;              `(do
+  ;;                 (fn [app#] 
+  ;;                 (build-function-cannon {:x ~x :z ~z :id  ~id :direction ~direction :velocity ~velocity :mass  ~mass :constraint ~constraint :app app# :queue? ~queue? :transform-id ~transform-id}))))
+   })
 

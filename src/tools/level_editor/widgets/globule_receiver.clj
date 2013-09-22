@@ -104,9 +104,12 @@
                                      :model [:open
                                              :pass]] :label "Protocol"}
                {:id :pattern :type [:list :type :string] :label "Matches"}]
-   :prelude `(use '~'tools.level-editor.widgets.globule-receiver)
-   :build (fn [[x z] {:keys [id direction y target-id pattern protocol]}]
-            `(do
-               (fn [app#]
-               (build-globule-receiver {:x ~x :y ~y :z ~z :id ~id :direction ~direction :target-id ~target-id :pattern ~pattern :app app# :protocol ~protocol}))))})
+   :build build-globule-receiver
+   ;:prelude `(use '~'tools.level-editor.widgets.globule-receiver)
+   
+  ; :build (fn [[x z] {:keys [id direction y target-id pattern protocol]}]
+  ;          `(do
+  ;             (fn [app#]
+  ;             (build-globule-receiver {:x ~x :y ~y :z ~z :id ~id :direction ~direction :target-id ~target-id :pattern ~pattern :app app# :protocol ~protocol}))))
+   })
 

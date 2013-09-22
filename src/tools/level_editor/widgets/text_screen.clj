@@ -4,7 +4,7 @@
            [com.jme3.font Rectangle]
            [com.jme3.math ColorRGBA FastMath Vector3f]
            [com.jme3.scene.shape Box Quad]) 
-  (:require [tools.level-viewer.core :as level-viewer])
+  (:require [tools.level-viewer.context :as level-context])
   (:use [control assert bindings timer]
         [data coll color object ring-buffer quaternion]
         [jme-clj animate bitmap-text control geometry material model node physics physics-control selector transform]
@@ -23,7 +23,7 @@
             (swap! *letters* (constantly letters))
             true)
           (when end-level?
-            (level-viewer/end-level! app))))))))
+            (level-context/end-level! app))))))))
 
 
 (defn build-text-screen [{:keys [x z id direction text target-id end-level? app transform-param transform success? parameter docstring success-text error-text font-size protocol]}]
@@ -170,9 +170,11 @@
                {:id :error-text :type [:string :multi-line? true] :label "Error Text"}
                {:id :target-id :type :string :label "Target"}
                {:id :end-level? :type :boolean :label "End Level?"}]
-   :prelude `(use '~'tools.level-editor.widgets.text-screen)
-   :build (fn [[x z] {:keys [id direction text target-id font-size transform-param transform success? parameter docstring success-text error-text end-level? protocol]}]
-            `(do
-               (fn [app#]
-               (build-text-screen {:x ~x :z ~z :id ~id :direction ~direction :text ~text :target-id ~target-id :app app# :transform-param ~transform-param :transform ~transform :success? ~success? :font-size ~font-size :parameter ~parameter :docstring ~docstring :success-text ~success-text :error-text ~error-text :end-level? ~end-level? :protocol ~protocol}))))})
+   :build build-text-screen
+  ;; :prelude `(use '~'tools.level-editor.widgets.text-screen)
+  ;; :build (fn [[x z] {:keys [id direction text target-id font-size transform-param transform success? parameter docstring success-text error-text end-level? protocol]}]
+  ;;          `(do
+  ;;             (fn [app#]
+  ;;             (build-text-screen {:x ~x :z ~z :id ~id :direction ~direction :text ~text :target-id ~target-id :app app# :transform-param ~transform-param :transform ~transform :success? ~success? :font-size ~font-size :parameter ~parameter :docstring ~docstring :success-text ~success-text :error-text ~error-text :end-level? ~end-level? :protocol ~protocol}))))
+   })
 

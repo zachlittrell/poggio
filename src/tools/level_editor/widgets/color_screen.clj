@@ -51,9 +51,11 @@
             (.fillRect 50 0 49 49))
    :questions [{:id :id :type :string :label "ID"}
                {:id :direction :type :direction :label "Direction"}]
-   :prelude `(use '~'tools.level-editor.widgets.color-screen)
-   :build (fn [[x z] {:keys [id direction target-id]}]
-            `(do
-               (fn [app#]
-               (build-color-screen {:x ~x  :z ~z :id ~id :direction ~direction :app app#}))))})
+   :build build-color-screen
+  ;; :prelude `(use '~'tools.level-editor.widgets.color-screen)
+  ;; :build (fn [[x z] {:keys [id direction target-id]}]
+  ;;          `(do
+  ;;             (fn [app#]
+  ;;             (build-color-screen {:x ~x  :z ~z :id ~id :direction ~direction :app app#}))))
+   })
 

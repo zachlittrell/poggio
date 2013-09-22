@@ -6,11 +6,7 @@
         [data string]
         [seesaw core]
         [seesawx core]
-        [tools.level-editor.widgets [function-cannon :only [function-cannon-template]]
-                                    [globule-receiver :only [globule-receiver-template]]
-                                    [glass-door :only [glass-door-template]]
-                                    [color-screen :only [color-screen-template]]
-                                    [text-screen :only [text-screen-template]]]
+        [tools.level-editor templates]
         [tools.level-viewer [core :only [view-level]]]))
 ;  (:gen-class))
 
@@ -30,17 +26,11 @@
              (.drawString  "☺" 49 49))
    :blank  default-image})
 
-(def widget-templates
-  [function-cannon-template
-   globule-receiver-template
-   glass-door-template
-   text-screen-template
-   color-screen-template])
 
-
-(defn template->item-icon [template]
+       
+(defn template->item-icon [[name template]]
   (let [{:keys [image]} template]
-    (image-icon* image template)))
+    (image-icon* image (assoc template :name name))))
 
 (defn answer-questions [questions answers]
   (for [{:keys [id type] :as question} questions
@@ -59,7 +49,7 @@
 
 (defn item-panel []
   (listbox :model (concat (vals default-item-icons)
-                          (map template->item-icon widget-templates))))
+                          (map template->item-icon keyword->widget-templates))))
 
 (defn update-selected! [item-box e]
   (config! (.getComponent e)
@@ -118,18 +108,22 @@
                       (for-grid-panel [[row column component] map-panel
                                        :let [icon (config component :icon)
                                              m (meta icon)
-                                             build (:build m)
+                                             name (:name m)
                                              answers (:answers m)]
-                                       :when build]
-                 (build [column row] answers)))
-      prelude (for-grid-panel [[row column component] map-panel
-                               :let [icon (config component :icon)
-                                     m (meta icon)
-                                     prelude (:prelude m)]
-                               :when prelude]
-                prelude)]
+                                       :when name]
+                        {:name name
+                         :answers (assoc answers :x column
+                                                 :z row)}))
+                 ;;(build [column row] answers)))
+      ;;prelude (for-grid-panel [[row column component] map-panel
+      ;;                         :let [icon (config component :icon)
+      ;;                               m (meta icon)
+      ;;                               prelude (:prelude m)]
+      ;;                         :when prelude]
+      ;;          prelude)
+        ]
     (list 'do
-          (list* 'do prelude)
+          ;(list* 'do prelude)
           {:loc loc
            :dir dir
            :walls walls

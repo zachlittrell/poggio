@@ -116,9 +116,11 @@
                               :label "Movement"}
                {:id :speed :type :decimal :label "Speed"}
                {:id :time :type :decimal :label "Time"}]
-   :prelude `(use '~'tools.level-editor.widgets.glass-door)
-   :build (fn [[x z] {:keys [id direction distance movement speed time]}]
-           `(do
-                 (fn [app#] 
-                 (build-glass-door {:x ~x :z ~z :id ~id :direction ~direction :distance ~distance :movement ~movement :speed ~speed :time ~time :app app#}))))})
+   :build build-glass-door
+  ;; :prelude `(use '~'tools.level-editor.widgets.glass-door)
+  ;; :build (fn [[x z] {:keys [id direction distance movement speed time]}]
+  ;;         `(do
+  ;;               (fn [app#] 
+  ;;               (build-glass-door {:x ~x :z ~z :id ~id :direction ~direction :distance ~distance :movement ~movement :speed ~speed :time ~time :app app#}))))
+   })
 

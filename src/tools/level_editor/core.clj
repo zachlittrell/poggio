@@ -92,18 +92,22 @@
                     answers (:answers m)]
                 (if answers
                   (image-icon* (.getImage icon)
-                     (assoc m :answers (apply get-values
-                                              (answer-questions (:questions m)
-                                                          answers))))
+                     (if-let [answers (apply get-values
+                                             (answer-questions (:questions m)
+                                                               answers))]
+                       (assoc m :answers answers)
+                       m))
                   icon))
               java.awt.event.MouseEvent/BUTTON1
               (let [icon (selection item-box)
                      m (meta icon)
-                     questions (:questions m)]
+                     questions (:questions m)
+                     answers (when questions
+                               (apply get-values questions))]
+                (if (and (seq questions) (not answers))
+                 (.getIcon (.getComponent e))
                  (image-icon* (.getImage icon)
-                              (assoc m :answers (if questions
-                                                  (apply get-values questions)
-                                               nil)))))))
+                              (assoc m :answers answers)))))))
 (defn map-panel [item-box]
   (let [items (for [n (range (* max-x max-y))]
                 (label 
@@ -183,13 +187,22 @@
                :success-fn (fn [_ file]
                              (load-level! (read-string (slurp file)) map-panel))))))
 
-
+(defn save-button [map-panel]
+  (action :name "Save"
+          :handler
+          (fn [_]
+            (choose-file
+              :type :save
+              :success-fn (fn [_ file]
+                            (spit file (object->pretty-printed-string
+                                         (code map-panel))))))))
 
 (defn make-gui []
   (let [item-box (item-panel)
         map-panel  (map-panel item-box)
         output-panel (output-panel map-panel)
         load-button (load-button map-panel)
+        save-button (save-button map-panel)
         build-button (build-button map-panel output-panel)
         view-button (view-button map-panel)]
   (frame :title "Poggio Level Editor"
@@ -202,6 +215,7 @@
                                           :divider-location 0.5)
                                 :north (flow-panel 
                                          :items [ load-button
+                                                  save-button
                                                   build-button
                                                   view-button])))))
 

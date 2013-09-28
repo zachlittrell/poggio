@@ -19,6 +19,7 @@
 
 (defprotocol Ballable
   (modify-ball! [val app font ball-node ball]))
+
 (extend-protocol Ballable
   ColorRGBA
   (modify-ball! [color app ball-font ball-node ball]

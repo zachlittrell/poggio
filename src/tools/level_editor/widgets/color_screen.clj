@@ -4,19 +4,25 @@
            [com.jme3.bullet.control RigidBodyControl]
            [com.jme3.math ColorRGBA Vector3f]
            [com.jme3.scene.shape Box Quad])
-  (:use [control bindings timer]
+  (:use [control assert bindings timer]
         [data coll color object ring-buffer quaternion]
         [jme-clj animate geometry material model physics physics-control selector]
         [nifty-clj popup]
         [poggio.functions core scenegraph color utilities]
         [seesawx core]))
 
-(defn process-color! [screen color]
-  (let-weave (map? color)
-    [color (:value color)]
-    []
-    (-> (.getMaterial screen)
-        (.setColor "Color" (value color {})))))  
+(defn process-color! [screen {color :value
+                              on-error! :on-error!
+                              :as input}]
+  (try
+    (let [color (value color)]
+      (assert! (implements? ColorRGBA color))
+      (-> (.getMaterial screen)
+          (.setColor "Color" color)))
+    (catch Exception e
+      (when-not (:globule input)
+        ;;We don't want to report an error if a globule bumps 
+        (on-error! e)))))
   
 
 (defn build-color-screen [{:keys [x z id direction target-id app]}]

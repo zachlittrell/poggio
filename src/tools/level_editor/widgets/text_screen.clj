@@ -69,7 +69,8 @@
                     (invoke* message env []))
                   (fn [result]
                     (when-let [t (select app target-id)]
-                      (invoke* (spatial-pog-fn t) {} [result])))
+                      (invoke* (spatial-pog-fn t) {} [{:on-error! on-error!
+                                                       :value result}])))
                   (fn [error]
                     (on-error! error))))))))
 

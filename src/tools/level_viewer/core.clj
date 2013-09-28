@@ -5,8 +5,8 @@
            [com.jme3.material Material]
            [com.jme3.math ColorRGBA Vector3f]
            [com.jme3.scene Spatial]
-           [com.jme3.system AppSettings]
-           [tools.level_viewer.context LevelContext])
+           [com.jme3.system AppSettings])
+           ;[tools.level_viewer.context LevelContext])
   (:require [jme-clj.input :as input]
             [tools.level-editor.templates :as templates])
   (:use [control io]
@@ -141,7 +141,7 @@
      (fn [app nifty] (.stop app))))
   ([setup! end-level! & {:as opts-map}]
     (doto
-  (proxy [SimpleApplication LevelContext][]
+  (proxy [SimpleApplication tools.level_viewer.context.LevelContext][]
     (end_level! [] (end-level! this))
     (stop []
       (proxy-super stop)

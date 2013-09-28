@@ -41,11 +41,12 @@
   ([spatial time repeat? f]
    (control-timer (timer-control time repeat? f) spatial)))
 
-(defn computation-control [time-out f success fail]
+(defn computation-control
   "Returns a control that computes f in a separate thread.
    If it times-out or throws an error, the fail function is called
    with the error message. Else, the success function is called
    with the result of f."
+  [time-out f success fail]
   (let [computation (future (try-right f))
         time-elapsed (atom 0)]
     (proxy [AbstractControl][]

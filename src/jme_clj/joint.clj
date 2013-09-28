@@ -8,7 +8,7 @@
                           ~'axisA ~'axisB)]
   `(def-opts-constructor ~name
       [:setter]
-      {:nodeA
+      {:nodeA nil
        :nodeB nil
        :pivotA nil
        :pivotB nil

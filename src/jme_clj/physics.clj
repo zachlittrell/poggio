@@ -26,8 +26,9 @@
   (apply attach!* physics-node physics-node children))
 
 
-(defn detach! [& spatials]
+(defn detach!
   "Detaches the children from both the scenegraph and the physics-space."
+  [& spatials]
   (doseq [spatial spatials]
     (let [phys-control (.getControl spatial PhysicsControl)]
       (.setEnabled phys-control false))

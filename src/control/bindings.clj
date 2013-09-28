@@ -1,12 +1,13 @@
 (ns control.bindings)
 
-(defmacro let-weave [pred true-bindings false-bindings & body]
+(defmacro let-weave
   "Creates a let binding which uses the bindings in true-bindings when
    pred is true and false-bindings otherwise. The body is composed of pairs,
    a vector of symbols and a form, separated by :>>, such that the form
    is inserted into the let if all of the symbols in the vector are 
    contained in the selected bindings. There can be a default code at the
    end with no binding."
+  [pred true-bindings false-bindings & body]
   (let [in-true-bindings? (set (flatten (map first 
                                              (partition 2 true-bindings))))
         in-false-bindings? (set (flatten (map first 

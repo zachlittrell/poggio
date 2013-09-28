@@ -4,8 +4,9 @@
   (:import [com.jme3.light AmbientLight DirectionalLight]))
 
 
-(defmacro def-light-constructor [name default defaults constructor handlers]
+(defmacro def-light-constructor
   "Creates a constructor for a Light subclass with pre-provided handlers."
+  [name default defaults constructor handlers]
   `(def-opts-constructor ~name
                          ~default
                          ~defaults

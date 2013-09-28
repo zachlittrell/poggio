@@ -9,9 +9,10 @@
    :controls [:do-seq
               :replace [#"^(.*)$","add-control"]]})
 
-(defmacro def-spatial-constructor [name default defaults constructor handlers]
+(defmacro def-spatial-constructor
   "Creates a constructor, specifically for Spatial subclasses,
    with defaults provided."
+  [name default defaults constructor handlers]
   `(def-opts-constructor ~name
      ~default
      ~defaults

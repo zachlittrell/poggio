@@ -15,10 +15,11 @@
   (implements? [p child] (extends? p (class child))))
 
 
-(defn type-mismatches [types objs]
+(defn type-mismatches
   "Returns either nil if all objects in objs 'implement' the corresponding
    type in types, as per the Implementable protocol, or the first pair
    that fails this type check."
+  [types objs]
   (seq (filter (fn [[type obj]] (not (implements? type obj)))
           (zip types objs))))
 

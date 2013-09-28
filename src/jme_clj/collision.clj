@@ -48,9 +48,10 @@
                                                      
 
 
-(defmacro pred-collision-listener [preds [this obj1 obj2 e] & body]
+(defmacro pred-collision-listener
   "Returns a Physics CollisionListener which only executes body when
    the colliding objects match preds in some permutation."
+  [preds [this obj1 obj2 e] & body]
   `(let [preds# ~preds]
      (reify PhysicsCollisionListener
        (collision[~this ~e]
@@ -58,17 +59,19 @@
                                                       (.getNodeB ~e)])]
             ~@body)))))
 
-(defmacro on-collision! [physics-space bindings & body]
+(defmacro on-collision!
   "Adds a PhysicsCollisionListener to the physics-space
    which uses bindings for its parameters and body for the
    collision function body."
+  [physics-space bindings & body]
   `(.addCollisionListener (physics/physics-space ~physics-space)
       (reify PhysicsCollisionListener
         (collision ~bindings ~@body))))
 
-(defmacro on-pred-collision! [physics-space preds [this obj1 obj2 e :as bindings]  & body]
+(defmacro on-pred-collision!
   "Adds a predicated PhysicsCollisionListener to the physics-space.
    See pred-collision-listener for details."
+  [physics-space preds [this obj1 obj2 e :as bindings]  & body]
   `(.addCollisionListener (physics/physics-space ~physics-space)
       (pred-collision-listener ~preds ~bindings ~@body)))
 

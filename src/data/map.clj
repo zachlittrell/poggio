@@ -4,9 +4,10 @@
   (:refer-clojure :exclude [keys merge vals])
   (:require [clojure.core :as core]))
 
-(defn seq->pairs [s]
+(defn seq->pairs
   "Converts a sequence into a sequence of vector pairs,
    maintaining the order they appeared in s."
+  [s]
   (map vec (partition 2 s)))
 
 (defprotocol MapLike
@@ -67,8 +68,9 @@
         (recur (merge m (key-filter m2 in-shared-keys)) ms)
         m))))
 
-(defn invert-map [m]
+(defn invert-map
   "Returns a map inverted."
+  [m]
   (loop [m m
          m' {}]
     (if-let [[[key val] & more] m]

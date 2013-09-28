@@ -23,26 +23,30 @@
                          (if (nil? tail) nil (list tail))))))
   
 
-(defn textfield [textfield-entry]
+(defn textfield
   "Returns the actual textfield."
+  [textfield-entry]
   (-> textfield-entry
       (.getElements)
       (first)
       (.getElements)
       (second)))
      
-(defn parent [textfield-entry]
+(defn parent
   "Returns the previous element before textfield-entry."
+  [textfield-entry]
   (.getParent textfield-entry))
 
-(defn tail [textfield-entry]
+(defn tail
   "Returns the next element."
+  [textfield-entry]
   (let [elems (.getElements textfield-entry)]
     (when (== 2 (count elems))
       (second elems))))
 
-(defn line-number [textfield-entry]
+(defn line-number
   "Returns the line-number."
+  [textfield-entry]
   (-> textfield-entry
       (.getElements)
       first
@@ -51,8 +55,9 @@
       text
       (Integer/parseInt)))
 
-(defn set-line-number! [textfield-entry f]
+(defn set-line-number!
   "Sets the line-number to be (f (line-number textfield-entry))"
+  [textfield-entry f]
   (let [label (-> textfield-entry
                   (.getElements)
                   first
@@ -63,8 +68,9 @@
 (defn first-entry? [textfield-entry]
   (== (line-number textfield-entry) 1))
 
-(defn line-text [textfield-entry]
+(defn line-text
   "Returns the text of the entry."
+  [textfield-entry]
   (-> textfield-entry
       (.getElements)
       (first)
@@ -160,8 +166,9 @@
                                      front))
                             prev)))])))
 
-(defn first-entry [textfieldx]
+(defn first-entry
   "Returns the first entry of the textfieldx."
+  [textfieldx]
   (-> textfieldx
       (select , "textfield-entries")
       (.getElements)
@@ -201,8 +208,9 @@
              (swap-cursors! entry (parent entry)))
         nil))))
 
-(defn set-lines! [nifty textfieldx text]
+(defn set-lines!
   "Sets the text of this textfieldx."
+  [nifty textfieldx text]
   (let [[line & lines] (or (seq (str/split-lines text)) [""])
         entry (first-entry textfieldx)
         add-rest #(loop [lines lines
@@ -221,10 +229,11 @@
 
 
 
-(defn textfieldx [& opts]
+(defn textfieldx
   "Returns a map, with :textfieldx mapping to the actual textfieldx,
    and :initialize! mapping to a function that takes a nifty instance
    and initializes this textfield."
+  [& opts]
   (let [{:keys [id] :as opts-map} opts]
     {:textfieldx (apply textfieldx-component opts)
      :initialize! (fn [nifty]

@@ -26,11 +26,13 @@
   (blue [c] (.getBlue c))
   (alpha [c] (.getAlpha c)))
 
-(defn color->triple [color]
+(defn color->triple
   "Returns a triple containing the red, green, and blue value of the color"
+  [color]
   [(red color) (green color) (blue color)])
 
-(defn color->quadruple [color]
+(defn color->quadruple
   "Returns a quadruple containing the red, green, blue, and alpha value
    of the color."
+  [color]
   (conj (color->triple color) (alpha color)))

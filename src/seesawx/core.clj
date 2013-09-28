@@ -12,9 +12,10 @@
   (let [grid (.getLayout grid-panel)]
     (.getComponent grid-panel (+ (* row (.getColumns grid)) column))))
 
-(defmacro for-grid-panel [[[row column component] panel & opts] & body]
+(defmacro for-grid-panel
   "A for-loop that loops through each child of the grid panel, 
    binding the current row, column, and component to the given variables."
+  [[[row column component] panel & opts] & body]
   `(let [grid# (.getLayout ~panel)
          max-x# (.getRows grid#)
          max-y# (.getColumns grid#)]
@@ -25,9 +26,10 @@
            ~@opts]
        ~@body)))
 
-(defn some-in-grid-panel [pred grid-panel]
+(defn some-in-grid-panel
   "Returns a vector containing the row, column, and component of the first
    component that (pred component) returns true for, or nil."
+  [pred grid-panel]
   (when-let [[coord & _] 
              (seq (for-grid-panel [[row column component] grid-panel
                                    :when (pred component)]
@@ -36,24 +38,27 @@
                                          
 
 
-(defn image-icon* [img image-meta]
+(defn image-icon*
   "Returns an ImageIcon using image that can also be treated
    like a map, whose keys and values are determined by image-meta."
+  [img image-meta]
   (proxy [ImageIcon clojure.lang.IMeta] [img]
     (meta [] image-meta)))
 
-(defmacro image-pad [[width height] & body]
+(defmacro image-pad
   "Returns an image with width and height
 1d   and applies body to the graphics of the image."
+  [[width height] & body]
   `(let [img# (BufferedImage. ~width ~height BufferedImage/TYPE_INT_ARGB)]
           (doto (.createGraphics img#)
                    (.setColor Color/BLACK)
                    ~@body)
           img#))
 
-(defmacro image-icon-pad [[width height] image-meta & body]
+(defmacro image-icon-pad
   "Returns an image-icon* with width and height and the given image-meta,
    and applies body to the graphics of the image."
+  [[width height] image-meta & body]
   `(image-icon* (image-pad [~width ~height] ~@body) ~image-meta))
 
 (defmacro image-icon-pad* [size image-meta & body]
@@ -74,9 +79,10 @@
                               center-x))))))
   (.repaint (.getSource e)))
 
-(defn wheel [& options]
+(defn wheel
   "Returns a wheel component with a directed arrow whose value is the angle
    the arrow points to."
+  [& options]
   (let [{:keys [id init]
          :or {init (/ Math/PI 2.0)}} options
         angle (atom init)]
@@ -114,10 +120,11 @@
                     :blue (.getBlue c)}))
   (value!* [this v] (selection! this v)))
 
-(defn listx [& opts]
+(defn listx
   "Creates a widget that allows the user to build up a list.
    Accepts a type option, which can be one of the widget keywords
    used by get-values (the :string type is used if omitted)."
+  [& opts]
   (let [{:keys [type id init]
          :or
          {type :string
@@ -182,11 +189,12 @@
                 (apply spinner :id id :model (spinner-model init :by 0.1)
                          []))})
 
-(defn get-values [& questions]
+(defn get-values
   "Creates a dialog which creates widgets for each pair in questions,
    where a pair consists of a string for a label and a keyword for the 
    type of value desired, and returns a map of the final values, or nil
    if the user cancels."
+  [& questions]
   (let [panel (grid-panel :columns 2
                           :items (flatten 
                                    (for [{:keys [id type label]} questions]

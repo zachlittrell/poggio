@@ -32,9 +32,10 @@
   (source-code [f] "Returns the source code as a string, or nil if there is no
                     source code."))
 
-(defn source* [f]
+(defn source*
   "Returns the source code of f, if it has any. Else, it returns the empty
    string."
+  [f]
   (if (implements? Sourceable f)
     (or (source-code f) "")
     ""))
@@ -52,8 +53,9 @@
   (name* [param] (:name param))
   (type* [param] (:type param)))
 
-(defn pog-implements? [param obj]
+(defn pog-implements?
   "Returns true if obj 'implements' the type of the PogFnParameter."
+  [param obj]
   (implements? (type* param) obj))
 
 
@@ -86,8 +88,9 @@
   (general-type-str [type] (fn-str (:parameter-count type))))
 
 
-(defn docstring* [f]
+(defn docstring*
   "Returns the docstring of f with whitespace merged together."
+  [f]
   (trivialize-whitespace (docstring f)))
 
 (defn pog-fn 
@@ -136,15 +139,17 @@
     (assert! (variable-defined? env name))
     (value (env name) env)))
 
-(defn var* [name]
+(defn var*
   "Returns a PogFnVar for name."
+  [name]
   (PogFnVar. name))
 
 (defn var*? [o]
   (implements? PogFnVar o))
 
-(defn correct-arity? [f args]
+(defn correct-arity?
   "Returns true iff args is the correct length for f."
+  [f args]
   (== (count (parameters f))
       (count args)))
 
@@ -162,9 +167,10 @@
             (lazy-invoke f env args*)
             (invoke f (map/value-map args* #(value % env)))))))))
 
-(defn partial* [f args-map]
+(defn partial*
   "Partially applies a Pog function using args-map, which
    maps applied parameters to their values."
+  [f args-map]
   (reify
     ObjTypeStringable
     (obj-type-str [f] (fn->str f))
@@ -191,9 +197,10 @@
                            (invoke v {}))
         :else v)))
 
-(defn fn-invoke [f parameters args]
+(defn fn-invoke
   "Invokes clojure function f on args, reducing any nullary
    PogFn into its output."
+  [f parameters args]
   (let [args* (for [param (map name* parameters)]
                (value (args param)))]
     (doseq [[type arg] (zip (map type* parameters)
@@ -209,9 +216,10 @@
     (basic-pog-fn parameters docstring
                  (partial fn-invoke f parameters))))
 
-(defn seq->partial-pog-fn [seq]
+(defn seq->partial-pog-fn
   "Converts seq into an applied PogFn. Unlike seq->pog-fn,
    all elements must be already PogFns."
+  [seq]
   (if (seq? seq)
     (let [[f & args] seq
           f* (seq->partial-pog-fn f)
@@ -313,7 +321,8 @@
   ([obj docstring]
     (fn->pog-fn (constantly obj) "constant"  [] docstring)))
 
-(defn comp* [f1 f2]
+(defn comp*
   "Composes two PogFunctions."
+  [f1 f2]
   (seq->pog-fn "compose" ["f" "g" "x"] (list (var* "f") 
                                              (list (var* "g") (var* "x")))))

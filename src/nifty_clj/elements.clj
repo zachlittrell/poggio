@@ -78,8 +78,9 @@
   (.markForRemoval element)
   (.layoutElements (.getParent element)))
 
-(defn remove-children! [element children]
+(defn remove-children!
   "Removes every child in children from element."
+  [element children]
   (doseq [child children]
     (.markForRemoval child))
   (.layoutElements element))

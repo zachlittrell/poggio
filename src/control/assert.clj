@@ -2,9 +2,10 @@
 
 (defmulti error-message (fn [f & _] f))
 
-(defmacro assert! [[f & args :as form]]
+(defmacro assert!
   "Same as assert, except uses the error message given by applying
    error-message to the function."
+  [[f & args :as form]]
   `(let [f# ~f
          args# [~@args]]
      (when-not (apply f# args#)

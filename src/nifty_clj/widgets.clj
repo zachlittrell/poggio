@@ -3,8 +3,9 @@
   (:require [nifty-clj.builders :as builder])
   (:use [data color]))
 
-(defn wbutton [& options]
+(defn wbutton
   "Returns a control that acts like a button."
+  [& options]
   (let [{:keys [id background-color color label
                 width height]
          :or {background-color "#734f96"

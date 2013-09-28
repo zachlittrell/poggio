@@ -11,8 +11,9 @@
 (defn nothing? [m]
   (identical? m nothing))
 
-(defn just? [m]
+(defn just?
   "Returns true iff m is not nothing."
+  [m]
   (not (nothing? m)))
 
 

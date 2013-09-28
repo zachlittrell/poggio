@@ -17,17 +17,19 @@
 (defn left? [either]
   (not (right? either)))
 
-(defn try-right [f]
+(defn try-right
   "Returns the result of computing f in a Right object,
    or the resulting exception in a Left object."
+  [f]
   (try
     (right (f))
     (catch Exception e
       (left e))))
 
-(defn on-either [either right-fn left-fn]
+(defn on-either
   "Returns the result of applying the value of either to right-fn
    if either is right, else applying the value of either to left-fn."
+  [either right-fn left-fn]
   (if (right? either)
     (right-fn (:value either))
     (left-fn (:value either))))

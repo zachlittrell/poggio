@@ -16,8 +16,9 @@
   {:label [:no-op]
    :shape [:no-op]})
 
-(defn transparent! [geom]
+(defn transparent!
   "Returns the geometry with transparency enabled."
+  [geom]
   (doto geom
     (-> ,
        (.getMaterial)

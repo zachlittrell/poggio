@@ -43,20 +43,23 @@
   [s]
   (str/split s #"(?<!^)(?=[A-Z])")) 
 
-(defn object->pretty-printed-string [o]
+(defn object->pretty-printed-string
   "Returns the object pretty-printed onto a string."
+  [o]
   (let [writer (StringWriter.)]
     (pretty/pprint o writer)
     (.toString writer)))
 
-(defn genstr [prefix]
+(defn genstr
   "Returns a randomly generated string, using the counter
    from gensym."
+  [prefix]
   (str prefix (clojure.lang.RT/nextID)))
 
-(defn trivialize-whitespace [s]
+(defn trivialize-whitespace
   "Returns the string s with single newlines turned into spaces,
    and multiple entries of whitespace turned into a single space."
+  [s]
   (-> s
      (str/replace #"\s+" " ")))
 

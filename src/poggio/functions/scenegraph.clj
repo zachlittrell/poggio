@@ -26,9 +26,10 @@
 
 
 
-(defn pog-fn->node [name pog-fn]
+(defn pog-fn->node
   "Returns a Node that implements PogFn protocol, and delegates
    its implementation to pog-fn."
+  [name pog-fn]
   ;;TODO This will be replaced with using getUserData
   (proxy [Node poggio.functions.core.PogFn poggio.functions.core.LazyPogFn] 
     [name]

@@ -31,16 +31,18 @@
       (onWayPointReach [_ motion-control way-point-index]
         (f motion-control way-point-index)))))
 
-(defn follow-path! [spatial time path]
+(defn follow-path!
   "Sets the spatial to follow the path, which should implement the
    MotionPathProvider protocol, with time duration. Returns the
    MotionEvent object controlling teh animation."
+  [spatial time path]
   (doto (MotionEvent. spatial (motion-path path) time LoopMode/DontLoop)
     (.play)))
 
 
-(defn visibility! [app geom show?]
+(defn visibility!
   "Toggles the visibility of the geom."
+  [app geom show?]
   (if (and show? (not (.getParent geom)))
     (do 
       (if-let [ctrl (physics-control geom)]

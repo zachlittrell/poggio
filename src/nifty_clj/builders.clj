@@ -311,9 +311,10 @@
                              :replace [#"\?$" ""]]})
 
 
-(defn laid-out-screen-around [child-layout & controls]
+(defn laid-out-screen-around
   "Returns a screen with one layer and one panel (which uses the given
    child-layout) that contains the given controls."
+  [child-layout & controls]
   (screen
     :layer
       (layer
@@ -323,24 +324,27 @@
             :child-layout child-layout
             :controls controls))))
         
-(defn screen-around [& controls]
+(defn screen-around
   "Returns (apply laid-out-screen-around :center controls)"
+  [& controls]
   (apply laid-out-screen-around :center controls))
 
-(defn laid-out-screen-around-panels [child-layout & panels]
+(defn laid-out-screen-around-panels
   "Returns a screen with one layer, which uses the given
    child layout, containing panels."
+  [child-layout & panels]
   (screen
     :layer 
       (layer
         :child-layout child-layout
         :panels panels)))
 
-(defn screen-around-panels [& panels]
+(defn screen-around-panels
   "Returns (apply laid-out-screen-around-panels :center panels)"
+  [& panels]
   (apply laid-out-screen-around-panels :center panels))
 
-(defn apply-interactions [element & interactions]
+(defn apply-interactions
   "Returns the element given.
    Can also pass optionally pairs of ids and a map of 
    interaction-handlers. If the id is a vector of an id
@@ -349,6 +353,7 @@
    for interactions (see nifty-clj.events) to 
    NiftyMethodInvokerProviders, and the keyword being the id of the
    element to apply the interactions to."
+  [element & interactions]
   (let [{:as interaction-map} interactions]
     (doseq [[id-key interactions] interaction-map
             [interaction handler] interactions]

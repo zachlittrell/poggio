@@ -59,7 +59,7 @@
         (try
         (invoke* (spatial-pog-fn f) {} [(spatial-pog-fn input)])
         (catch Exception e
-          (.printStackTrace e))))))
+          )))))
 
 (defn loading-screen! [nifty]
   (let [{:keys [author quote]} (random quotes)]

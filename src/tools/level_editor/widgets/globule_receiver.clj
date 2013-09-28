@@ -24,12 +24,13 @@
 (defn pass-globule! [app hoop target-id  globule]
   (detach! (:globule globule))
   (when-let [target (select app target-id)]
-  (let [val (value (:value globule) {})]
+  (let [val (value (:value globule) {})
+        f (spatial-pog-fn target)]
      (when (implements? ColorRGBA val)
       (.setColor (.getMaterial hoop) "Color" val) )
-     (invoke*  (spatial-pog-fn target) 
-               [nil (:on-error! globule) 
-                        (list val)]))))
+     (invoke*  f
+               [(:on-error! globule) 
+                (list val)]))))
 
 
 (defn str->encoding [^String s]
@@ -105,11 +106,5 @@
                                              :pass]] :label "Protocol"}
                {:id :pattern :type [:list :type :string] :label "Matches"}]
    :build build-globule-receiver
-   ;:prelude `(use '~'tools.level-editor.widgets.globule-receiver)
-   
-  ; :build (fn [[x z] {:keys [id direction y target-id pattern protocol]}]
-  ;          `(do
-  ;             (fn [app#]
-  ;             (build-globule-receiver {:x ~x :y ~y :z ~z :id ~id :direction ~direction :target-id ~target-id :pattern ~pattern :app app# :protocol ~protocol}))))
    })
 

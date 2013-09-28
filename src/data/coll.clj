@@ -49,6 +49,14 @@
     `(let [~obj* ~obj]
        [~@forms* ~obj*])))
 
+(defmacro |_|? [& forms]
+  "Returns a vector whose elements are from forms, with elements discarded
+   if they are false."
+  (let [syms (map (comp gensym (constantly "sym")) forms)
+        let-binding (interleave syms forms)]
+    `(let [~@let-binding]
+       (vec (filter identity [~@syms])))))
+
 (defn zip [& colls]
   "Returns a list with each coll, in order, 'zipped' into vectors with
    the corresponding members sharing a vector."

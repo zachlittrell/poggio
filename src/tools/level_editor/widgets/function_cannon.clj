@@ -180,12 +180,16 @@
                                  (start! timer))))))
                          PogFn
                          (parameters [_]
-                          [{:name "player"
-                            :type Warpable}
-                           {:name "on-error!"
-                            :type clojure.lang.IFn}
-                           {:name "globules"
-                           :type clojure.lang.Seqable}])
+                          ;;We don't want the user to interact with the cannon
+                          ;;if this cannon is queued
+                          (|_|?
+                             (when-not queue?
+                               {:name "player"
+                                :type Warpable})
+                             {:name "on-error!"
+                              :type clojure.lang.IFn}
+                             {:name "globules"
+                             :type clojure.lang.Seqable}))
                           (docstring [_]
                           (docstr [["globules" "a list of values"]]
                                   (str "Spits out a globule for each values in globules."
@@ -211,11 +215,5 @@
                {:id :queue?    :type :boolean    :label "Queue?"}
                {:id :constraint :type :string  :label "Constraint"}]
    :build build-function-cannon
-  ;; :prelude `(use '~'tools.level-editor.widgets.function-cannon)
-  ;; :build     (fn [[x z] {:keys [id direction velocity mass
-  ;;                               queue? transform-id constraint]}]
-  ;;              `(do
-  ;;                 (fn [app#] 
-  ;;                 (build-function-cannon {:x ~x :z ~z :id  ~id :direction ~direction :velocity ~velocity :mass  ~mass :constraint ~constraint :app app# :queue? ~queue? :transform-id ~transform-id}))))
    })
 

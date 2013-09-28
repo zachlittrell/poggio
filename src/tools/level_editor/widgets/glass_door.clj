@@ -30,6 +30,7 @@
 
 
 (defn toggle-door! [door-node state initial-location open? movement speed time app]
+  
   (let [state* @state]
     ;;We want to toggle the door only if it is not already opening
     (if (= (:state state*) :opened)

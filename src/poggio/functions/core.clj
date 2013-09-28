@@ -66,13 +66,25 @@
     (and (is-pog-fn? obj)
          (== arity (count (parameters obj))))))
 
+(defn fn-str [count]
+  (str count "-parameter function"))
+
 (defn fn->str [f]
-  (str (count (parameters f)) "-parameter function."))
+  (fn-str (count (parameters f))))
+
 
 (defrecord PogFnType [parameter-count]
   Implementable
   (implements? [p child]
-    (is-pog-fn? child 2)))
+    (is-pog-fn? child parameter-count)))
+
+(defmethod error-message is-pog-fn? [f [f* count]]
+  (error-message implements? [(PogFnType. count) f*]))
+
+(extend-protocol GeneralTypeStringable
+  PogFnType
+  (general-type-str [type] (fn-str (:parameter-count type))))
+
 
 (defn docstring* [f]
   "Returns the docstring of f with whitespace merged together."

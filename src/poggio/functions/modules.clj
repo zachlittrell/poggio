@@ -51,7 +51,9 @@
             "r-value" red-value*
             "g-value" green-value*
             "b-value" blue-value*}
-   "Value" {"id" id*}
+   "Functions" {"lambda" lambda*}
+   "Value" {"id" id*
+            "let" let*}
    "User" {}})
 
 (def core-env

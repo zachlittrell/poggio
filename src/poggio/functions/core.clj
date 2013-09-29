@@ -236,6 +236,11 @@
           (invoke* f* env args*))))
     seq))
 
+(defn- bind [f env]
+  (reify PogFn
+    (parameters [_] [])
+    (invoke [_ _] (value f env))))
+
 (defn invoke-seq 
   "Invokes the function represented by the seq, with the first argument
    as the function, followed by its arguments. Will recursively invoke
@@ -245,9 +250,8 @@
             (merge env 
               (map/value-map args
                 (fn [f]
-                  (reify PogFn
-                    (parameters [_] [])
-                    (invoke [_ _] (value f env))))))
+                  (bind f env)
+                    )))
             {})))
 
 (defn seq->pog-fn
@@ -301,8 +305,8 @@
     (obj-type-str [f] (fn->str f))
     LazyPogFn
     (lazy-invoke [_ env args]
-      (value (env "function") (assoc env (:name (args "var"))
-                                         (args "val"))))
+      (value (args "function") (assoc env (:name (args "var"))
+                                          (bind (args "val") env))))
     PogFn
    (parameters [_] [{:name "var"
                      :type PogFnVar}
@@ -314,6 +318,33 @@
              "function executed with variable set to value"))
    (invoke [f env]
       (lazy-invoke f env env))))
+
+(defn- semi-bind [f env]
+  (reify PogFn
+    (parameters [_] [])
+    LazyPogFn
+    (lazy-invoke [_ env* args*]
+      (value f (merge env env*)))))
+
+(def lambda*
+  (reify
+    ObjTypeStringable
+    (obj-type-str [f] (fn->str f))
+    LazyPogFn
+    (lazy-invoke [_ env {var "var"
+                         func "function"}]
+      (seq->pog-fn ""
+        [(:name var)]
+        (list let* var var (semi-bind func env))
+        ))
+    PogFn
+    (parameters [_] [{:name "var"
+                      :type PogFnVar}
+                     "function"])
+    (docstring [_]
+      (docstr [["var" "a variable"]
+               ["function" "a function to execute"]]
+              "a new 1-argument function that sets var and executes function."))))
 
 (defn constantly* 
   ([obj]

@@ -10,7 +10,7 @@
         [data coll color object ring-buffer quaternion]
         [jme-clj animate bitmap-text control geometry material model node physics physics-control selector transform]
         [nifty-clj popup]
-        [poggio.functions core scenegraph color utilities]
+        [poggio.functions core parser modules scenegraph color utilities]
         [seesawx core]))
 
 (def globule-shape (Sphere. 32 32 (float 0.4)))
@@ -119,6 +119,7 @@
 
 (defn build-function-cannon [{:keys [x z id direction velocity mass app
                                      queue?
+                                     init-queue
                                      constraint
                                      transform-id]}]
  (let [loc (Vector3f. (* x 16) -16 (* z 16))
@@ -196,7 +197,11 @@
                                        " Globules can be " (if (empty? constraint)
                                                              "numbers or colors" constraint))))
  
-                          )))))
+                          )))
+   (when (and queue? (not-empty init-queue))
+     (invoke* (spatial-pog-fn cannon) core-env [nil (code-pog-fn [] ""
+                                                        init-queue)]))
+   cannon))
  
 (def function-cannon-template
   {:image (image-pad [100 100]
@@ -213,6 +218,8 @@
                                       :init 0.5] :label "Mass"}
                {:id :transform-id :type :string :label "Transformer"}
                {:id :queue?    :type :boolean    :label "Queue?"}
+               {:id :init-queue :type [:string :multi-line? true]
+                                :label "Init Queue"}
                {:id :constraint :type :string  :label "Constraint"}]
    :build build-function-cannon
    })

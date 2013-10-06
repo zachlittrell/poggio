@@ -38,7 +38,7 @@
                           ["y" "a number"]]
                    "true if x < y")))
 
-(def greater-than?* (fn->pog-fn < "greater-than?"
+(def greater-than?* (fn->pog-fn > "greater-than?"
                       [{:name "x" :type Number}
                        {:name "y" :type Number}]
                       (docstr [["x" "a number"]

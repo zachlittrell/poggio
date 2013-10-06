@@ -5,6 +5,7 @@
 
 (def color* (fn->pog-fn #(ColorRGBA. (/ %1 255.0) (/ %2 255.0) (/ %3 255.0) 1)
                         "color"
+                        ;TODO check for numbers within proper range
                         ["r" "g" "b"]
                         (docstr [["r" "a number between 0-255"] 
                                  ["g" "a number between 0-255"]

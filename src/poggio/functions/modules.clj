@@ -1,5 +1,5 @@
 (ns poggio.functions.modules
-  (:use [poggio.functions boolean core list number color value])
+  (:use [poggio.functions boolean core list music number color value])
   (:require [clojure.string :as str]))
 
 (defn path
@@ -37,6 +37,12 @@
            "map" map*
            "single" single*
            "pair" pair*}
+   "Music" {"note" note*
+            "pitch" pitch*
+            "duration" duration*
+            "rest" rest*
+            "rest?" rest?*
+            "middle-c" middle-c*}
    "Number" {"add" add*
              "subtract" subtract*
              "multiply" multiply*

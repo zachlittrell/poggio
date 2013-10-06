@@ -6,6 +6,7 @@
 (def spatial-constructor-handlers
   "The default handlers for Spatial constructors"
   {:move [:simple]
+   :scale [:simple]
    :controls [:do-seq
               :replace [#"^(.*)$","add-control"]]})
 

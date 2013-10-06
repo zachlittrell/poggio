@@ -1,4 +1,4 @@
-(defproject poggio "0.1.0-SNAPSHOT"
+(defproject poggio "0.1.3-SNAPSHOT"
   :description "FIXME: write description"
   :repositories {"oss-sonatype" "https://oss.sonatype.org/content/repositories/snapshots/"}
   :main poggio.core
@@ -10,6 +10,7 @@
                  [org.clojure/core.match "0.2.0-alpha9"]
                  [org.clojure/math.combinatorics "0.0.3"]
                  [org.clojure/tools.macro "0.1.1"]
+                 [org.clojars.jmeeks/jfugue "4.0.3"]
                  [com.jme3/eventbus "3.0.0.20121220-SNAPSHOT"]
                  [com.jme3/j-ogg-oggd "3.0.0.20121220-SNAPSHOT"]
                  [com.jme3/j-ogg-vorbisd "3.0.0.20121220-SNAPSHOT"]

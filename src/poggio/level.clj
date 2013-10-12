@@ -16,12 +16,12 @@
                  transform]))
 
 (defprotocol Level
-  (load-level [this node warpables rotatables]))
+  (load-level [this node on-error! warpables rotatables]))
 
 (defrecord BasicLevel
   [loc dir wall-bounds wall-mat widgets]
   Level
-  (load-level [this app warpables rotatables]
+  (load-level [this app on-error! warpables rotatables]
     (let [level-node (node*)
           [x z :as init] loc
           wall-mat (textured-material (asset-manager app) wall-mat)
@@ -72,7 +72,7 @@
                          :controls [(RigidBodyControl. collision-shape
                                                        0)]))))
       ;;Build widgets
-      (apply attach!* app level-node (for [widget widgets] (widget app)))
+      (apply attach!* app level-node (for [widget widgets] (widget app on-error!)))
       level-node)))
 
 (defn basic-level 

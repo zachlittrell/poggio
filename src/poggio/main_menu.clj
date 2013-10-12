@@ -11,7 +11,7 @@
           :width "35%"
           :height "15%"))
 
-(defn main-menu [app nifty]
+(defn main-menu [app nifty on-error!]
  (let [load-level! (fn [level-path]
                      (level-viewer/set-up-room!
                        app
@@ -19,7 +19,8 @@
                             resource
                             slurp
                             load-string)
-                       nifty))
+                       nifty
+                       on-error!))
 
        screen (build-screen nifty
                (screen

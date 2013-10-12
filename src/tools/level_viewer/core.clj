@@ -104,7 +104,7 @@
                                                 player})))
         )))))
 
-(defn set-up-room! [app level nifty]
+(defn set-up-room! [app level nifty on-error!]
   (pause-physics! app)
   (let [root (.getRootNode app)]
     (when-not (zero? (.getQuantity root))
@@ -117,6 +117,7 @@
                                   (templates/eval-level
                                   (if (fn? level) (level) level)))
                                 app
+                                on-error!
                                 [(.getCamera app) player]
                                 [(.getCamera app)])]
           (doto level
@@ -137,7 +138,7 @@
 (defn make-app 
   ([level]
    (make-app 
-     (fn [app nifty] (set-up-room! app level nifty))
+     (fn [app nifty on-error!] (set-up-room! app level nifty on-error!))
      (fn [app nifty] (.stop app))))
   ([setup! end-level! & {:as opts-map}]
     (doto
@@ -199,7 +200,7 @@
       (doto this
         ;(set-up-room! level nifty)
         (set-up-collisions!))
-      (setup! this nifty)
+      (setup! this nifty alert!)
       (set-user-data! (.getRootNode this) end-level-key (partial end-level! this nifty))
 
                    )))

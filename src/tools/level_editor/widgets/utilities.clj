@@ -1,7 +1,9 @@
 (ns tools.level-editor.widgets.utilities
+  (:import [com.jme3.math ColorRGBA])
+  (:require [clojure.string :as str])
   (:use [control assert bindings timer]
-        [data coll color object]
-        [jme-clj control selector transform]
+        [data coll color object ring-buffer]
+        [jme-clj control selector transform physics]
         [poggio.functions core modules utilities color scenegraph]))
 
 (defn do-list-timer 
@@ -13,9 +15,10 @@
    on-empty is called. Else, the error is passed to on-failure.
    Every time a new timer is started, handle-timer! is called."
   [spatial xs type env transform 
-   on-value! on-empty! on-failure! handle-timer!]
+   init-wait-time
+   wait-time on-value! on-empty! on-failure! handle-timer!]
   (let [*xs* (atom xs)]
-    (control-timer spatial 0.5 false
+    (control-timer spatial init-wait-time false
       (fn []
         (let [comp-timer
                 (computation-timer spatial
@@ -37,6 +40,8 @@
                                                        type
                                                        env
                                                        transform
+                                                       (wait-time x)
+                                                       wait-time
                                                        on-value!
                                                        on-empty!
                                                        on-failure!
@@ -51,6 +56,8 @@
 
 (defn do-list-pog-fn 
   [& {:keys [spatial 
+             wait-time
+             init-wait-time
            on-value! queue? transformer-id valid-input-type queue-init param
            handle-continuation?
            app]
@@ -58,6 +65,7 @@
          valid-input-type Object}}]
   (let [*state* (atom {:state :inactive})
         *queue* (atom [])
+        wait-time (if wait-time wait-time (constantly init-wait-time))
         on-value! (if handle-continuation? 
                     on-value! 
                     #(do (on-value! %1) (%2)))
@@ -82,11 +90,23 @@
               (stop! (:timer state))))
           (when-not (and (= (:state state) :active)
                          queue?)
-            (let [timer (do-list-timer spatial balls valid-input-type
-                                       env transformer on-value!
+            (let [new-timer (fn new-timer [balls]
+                             (do-list-timer spatial balls valid-input-type
+                                       env transformer
+                                       init-wait-time
+                                       wait-time
+                                       on-value!
                                        (fn []
-                                        ;;TODO HERE we'll handle emptiness 
-                                         )
+                                        (let [queue @*queue*]
+                                          (if (empty? queue)
+                                            (reset! *state* {:state :inactive})
+                                            (do 
+                                              (reset! *queue* [])
+                                              (let [timer (new-timer queue)]
+                                                (reset! *state* {:state :active
+                                                                 :timer timer})
+                                                (start! timer))))))
+                                         
                                        (fn [error]
                                          (my-error! error)
                                          (on-error! error)
@@ -94,7 +114,8 @@
                                        (fn [timer]
                                          (reset! *state*
                                                  {:state :active
-                                                  :timer timer})))]
+                                                  :timer timer}))))
+                  timer (new-timer balls)]
               (reset! *state* {:state :active :timer timer})
               (start! timer))))))
     PogFn
@@ -110,4 +131,73 @@
     (docstring [_]
       docstring))))
 
+(defn str->encoding [^String s]
+  (condp re-matches s
+    #"-?(\d+)(.\d+)?" (bigdec s)
+    #"red" ColorRGBA/Red
+    #"green" ColorRGBA/Green
+    #"blue" ColorRGBA/Blue))
 
+(defprotocol Equable
+  (equal? [eq obj]))
+
+(extend-protocol Equable
+  clojure.lang.Seqable
+  (equal? [seq1 seq2]
+    (when (and (not-empty seq1) (not-empty seq2)
+               (equal? (first seq1) (first seq2)))
+      (recur (next seq1) (next seq2)))))
+
+(defn open-on-pattern-processor [target-id pattern]
+  (let [*buffer* (atom (ring-buffer (count pattern)))
+        encoded-pattern (map str->encoding (rseq pattern))]
+    {:docstring (format "Activates %s once it receives %s."
+                        target-id
+                        (str/join "," pattern))
+     :process! (partial swap! *buffer* adjoin )
+     :proceed? #(equal? encoded-pattern (lifo @*buffer*))
+     :transform (constantly true)}))
+
+(defn pass-processor [target-id]
+  {:docstring (format "Passes globules to %s." target-id)
+   :process! (constantly nil)
+   :proceed? (constantly true)
+   :transform list})
+
+(defn process-globule! [app receiver process! proceed? transform target-id globule]
+  (detach! (:globule globule))
+    (let [val (value (:value globule) {})]
+      (when (implements? ColorRGBA val)
+        (.setColor (.getMaterial receiver) "Color" val))
+     (process! val)
+    (if (proceed?)
+      (when-let [target (spatial-pog-fn (select app target-id))]
+        (let [val* (transform val)]
+        (invoke* target (if (== 1 (count (parameters target)))
+                          [val*]
+                          [nil val*])))))))
+
+
+(defn globule-processor-pog-fn
+  [& {:keys [app spatial target-id
+             process! proceed? transform
+              docstring]}]
+  (fn->pog-fn (partial process-globule! app spatial 
+                       process! proceed? transform target-id)
+              "processor"
+              ["globule"]
+              docstring))
+
+(defn keyword->globule-processor-pog-fn
+  [& {:keys [app spatial target-id pattern keyword]}]
+   (let [processor (case keyword
+                     :open-on-pattern (open-on-pattern-processor
+                                        target-id pattern)
+                     :pass (pass-processor target-id))]
+     (globule-processor-pog-fn :app app
+                               :spatial spatial
+                               :target-id target-id
+                               :process! (:process! processor)
+                               :proceed? (:proceed? processor)
+                               :transform (:transform processor)
+                               :docstring (:docstring processor))))

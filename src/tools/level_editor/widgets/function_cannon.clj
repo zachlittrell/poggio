@@ -121,7 +121,8 @@
                                      queue?
                                      init-queue
                                      constraint
-                                     transform-id]}]
+                                     transform-id
+                                     on-error!]}]
  (let [loc (Vector3f. (* x 16) -16 (* z 16))
        dir (angle->quaternion direction :y)
        ball-font (render-back! (bitmap-font :asset-manager app))
@@ -149,7 +150,6 @@
      (attach-pog-fn!* (reify
                           LazyPogFn
                           (lazy-invoke [_ env {player "player"
-                                               on-error! "on-error!"
                                                balls "globules"}]
                             (if (and player (< 16
                                                (.distance (.getPhysicsLocation player)

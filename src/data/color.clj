@@ -36,3 +36,13 @@
    of the color."
   [color]
   (conj (color->triple color) (alpha color)))
+
+(defn rgb-equal? 
+  "Returns true if the colors' rgb components are equal."
+  [color1 color2]
+  (and (== (red color1)
+           (red color2))
+       (== (green color1)
+           (green color2))
+       (== (blue color1)
+           (blue color2))))

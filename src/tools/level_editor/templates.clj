@@ -23,6 +23,7 @@
   [level-map]
   (assoc level-map :widgets
     (for [{:keys [name answers]} (:widgets level-map)]
-      (fn [app]
+      (fn [app on-error!]
         ((:build (keyword->widget-template name))
-         (assoc answers :app app))))))
+         (assoc answers :app app
+                        :on-error! on-error!))))))

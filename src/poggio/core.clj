@@ -6,10 +6,10 @@
   (:require [tools.level-viewer.core :as viewer])
   (:gen-class))
 
-(defn -init [app nifty]
+(defn -init [app nifty alert!]
   (.setDisplayFps app false)
   (.setDisplayStatView app false)
-  (.addScreen nifty "main-menu" (main-menu app nifty))
+  (.addScreen nifty "main-menu" (main-menu app nifty alert!))
   (.gotoScreen nifty "main-menu")
   (.play (audio-node :asset-manager app
                      :name "Music/06_Ghosts_I.ogg"

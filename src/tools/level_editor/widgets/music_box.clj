@@ -16,7 +16,7 @@
 
 (defn play-note! [app *stereos* on-error! player note]
   (let [[stereo & stereos] @*stereos*]
-    (.stream player (pattern note))
+    (.stream player (note->music-string note))
     (when (seq stereo)
       (invoke* (spatial-pog-fn (select app stereo)) [on-error! (list note)]))
     (reset! *stereos* stereos)))
@@ -50,6 +50,8 @@
                           :local-rotation dir)
        player (org.jfugue.StreamingPlayer.)
        *muted?* (atom false)]
+   (.stream player (pattern 
+                     (org.jfugue.Instrument. org.jfugue.Instrument/GUITAR)))
    (set-user-data! music-box "player" player)
    (set-user-data! music-box "*muted?*" *muted?*)
    (.scale music-box 8.0 8.0 8.0)

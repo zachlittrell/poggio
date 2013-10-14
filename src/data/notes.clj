@@ -22,7 +22,6 @@
   [^Note n]
   (.isRest n))
 
-
 (defn pitch 
   "Returns the pitch of the note."
   [^Note note]
@@ -39,6 +38,12 @@
     (doseq [element elements]
       (.addElement pattern ^JFugueElement element))
     pattern))
+
+(defn note->music-string
+  "Returns a music-string representation for note."
+  [^Note note]
+  (str "[" (pitch note) "]"
+       "/" (duration note)))
 
 (defn- coarse-value [n]
   (byte (/ n 128)))

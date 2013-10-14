@@ -5,6 +5,16 @@
            [com.jme3.bullet.control CharacterControl RigidBodyControl PhysicsControl] 
            [com.jme3.bullet.util CollisionShapeFactory]))
 
+;;(def-opts-constructor better-character-control
+;;  [:setter]
+;;  {:radius 2
+;;   :height 2
+;;   :mass 1}
+;;   `(com.jme3.bullet.control.BetterCharacterControl. ~'radius ~'height ~'mass)
+;;   {:radius [:no-op]
+;;    :height [:no-op]
+;;    :mass [:no-op]})
+
 (def-opts-constructor character-control
   [:setter]
   {:shape `(CapsuleCollisionShape. 2 2 1)

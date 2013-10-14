@@ -6,6 +6,7 @@
          [glass-door :only [glass-door-template]]
          [color-screen :only [color-screen-template]]
          [music-box :only [music-box-template]]
+         [sound-barrier :only [sound-barrier-template]]
          [text-screen :only [text-screen-template]]]))
 
 (def keyword->widget-template
@@ -16,6 +17,7 @@
    :text-screen text-screen-template
    :music-box music-box-template
    :ball-stereo ball-stereo-template
+   :sound-barrier sound-barrier-template
    :color-screen color-screen-template))
 
 (defn eval-level 

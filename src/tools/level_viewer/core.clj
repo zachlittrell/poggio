@@ -4,7 +4,7 @@
            [com.jme3.input KeyInput MouseInput]
            [com.jme3.material Material]
            [com.jme3.math ColorRGBA Vector3f]
-           [com.jme3.scene Spatial]
+           [com.jme3.scene Spatial Geometry]
            [com.jme3.system AppSettings])
            ;[tools.level_viewer.context LevelContext])
   (:require [jme-clj.input :as input]
@@ -15,7 +15,7 @@
         [nifty-clj builders]
         [poggio level loading-gui quotes]
         [poggio.functions core color modules list gui scenegraph]
-        [jme-clj collision light material physics physics-providers 
+        [jme-clj collision light material node physics physics-providers 
          physics-control]
         [seesaw [core :only [input]]]))
 
@@ -28,7 +28,6 @@
 (defn level-end! [spatial]
   (set-user-data! spatial level-end-key :level-end)
   spatial)
-
 
 (def end-level-key "end-level!")
 
@@ -52,14 +51,19 @@
    KeyInput/KEY_D [(atom false) :cam-left :negate]})
 
 (defn set-up-collisions! [app]
-  (on-pred-collision! app [#(and % (is-pog-fn-spatial? % 1) %)
-                           #(and % (is-pog-fn-spatial? % 0) %)]
-      [this f input e]
-      (when (and (.getParent f) (.getParent input))
-        (try
-        (invoke* (spatial-pog-fn f) {} [(spatial-pog-fn input)])
-        (catch Exception e
-          )))))
+  (let [n (node*)
+        dummy (node* :children [n])]
+    (.setUserObject player n)
+    (attach-pog-fn! n
+      (constantly* player))
+    (on-pred-collision! app [#(and % (is-pog-fn-spatial? % 1) %)
+                             #(and % (is-pog-fn-spatial? % 0) %)]
+        [this f input e]
+        (when (and (.getParent f) (.getParent input))
+          (try
+          (invoke* (spatial-pog-fn f) {} [(spatial-pog-fn input)])
+          (catch Exception e
+            ))))))
 
 (defn loading-screen! [nifty]
   (let [{:keys [author quote]} (random quotes)]

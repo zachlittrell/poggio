@@ -8,7 +8,7 @@
   (:require [clojure.string :as str])
   (:use [control assert bindings timer]
         [data coll color object notes ring-buffer quaternion]
-        [jme-clj animate bitmap-text control geometry material model node physics physics-control selector transform]
+        [jme-clj animate bitmap-text control geometry material model node physics physics-control selector spatial transform]
         [nifty-clj popup]
         [poggio.functions core parser modules scenegraph color utilities]
         [seesawx core]
@@ -25,6 +25,17 @@
   [note]
   (+ 0.01 (* 2.75 (duration note))))
 
+(defn set-volume! [spatial mute?]
+  (let [player (get-user-data! spatial "player")
+        *muted?* (get-user-data! spatial "*muted?*")]
+    (if mute?
+      (when-not @*muted?*
+        (.stream player mute-pattern)
+        (reset! *muted?* true))
+      (when @*muted?*
+        (.stream player max-volume-pattern)
+        (reset! *muted?* false)))))
+
 
 (defn build-music-box [{:keys [x z id direction stereos app
                                on-error!
@@ -37,7 +48,10 @@
                           :name id
                           :local-translation loc
                           :local-rotation dir)
-       player (org.jfugue.StreamingPlayer.)]
+       player (org.jfugue.StreamingPlayer.)
+       *muted?* (atom false)]
+   (set-user-data! music-box "player" player)
+   (set-user-data! music-box "*muted?*" *muted?*)
    (.scale music-box 8.0 8.0 8.0)
    (.addControl music-box control)
    (attach-pog-fn!* music-box

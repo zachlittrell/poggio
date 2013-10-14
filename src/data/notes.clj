@@ -52,3 +52,10 @@
   (pattern (Controller. Controller/VOLUME_COARSE (coarse-value volume))
            (Controller. Controller/VOLUME_FINE (fine-value volume))))
 
+(def mute-pattern
+  "A pattern that mutes the volume."
+  (volume-pattern 0))
+
+(def max-volume-pattern
+  "A pattern that turns the volume all the way up."
+  (volume-pattern 16383))

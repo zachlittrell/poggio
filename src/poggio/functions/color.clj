@@ -28,12 +28,12 @@
 
 (def red* (code-pog-fn []
               (docstr [] "the color red")
-              "color 255 0 0"))
+              "(color 255 0 0)"))
 
 (def green* (code-pog-fn [] 
               (docstr [] "the color green")
-              "color 0 255 0"))
+              "(color 0 255 0)"))
 
 (def blue* (code-pog-fn [] 
               (docstr [] "the color blue")
-              "color 0 0 255"))
+              "(color 0 0 255)"))

@@ -24,12 +24,12 @@
 (def inc* (code-pog-fn ["n"]
               (docstr [["n" "a number"]]
                       "n + 1")
-              "add n 1"))
+              "(add n 1)"))
 
 (def dec* (code-pog-fn ["n"]
               (docstr [["n" "a number"]]
                   "n - 1")
-              "subtract n 1"))
+              "(subtract n 1)"))
 
 (def less-than?* (fn->pog-fn < "less-than?"
                    [{:name "x" :type Number}

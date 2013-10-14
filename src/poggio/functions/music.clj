@@ -32,7 +32,7 @@
 
 (def middle-c* (code-pog-fn []
                   (docstr [] "middle c for a quarter note")
-                  "note 60 0.25"))
+                  "(note 60 0.25)"))
 
 ;;(def octave-up (code-pog-fn []
 ;;                  (docstr [["n" "a note"]]

@@ -3,7 +3,7 @@
   (:use [data either]
         [poggio.functions core]))
 
-(def var-pattern "[^\\(\\).\\s0-9-][^\\(\\).\\s]*")
+(def var-pattern "[^\\[\\]\\(\\).\\s0-9-][^\\[\\]\\(\\).\\s]*")
 
 (defn is-var-name? [var-name]
   (re-matches (re-pattern var-pattern) var-name))
@@ -12,13 +12,15 @@
   (format "<EXPR> = <OWS> VAR <OWS>
                   | <OWS> NUM <OWS>
                   | <OWS> PGROUP <OWS>
-                  | <OWS> CHAIN <OWS>
-           PGROUP = <LP> EXPR <RP>
-           <CHAIN> = EXPR EXPR+
+                  | <OWS> VEC <OWS>
+           PGROUP = <LP> EXPR+ <RP>
+           VEC = <LB> EXPR* <RB> | <LB> <OWS> <RB>
            NUM = #'-?[0-9]+(\\.[0-9]+)?'
            VAR = #'%s'
            WS = #'\\s+'
            OWS = WS | EPSILON
+           LB = #'\\['
+           RB = #'\\]'
            LP = #'\\('
            RP = #'\\)'"
           var-pattern))
@@ -32,7 +34,11 @@
       (right 
         (insta/transform {:VAR var*
                           :NUM bigdec
-                          :PGROUP (fn [& args] args)}
+                          :PGROUP (fn [& args] args)
+                          :VEC (fn [& args]
+                                 (reduce (fn [result next]
+                                           (list (var* "cons") next result))
+                                         (var* "nil") (reverse args)))}
                          parse-tree)))))
 
 (defn code-pog-fn [parameters docstring code]
@@ -44,4 +50,3 @@
             code))
       (fn [failure]
         (throw (Exception. (str failure)))))))
-

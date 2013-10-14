@@ -42,7 +42,7 @@
 (def repeat* (code-pog-fn ["o"]
                (docstr [["o" "a value"]]
                        "a list with the element o, over and over again.")
-               "cons o (repeat o)"))
+               "(cons o (repeat o))"))
 
 (def empty?* (fn->pog-fn empty? "empty?" ["xs"]
                 (docstr [["xs" "a list"]] 
@@ -51,45 +51,45 @@
 (def single* (code-pog-fn ["a"]
                   (docstr [["a" "a value"]]
                           "a list whose only element is a")
-                  "cons a nil"))
+                  "(cons a nil)"))
 
 (def pair* (code-pog-fn ["a" "b"]
                 (docstr [["a" "a value"] ["b" "a value"]]
                   "a list with the elements a and b")
-                "cons a (cons b nil)"))
+                "(cons a (cons b nil))"))
 
 (def triple* (code-pog-fn ["a" "b" "c"]
                 (docstr [["a" "a value"] ["b" "a value"] ["c" "a value"]]
                         "a list with the elements a, b, and c")
-                "cons a (cons b (cons c nil))"))
+                "(cons a (cons b (cons c nil)))"))
 
 (def reduce* (code-pog-fn ["f" "xs" "init"]
                 (docstr [["f" "a binary function"]
                          ["xs" "a list"]
                          ["init" "an initial value"]]
                   "the result of f (head xs) (reduce f (tail xs) init)")
-"if (empty? xs)
-  init
-  (f (head xs) (reduce f (tail xs) init))"))
+"(if (empty? xs)
+   init
+   (f (head xs) (reduce f (tail xs) init)))"))
 
 (def concat* (code-pog-fn ["xs" "ys"]
                 (docstr [["xs" "a list"] ["ys" "a list"]]
                         "a list of xs's elements, followed by ys's elements")
-"if (empty? xs)
+"(if (empty? xs)
   ys
- (cons (head xs) (concat (tail xs) ys))"))
+  (cons (head xs) (concat (tail xs) ys)))"))
 
 (def flatten* (code-pog-fn ["xs"]
                 (docstr [["xs" "a list of lists"]]
                         "a list of xs's lists joined together")
-                "reduce concat xs nil"))
+                "(reduce concat xs nil)"))
 
 (def map* (code-pog-fn ["f" "xs"]
             (docstr [["f" "a unary function"]
                      ["xs" "a list"]]
              "a list with f applied to each element in xs")
-"if (empty? xs)
-  nil
-  (cons (f (head xs)) (map f (tail xs)))"))
+"(if (empty? xs)
+   nil
+   (cons (f (head xs)) (map f (tail xs))))"))
 
 

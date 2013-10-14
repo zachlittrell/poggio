@@ -77,7 +77,8 @@
      :hold (let [default-transform {:transform (code-pog-fn [transform-param] "" transform)
                                     :env core-env}
                  *transformer* (atom  default-transform)]
-             (.setText text* (str text "\n\nUSING DEFAULT FUNCTION."))
+             (.setText text* (str text "\n\nUSING DEFAULT FUNCTION:\n\n"
+                                 (source-code (:transform default-transform))))
              (attach-pog-fn!* node
               (reify PogFn
                     (parameters [_] [{:name "player" :type Warpable}
@@ -90,14 +91,16 @@
                     ))
                 (on-bad-transform! [_]
                     (.setText text* (str text
-                                         "\n\nUSING DEFAULT FUNCTION."))
+                                         "\n\nUSING DEFAULT FUNCTION:\n\n"
+                                         (source-code (:transform default-transform))))
                     (reset! *transformer* default-transform))
                 LazyPogFn
                 (lazy-invoke [_ env {player "player"
                                      on-error! "on-error!"
                                      message parameter}]
                   (.setText text* (str text 
-                                       "\n\nUSING USER SUBMITTED FUNCTION."))
+                                       "\n\nUSING USER SUBMITTED FUNCTION:\n\n"
+                                       (source-code message)))
                   (reset! *transformer* {:transform message
                                          :on-error! on-error!
                                          :env env})

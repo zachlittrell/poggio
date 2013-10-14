@@ -19,7 +19,7 @@
                                            (text-field :initial-text line
                                                        :font "Interface/Fonts/Monospaced.fnt" ;;I don't think this actually gives me a monospaced font...
                                                        :id (genstr "textbox")
-                                                       :width "100%")])
+                                                       :width "*")])
                          (if (nil? tail) nil (list tail))))))
   
 

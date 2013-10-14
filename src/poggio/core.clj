@@ -11,17 +11,12 @@
   (.setDisplayStatView app false)
   (.addScreen nifty "main-menu" (main-menu app nifty alert!))
   (.gotoScreen nifty "main-menu")
-  (.play (audio-node :asset-manager app
-                     :name "Music/06_Ghosts_I.ogg"
-  ;                   :looping? true
-                     :buffered? true
-                     :positional? false)))
+  (play! app ["Music/06_Ghosts_I.ogg"]))
 
 (defn -end-level [app nifty]
  ; (clean! (.getCurrentScreen nifty) nifty)
   (.detachAllChildren (.getRootNode app))
   (.gotoScreen nifty "main-menu"))
-
 
 (defn -main [& args]
   (.setLevel (java.util.logging.Logger/getLogger "com.jme3") 

@@ -11,7 +11,7 @@
             [tools.level-editor.templates :as templates])
   (:use [control io]
         [data coll object]
-        [jme-clj spatial]
+        [jme-clj audio spatial]
         [nifty-clj builders]
         [poggio level loading-gui quotes]
         [poggio.functions core color modules list gui scenegraph]
@@ -146,7 +146,8 @@
      (fn [app nifty] (.stop app))))
   ([setup! end-level! & {:as opts-map}]
     (doto
-  (proxy [SimpleApplication tools.level_viewer.context.LevelContext][]
+  (proxy [SimpleApplication 
+          tools.level_viewer.context.LevelContext][]
     (end_level! [] (end-level! this))
     (stop []
       (proxy-super stop)
@@ -195,7 +196,8 @@
         (.addScreen nifty "loading-screen" (build-screen nifty (loading-gui)))
  
             (doto (.getStateManager this)
-             (.attach (BulletAppState.)))
+             (.attach (BulletAppState.))
+             (.attach (soundtrack-dj this)))
         (set-up-keys! nifty alert! set-current-function!
                       (.getInputManager this)
                       (.getCamera this) (.getRootNode this))

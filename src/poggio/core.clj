@@ -13,10 +13,13 @@
   (.gotoScreen nifty "main-menu")
   (play! app ["Music/06_Ghosts_I.ogg"]))
 
-(defn -end-level [app nifty]
- ; (clean! (.getCurrentScreen nifty) nifty)
-  (.detachAllChildren (.getRootNode app))
-  (.gotoScreen nifty "main-menu"))
+(defn -end-level [app nifty success?]
+  (when (is-current-screen? nifty "main-menu")
+    (.stop app))
+  (when-not (is-current-screen? nifty "loading-screen")
+   ; (clean! (.getCurrentScreen nifty) nifty)
+    (.detachAllChildren (.getRootNode app))
+    (.gotoScreen nifty "main-menu")))
 
 (defn -main [& args]
   (.setLevel (java.util.logging.Logger/getLogger "com.jme3") 

@@ -23,7 +23,7 @@
             (swap! *letters* (constantly letters))
             true)
           (when end-level?
-            (level-context/end-level! app))))))))
+            (level-context/end-level! app true))))))))
 
 
 (defn build-text-screen [{:keys [x z id direction text target-ids end-level? app  transform success? parameter docstring success-text error-text text-color font-size protocol]}]

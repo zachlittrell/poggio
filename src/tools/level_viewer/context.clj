@@ -1,4 +1,4 @@
 (ns tools.level-viewer.context)
 
 (defprotocol LevelContext
-  (end-level! [context]))
+  (end-level! [context complete?]))

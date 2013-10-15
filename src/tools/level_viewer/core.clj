@@ -8,7 +8,8 @@
            [com.jme3.system AppSettings])
            ;[tools.level_viewer.context LevelContext])
   (:require [jme-clj.input :as input]
-            [tools.level-editor.templates :as templates])
+            [tools.level-editor.templates :as templates]
+            [tools.level-viewer.context :as context])
   (:use [control io]
         [data coll object]
         [jme-clj audio spatial]
@@ -31,9 +32,9 @@
 
 (def end-level-key "end-level!")
 
-(defn end-level! [app]
+(defn end-level! [app success?]
   (if-let [end-level! (get-user-data! (.getRootNode app) end-level-key)]
-    (end-level!)
+    (end-level! success?)
     (.stop app)))
 
 (def player  (character-control :step-height (float 0.025)
@@ -71,7 +72,13 @@
                   :header author :subheader quote)
     (.gotoScreen nifty "loading-screen")))
 
-(defn set-up-keys! [nifty alert! set-current-function! input-manager camera clickable]
+(defn set-up-keys! [nifty alert! set-current-function! input-manager app camera clickable]
+  (.deleteMapping input-manager SimpleApplication/INPUT_MAPPING_EXIT)
+  (input/on-key! input-manager :action SimpleApplication/INPUT_MAPPING_EXIT
+                               KeyInput/KEY_ESCAPE
+      [_ name is-pressed? tpf]
+        (when is-pressed?
+          (context/end-level! app false)))
   (input/on-key!* input-manager :action KeyInput/KEY_SPACE
       [_ name is-pressed? tpf]
         (when is-pressed?
@@ -144,12 +151,12 @@
   ([level]
    (make-app 
      (fn [app nifty on-error!] (set-up-room! app level nifty on-error!))
-     (fn [app nifty] (.stop app))))
+     (fn [app nifty success?] (.stop app))))
   ([setup! end-level! & {:as opts-map}]
     (doto
   (proxy [SimpleApplication 
           tools.level_viewer.context.LevelContext][]
-    (end_level! [] (end-level! this))
+    (end_level_BANG_ [success?] (tools.level-viewer.core/end-level! this success?))
     (stop []
       (proxy-super stop)
       (if (:shutdown? opts-map)
@@ -201,6 +208,7 @@
              (.attach (soundtrack-dj this)))
         (set-up-keys! nifty alert! set-current-function!
                       (.getInputManager this)
+                      this
                       (.getCamera this) (.getRootNode this))
             (doto (.getFlyByCamera this)
         (.setDragToRotate true))

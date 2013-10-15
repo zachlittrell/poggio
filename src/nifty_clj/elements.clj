@@ -3,6 +3,11 @@
            [de.lessvoid.nifty.elements Element] 
            [de.lessvoid.nifty.elements.render TextRenderer]))
 
+(defn is-current-screen? 
+  [nifty id]
+  (identical? (.getCurrentScreen nifty)
+              (.getScreen nifty id)))
+
 (defn element? [element]
   (instance? Element element))
 

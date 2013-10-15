@@ -3,16 +3,26 @@
   (:use [jme-clj spatial]
         [poggio.functions core]))
 
+(def pog-fn-name-key "node-pog-fn-key")
 (def pog-fn-key "node-pog-fn")
 
-(defn attach-pog-fn! [spatial pog-fn]
-  (set-user-data! spatial pog-fn-key pog-fn))
 
-(defn attach-pog-fn!* [^Spatial spatial pog-fn]
-  (do-dfs [spatial* spatial]
-    (attach-pog-fn! spatial* pog-fn)))
+(defn attach-pog-fn! 
+  ([spatial pog-fn]
+   (attach-pog-fn! spatial pog-fn (.getName spatial)))
+  ([spatial pog-fn name]
+    (set-user-data! spatial pog-fn-name-key name)
+    (set-user-data! spatial pog-fn-key pog-fn)))
 
+(defn attach-pog-fn!* 
+  ([spatial pog-fn]
+   (attach-pog-fn!* spatial pog-fn (.getName spatial)))
+  ([^Spatial spatial pog-fn name]
+    (do-dfs [spatial* spatial]
+      (attach-pog-fn! spatial* pog-fn name))))
 
+(defn pog-fn-name [spatial]
+  (get-user-data! spatial pog-fn-name-key))
 
 (defn spatial-pog-fn [spatial]
   (get-user-data! spatial pog-fn-key))

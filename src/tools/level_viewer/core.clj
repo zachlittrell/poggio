@@ -105,7 +105,8 @@
               (set-current-function! (partial* pog-fn
                                                {(name* (first (parameters
                                                                 pog-fn)))
-                                                player})))
+                                                player})
+                                     (pog-fn-name (.getGeometry collision))))
         )))))
 
 (defn set-up-room! [app level nifty on-error!]

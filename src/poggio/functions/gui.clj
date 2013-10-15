@@ -23,8 +23,11 @@
     ;(.setHeight alert-panel (.getHeight alert-text))
     (.setVisible alert-panel true)))
 
-(defn set-pog-fn! [fn-pad-param nifty f]
-  (set-text! fn-pad-param (name* (first (parameters f)))))
+(defn set-pog-fn! [fn-pad-param nifty f name]
+  (set-text! fn-pad-param 
+             (format "%s: %s"
+                     name
+                     (name* (first (parameters f))))))
 
 (defn get-pog-fn [fn-pad f fn-map ]
   (seq->pog-fn "" [] 
@@ -510,12 +513,12 @@
                                     (my-alert! e)))}
                         )
     {:set-current-function! 
-       (fn [pog-fn]
+       (fn [pog-fn name]
          (let [f (partial* pog-fn {(name* (first (parameters pog-fn)))
                                    my-alert!})]
          (swap! *current-f* (constantly f))
          (set-pog-fn! (select made-screen "fn-pad-param")
-                      nifty f)
+                      nifty f name)
          (.setVisible (select made-screen "fn-panels") true)))
      :function-screen made-screen
      :alert! my-alert!}))

@@ -14,13 +14,28 @@
         [seesawx core]
         [tools.level-editor.widgets utilities]))
 
-(def high-color ColorRGBA/Green);(ColorRGBA. 78 0 65 0))
-(def low-color ColorRGBA/Blue)
+(def note-number->color
+  [(ColorRGBA. 0.15 1.0 0 1.0)
+   (ColorRGBA. 0 1.0 0.94 1)
+   (ColorRGBA. 0 0.47 1.0 1)
+   (ColorRGBA. 5 0 1.0 1)
+   (ColorRGBA. 0.27 0 0.92 1.0)
+   (ColorRGBA. 0.38 0 0.69 1.0)
+   (ColorRGBA. 0.68 0 0 1.0)
+   (ColorRGBA. 1.0 0 0 1.0)
+   ColorRGBA/Magenta
+   (ColorRGBA. 1.0 0.4 0 1.0)
+   ColorRGBA/Yellow
+   (ColorRGBA. 0.6 1.0 0 1.0)])
+   
 (defn shoot-globule! [app on-error! loc dir note]
-  (let [c (ColorRGBA.)]
-    (.interpolate c low-color high-color (/ (pitch note) 127.0))
+  (println "HELLLLLOOO"
+           (pitch note) (mod (pitch note) 12))
+  (let [c (if (rest? note) ColorRGBA/White (note-number->color
+                                             (mod (pitch note) 12)))
+        d (duration note)]
     (cannon/shoot-globule! app on-error! nil loc dir
-                           (float 20.0)
+                           (float (+ 20.0 (* 30.0 (- 1.1 (duration note)))))
                            0.5
                            c)))
                           

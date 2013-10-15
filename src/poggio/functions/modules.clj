@@ -57,7 +57,7 @@
             "r-value" red-value*
             "g-value" green-value*
             "b-value" blue-value*}
-   "Functions" {"lambda" lambda*}
+   "Functions" {"function" lambda*}
    "Value" {"id" id*
             "let" let*}
    "User" {}})

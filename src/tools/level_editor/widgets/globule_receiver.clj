@@ -10,46 +10,11 @@
         [jme-clj animate light geometry material model physics physics-control selector spatial]
         [nifty-clj popup]
         [poggio.functions core scenegraph color utilities]
-        [seesawx core]))
-
-(defn process-globule! [hoop match? on-match previous conj* globule]
-  (detach! (:globule globule))
-  (let [val (value (:value globule) {})
-        results (swap! previous conj* (value (:value globule) {}))]
-    (when (implements? ColorRGBA val)
-      (.setColor (.getMaterial hoop) "Color" val) )
-    (when (match? results)
-      (on-match))))
-
-(defn pass-globule! [app hoop target-id  globule]
-  (detach! (:globule globule))
-  (when-let [target (select app target-id)]
-  (let [val (value (:value globule) {})
-        f (spatial-pog-fn target)]
-     (when (implements? ColorRGBA val)
-      (.setColor (.getMaterial hoop) "Color" val) )
-     (invoke*  f
-               [(:on-error! globule) 
-                (list val)]))))
+        [seesawx core]
+        [tools.level-editor.widgets utilities]))
 
 
-(defn str->encoding [^String s]
-  (condp re-matches s
-    #"-?(\d+)(.\d+)?" [:num (bigdec s)]
-    #"red" [:color 1.0 0.0 0.0]
-    #"green" [:color 0.0 1.0 0.0]
-    #"blue" [:color 0.0 0.0 1.0]))
-
-(defprotocol Encodable
-  (encode [o]))
-
-(extend-protocol Encodable
-  Number
-  (encode [d] [:num d])
-  ColorRGBA
-  (encode [c] [:color (red c) (green c) (blue c)]))
-
-(defn build-globule-receiver [{:keys [x y z id direction target-id  protocol pattern app]}]
+(defn build-globule-receiver [{:keys [x y z id direction target-ids  protocol pattern app]}]
  (let [loc (Vector3f. (* x 16) (+ -16 y) (* z 16))
        dir (angle->quaternion direction :y)
        control (RigidBodyControl. 0.0)
@@ -65,34 +30,11 @@
                                      :color {"Color" ColorRGBA/White}))
    (doto hoop
      (attach-pog-fn!*  
-       (case protocol
-         :pass
-           (fn->pog-fn
-             (partial pass-globule! app hoop-ball target-id)
-             "receiver"
-             ["ball"]
-             (docstr [["globule" "a globule"]]
-                 (str "Passes globules to " target-id)))
-         :open
-           (fn->pog-fn 
-            (partial process-globule!
-                     hoop-ball
-                    (comp (partial = (map str->encoding
-                                          (rseq pattern)))
-                          lifo)
-                    #(when-let [target (select app target-id)]
-                       (invoke* (spatial-pog-fn target) [false]))
-                    (atom (ring-buffer (count pattern)))
-                    (fn [coll x] 
-                      (adjoin coll (encode x))))
-             "receiver"
-             ["ball"]
-             (docstr [["globule" "a globule"]]
-               (format "Activates %s once it receives %s."
-                   target-id
-                   (str/join ", " pattern)))
-                          
-                       ))))))
+          (keyword->globule-processor-pog-fn :app app
+                                             :spatial hoop-ball
+                                             :target-ids target-ids
+                                             :pattern pattern
+                                             :keyword protocol)))))
 
 (def globule-receiver-template
   {:image (image-pad [100 100]
@@ -100,9 +42,10 @@
    :questions [{:id :id :type :string :label "ID"}
                {:id :direction :type :direction :label "Direction"}
                {:id :y  :type :integer :label "Height"}
-               {:id :target-id :type :string :label "Target"}
+               {:id :target-ids :type [:list 
+                                       :type :string] :label "Targets"}
                {:id :protocol :type [:choice
-                                     :model [:open
+                                     :model [:open-on-pattern
                                              :pass]] :label "Protocol"}
                {:id :pattern :type [:list :type :string] :label "Matches"}]
    :build build-globule-receiver

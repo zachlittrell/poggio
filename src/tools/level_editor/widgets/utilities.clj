@@ -148,56 +148,57 @@
                (equal? (first seq1) (first seq2)))
       (recur (next seq1) (next seq2)))))
 
-(defn open-on-pattern-processor [target-id pattern]
+(defn open-on-pattern-processor [target-ids pattern]
   (let [*buffer* (atom (ring-buffer (count pattern)))
         encoded-pattern (map str->encoding (when-not (empty? pattern)
                                              (rseq pattern)))]
     {:docstring (format "Activates %s once it receives %s."
-                        target-id
+                        (str/join "," target-ids)
                         (str/join "," pattern))
      :process! (partial swap! *buffer* adjoin )
      :proceed? #(equal? encoded-pattern (lifo @*buffer*))
      :transform (constantly true)}))
 
-(defn pass-processor [target-id]
-  {:docstring (format "Passes globules to %s." target-id)
+(defn pass-processor [target-ids]
+  {:docstring (format "Passes globules to %s." (str/join "," target-ids))
    :process! (constantly nil)
    :proceed? (constantly true)
    :transform list})
 
-(defn process-globule! [app receiver process! proceed? transform target-id globule]
+(defn process-globule! [app receiver process! proceed? transform target-ids globule]
   (detach! (:globule globule))
     (let [val (value (:value globule) {})]
       (when (implements? ColorRGBA val)
         (.setColor (.getMaterial receiver) "Color" val))
      (process! val)
     (if (proceed?)
-      (when-let [target (spatial-pog-fn (select app target-id))]
-        (let [val* (transform val)]
-        (invoke* target (if (== 1 (count (parameters target)))
-                          [val*]
-                          [nil val*])))))))
+      (let [val* (transform val)]
+        (doseq [target-id target-ids]
+          (when-let [target (spatial-pog-fn (select app target-id))]
+            (invoke* target (if (== 1 (count (parameters target)))
+                              [val*]
+                              [nil val*]))))))))
 
 
 (defn globule-processor-pog-fn
-  [& {:keys [app spatial target-id
+  [& {:keys [app spatial target-ids
              process! proceed? transform
               docstring]}]
   (fn->pog-fn (partial process-globule! app spatial 
-                       process! proceed? transform target-id)
+                       process! proceed? transform target-ids)
               "processor"
               ["globule"]
               docstring))
 
 (defn keyword->globule-processor-pog-fn
-  [& {:keys [app spatial target-id pattern keyword]}]
+  [& {:keys [app spatial target-ids pattern keyword]}]
    (let [processor (case keyword
                      :open-on-pattern (open-on-pattern-processor
-                                        target-id pattern)
-                     :pass (pass-processor target-id))]
+                                        target-ids pattern)
+                     :pass (pass-processor target-ids))]
      (globule-processor-pog-fn :app app
                                :spatial spatial
-                               :target-id target-id
+                               :target-ids target-ids
                                :process! (:process! processor)
                                :proceed? (:proceed? processor)
                                :transform (:transform processor)

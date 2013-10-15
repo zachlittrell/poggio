@@ -41,7 +41,7 @@
                           
 
 
-(defn build-ball-stereo [{:keys [x z id target-id  protocol pattern app on-error!]}]
+(defn build-ball-stereo [{:keys [x z id target-ids protocol pattern app on-error!]}]
  (let [new-hoop (fn [loc dir id]
                   (let [hoop (model 
                                :asset-manager app
@@ -86,7 +86,7 @@
    (attach-pog-fn!* hoop2
       (keyword->globule-processor-pog-fn :app app
                                          :spatial hoop-ball2
-                                         :target-id target-id
+                                         :target-ids target-ids
                                          :pattern pattern
                                          :keyword protocol))
          node))
@@ -95,7 +95,7 @@
   {:image (image-pad [100 100]
             (.drawString "!" 49 49))
    :questions [{:id :id :type :string :label "ID"}
-               {:id :target-id :type :string :label "Target"}
+               {:id :target-ids :type [:list :type :string] :label "Target"}
                {:id :protocol :type [:choice
                                      :model [:open-on-pattern
                                              :pass]]

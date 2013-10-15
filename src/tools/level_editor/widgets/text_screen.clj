@@ -26,7 +26,7 @@
             (level-context/end-level! app))))))))
 
 
-(defn build-text-screen [{:keys [x z id direction text target-id end-level? app  transform success? parameter docstring success-text error-text font-size protocol]}]
+(defn build-text-screen [{:keys [x z id direction text target-ids end-level? app  transform success? parameter docstring success-text error-text font-size protocol]}]
   (try
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
@@ -68,9 +68,10 @@
                   (fn []
                     (invoke* message env []))
                   (fn [result]
-                    (when-let [t (select app target-id)]
-                      (invoke* (spatial-pog-fn t) {} [{:on-error! on-error!
-                                                       :value result}])))
+                    (doseq [target-id target-ids]
+                      (when-let [t (select app target-id)]
+                        (invoke* (spatial-pog-fn t) {} [{:on-error! on-error!
+                                                         :value result}]))))
                   (fn [error]
                     (on-error! error))))))))
 
@@ -138,7 +139,7 @@
                                                (swap! *done?* (constantly true))
                                                (when-not (empty? success-text)
                                                  (add-text! text* success-text app end-level?))
-                                               (when-not (empty? target-id)
+                                               (doseq [target-id target-ids]
                                                  (when-let [target (select app 
                                                                            target-id)]
                                                    (invoke* (spatial-pog-fn target )
@@ -171,7 +172,7 @@
                {:id :docstring :type [:string :multi-line? true] :label "Docstring"}
                {:id :success-text :type [:string :multi-line? true] :label "Success Text"}
                {:id :error-text :type [:string :multi-line? true] :label "Error Text"}
-               {:id :target-id :type :string :label "Target"}
+               {:id :target-ids :type [:list :type :string] :label "Target"}
                {:id :end-level? :type :boolean :label "End Level?"}]
    :build build-text-screen
    })

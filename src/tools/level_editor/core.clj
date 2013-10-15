@@ -162,7 +162,7 @@
           {:loc loc
            :dir dir
            :walls walls
-           :wall-mat "Textures/paper1.jpg"
+           :wall-mat "Textures/tile1.png"
            :widgets widgets}))
      
 

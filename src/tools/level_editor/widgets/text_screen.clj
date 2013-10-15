@@ -26,7 +26,7 @@
             (level-context/end-level! app))))))))
 
 
-(defn build-text-screen [{:keys [x z id direction text target-id end-level? app transform-param transform success? parameter docstring success-text error-text font-size protocol]}]
+(defn build-text-screen [{:keys [x z id direction text target-id end-level? app  transform success? parameter docstring success-text error-text font-size protocol]}]
   (try
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
@@ -74,7 +74,7 @@
                   (fn [error]
                     (on-error! error))))))))
 
-     :hold (let [default-transform {:transform (code-pog-fn [transform-param] "" transform)
+     :hold (let [default-transform {:transform (code-pog-fn [] "" transform)
                                     :env core-env}
                  *transformer* (atom  default-transform)]
              (.setText text* (str text "\n\nUSING DEFAULT FUNCTION:\n\n"
@@ -165,8 +165,7 @@
                                   :multi-line? true] :label "Text"}
                {:id :protocol :type [:choice
                                      :model [:none :open :pass :hold]] :label "Protocol"}
-               {:id :transform-param :type [:string :text "x"] :label "Transform Param"}
-               {:id :transform :type [:string :text "x" :multi-line? true] :label "Transform"}
+               {:id :transform :type [:string :text "(lambda x x)" :multi-line? true] :label "Transform"}
                {:id :success? :type [:string :multi-line? true] :label "Success Test"}
                {:id :parameter :type [:string :text "message"] :label "Parameter"}
                {:id :docstring :type [:string :multi-line? true] :label "Docstring"}
@@ -175,10 +174,5 @@
                {:id :target-id :type :string :label "Target"}
                {:id :end-level? :type :boolean :label "End Level?"}]
    :build build-text-screen
-  ;; :prelude `(use '~'tools.level-editor.widgets.text-screen)
-  ;; :build (fn [[x z] {:keys [id direction text target-id font-size transform-param transform success? parameter docstring success-text error-text end-level? protocol]}]
-  ;;          `(do
-  ;;             (fn [app#]
-  ;;             (build-text-screen {:x ~x :z ~z :id ~id :direction ~direction :text ~text :target-id ~target-id :app app# :transform-param ~transform-param :transform ~transform :success? ~success? :font-size ~font-size :parameter ~parameter :docstring ~docstring :success-text ~success-text :error-text ~error-text :end-level? ~end-level? :protocol ~protocol}))))
    })
 

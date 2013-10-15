@@ -150,7 +150,8 @@
 
 (defn open-on-pattern-processor [target-id pattern]
   (let [*buffer* (atom (ring-buffer (count pattern)))
-        encoded-pattern (map str->encoding (rseq pattern))]
+        encoded-pattern (map str->encoding (when-not (empty? pattern)
+                                             (rseq pattern)))]
     {:docstring (format "Activates %s once it receives %s."
                         target-id
                         (str/join "," pattern))

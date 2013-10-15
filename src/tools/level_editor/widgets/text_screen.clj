@@ -26,7 +26,7 @@
             (level-context/end-level! app))))))))
 
 
-(defn build-text-screen [{:keys [x z id direction text target-ids end-level? app  transform success? parameter docstring success-text error-text font-size protocol]}]
+(defn build-text-screen [{:keys [x z id direction text target-ids end-level? app  transform success? parameter docstring success-text error-text text-color font-size protocol]}]
   (try
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
@@ -43,7 +43,10 @@
                           :size font-size
                           :box (Rectangle. -8 16 16 16)
                           :alignment :left
-                          :color (ColorRGBA. 0.5 1 0 1)
+                          :color (ColorRGBA. (/ (:red text-color) 255.0) 
+                                             (/ (:green text-color) 255.0)
+                                             (/ (:blue text-color) 255.0)
+                                             1.0)
                           :local-translation (Vector3f. 0 0 0.02))
        node (node*  :name id
                     :local-translation (.subtract loc (.mult dir
@@ -160,6 +163,9 @@
             (.drawString "¶" 49 49))
    :questions [{:id :id :type :string :label "ID"}
                {:id :direction :type :direction :label "Direction"}
+               {:id :text-color :type [:color
+                                       :init {:red 127 :green 255 :blue 0}]
+                                :label "Color"}
                {:id :font-size :type [:decimal :init 0.6] :label "Font Size"}
                {:id :text  :type [:string 
                                   :text "POGGIO INSTITUTE\n================\n"

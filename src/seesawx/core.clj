@@ -165,22 +165,30 @@
                                            (remove w))
                                      (revalidate!)))))))
 
-(defn- add-init! [f init]
-  (fn [& opts]
-    (let [{:as opts-map} opts]
-      (if (contains? opts-map :init)
-        (let [args (apply concat (seq (dissoc opts-map :init)))]
-          (if (keyword? init)
-            (apply f init (:init opts-map) args)
-            (doto (apply f args)
-              (init (:init opts-map)))))
-        (apply f opts)))))
+(defn- add-init!
+  ([f init]
+   (add-init! f init identity))
+  ([f init transform]
+    (fn [& opts]
+      (let [{:as opts-map} opts]
+        ;;Is an init provided?
+        (if (contains? opts-map :init)
+          (let [args (apply concat (seq (dissoc opts-map :init)))]
+            (if (keyword? init)
+              (apply f init (transform (:init opts-map)) args)
+              (doto (apply f args)
+                (init (transform (:init opts-map))))))
+          (apply f opts))))))
 
 (def keyword->widget
   {:direction wheel
    :string    (add-init! text text!)
    :boolean   (add-init! checkbox :selected?)
-   :color     (add-init! color-selection-button :selection)
+   :color     (add-init! color-selection-button :selection
+                         (fn [{:keys [red green blue] :as m}]
+                           (if m
+                             (java.awt.Color. red green blue)
+                             (java.awt.Color. 255 255 255))))
    :choice    (add-init! combobox selection!)
    :list      listx
    :integer   (fn [& {:keys [id init] :or {init 0} }]

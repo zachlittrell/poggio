@@ -4,6 +4,8 @@
         [data coll object string]
         [poggio.functions utilities]))
 
+(def internal-core-env (atom nil))
+
 (defprotocol PogFn
   "Protocol for functions in Poggio."
   (docstring [f] "Returns the documentation of this function.")
@@ -247,7 +249,7 @@
    any nested function-sequences."
   ([seq env args]
    (invoke* (seq->partial-pog-fn seq) 
-            (merge env 
+            (merge @internal-core-env
               (map/value-map args
                 (fn [f]
                   (bind f env)
@@ -272,7 +274,8 @@
      (source-code [f] source)
      LazyPogFn
      (lazy-invoke [f env args]
-        (invoke-seq seq (assoc env name f) args)))))
+        (invoke-seq seq (assoc env name f) args))
+     )))
 
 
 (def if* 

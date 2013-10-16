@@ -68,6 +68,7 @@
           f fs]
       f))) 
 
+(reset! *internal-core-env* core-env)
 
 (defn is-core-fn? [module name]
   (get-in core-modules [module name]))

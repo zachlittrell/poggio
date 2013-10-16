@@ -8,19 +8,29 @@
   (:gen-class))
 
 
-(defn -init [max-levels-unlocked app nifty alert!]
+(defn -init [*current-level* max-levels-unlocked app nifty alert!]
   (.setDisplayFps app false)
   (.setDisplayStatView app false)
-  (.addScreen nifty "main-menu" (main-menu app nifty alert! max-levels-unlocked))
+  (.addScreen nifty "main-menu" (main-menu app nifty alert! max-levels-unlocked *current-level*))
   (.gotoScreen nifty "main-menu")
   (play! app ["Music/06_Ghosts_I.ogg"]))
 
-(defn -end-level [*levels-unlocked* app nifty success?]
+(defn -end-level [*current-level* app nifty success?]
   (when (is-current-screen? nifty "main-menu")
     (.stop app))
   (when-not (is-current-screen? nifty "loading-screen")
    ; (clean! (.getCurrentScreen nifty) nifty)
     (.detachAllChildren (.getRootNode app))
+    (if success?
+      ;;We only increase the index if this was a 
+      (when-let [[i & more] (seq (keep-indexed 
+                                   (fn [index [file name]]
+                                     (when (= file @*current-level*)
+                                       (inc index)))
+                                   levels))]
+        (when (< i (count levels))
+          (spit "savefile" i)
+          (enable! (.getScreen nifty "main-menu") i))))
     (.gotoScreen nifty "main-menu")))
 
 (defn -main [& args]
@@ -28,8 +38,9 @@
              java.util.logging.Level/SEVERE)
   (let [*levels-unlocked* (atom (if (.exists (file "savefile"))
                                   (read-string (slurp "savefile"))
-                                  0))]
-  (doto (viewer/make-app (partial -init @*levels-unlocked*)
-                         (partial -end-level *levels-unlocked*)
+                                  0))
+        *current-level* (atom nil)]
+  (doto (viewer/make-app (partial -init *current-level* @*levels-unlocked*)
+                         (partial -end-level *current-level*)
                          :shutdown? true)
     (.start))))

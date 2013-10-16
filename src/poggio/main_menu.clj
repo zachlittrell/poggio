@@ -21,8 +21,9 @@
                             levels)]
     (.enable (select screen file))))
 
-(defn main-menu [app nifty on-error! max-level-unlocked]
+(defn main-menu [app nifty on-error! max-level-unlocked *current-level*]
  (let [load-level! (fn [level-path]
+                     (reset! *current-level* level-path)
                      (level-viewer/set-up-room!
                        app
                        #(-> level-path

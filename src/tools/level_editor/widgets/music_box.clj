@@ -5,7 +5,8 @@
            [com.jme3.font Rectangle]
            [com.jme3.math ColorRGBA Vector3f]
            [com.jme3.scene.shape Box Sphere])
-  (:require [clojure.string :as str])
+  (:require [clojure.string :as str]
+            [tools.level-viewer.context :as context])
   (:use [control assert bindings timer]
         [data coll color object notes ring-buffer quaternion]
         [jme-clj animate bitmap-text control geometry material model node physics physics-control selector spatial transform]
@@ -52,6 +53,7 @@
        *muted?* (atom false)]
    (.stream player (pattern 
                      (org.jfugue.Instrument. org.jfugue.Instrument/GUITAR)))
+   (context/add-end-level-watch! app #(.close player))
    (set-user-data! music-box "player" player)
    (set-user-data! music-box "*muted?*" *muted?*)
    (.scale music-box 8.0 8.0 8.0)

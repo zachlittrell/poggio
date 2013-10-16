@@ -154,9 +154,16 @@
      (fn [app nifty success?] (.stop app))))
   ([setup! end-level! & {:as opts-map}]
     (doto
+  (let [*end-level-watchers* (atom [])]
   (proxy [SimpleApplication 
           tools.level_viewer.context.LevelContext][]
-    (end_level_BANG_ [success?] (tools.level-viewer.core/end-level! this success?))
+    (add_end_level_watch_BANG_ [watch]
+        (swap! *end-level-watchers* conj watch))
+    (end_level_BANG_ [success?] 
+        (doseq [watcher @*end-level-watchers*]
+          (watcher))
+        (reset! *end-level-watchers* [])
+        (tools.level-viewer.core/end-level! this success?))
     (stop []
       (proxy-super stop)
       (if (:shutdown? opts-map)
@@ -218,7 +225,7 @@
       (setup! this nifty alert!)
       (set-user-data! (.getRootNode this) end-level-key (partial end-level! this nifty))
 
-                   )))
+                   ))))
       (.setSettings  (doto (AppSettings. true)
              (.setSettingsDialogImage "Textures/splashscreen.png"))))))
 

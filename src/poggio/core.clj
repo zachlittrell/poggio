@@ -1,19 +1,21 @@
 (ns poggio.core
-  (:use [jme-clj audio]
+  (:use [clojure.java io]
+        [jme-clj audio]
         [nifty-clj [builders :exclude [text]] elements events]
         [poggio main-menu]
         [poggio.functions gui])
   (:require [tools.level-viewer.core :as viewer])
   (:gen-class))
 
-(defn -init [app nifty alert!]
+
+(defn -init [max-levels-unlocked app nifty alert!]
   (.setDisplayFps app false)
   (.setDisplayStatView app false)
-  (.addScreen nifty "main-menu" (main-menu app nifty alert!))
+  (.addScreen nifty "main-menu" (main-menu app nifty alert! max-levels-unlocked))
   (.gotoScreen nifty "main-menu")
   (play! app ["Music/06_Ghosts_I.ogg"]))
 
-(defn -end-level [app nifty success?]
+(defn -end-level [*levels-unlocked* app nifty success?]
   (when (is-current-screen? nifty "main-menu")
     (.stop app))
   (when-not (is-current-screen? nifty "loading-screen")
@@ -24,5 +26,10 @@
 (defn -main [& args]
   (.setLevel (java.util.logging.Logger/getLogger "com.jme3") 
              java.util.logging.Level/SEVERE)
-  (doto (viewer/make-app -init -end-level :shutdown? true)
-    (.start)))
+  (let [*levels-unlocked* (atom (if (.exists (file "savefile"))
+                                  (read-string (slurp "savefile"))
+                                  0))]
+  (doto (viewer/make-app (partial -init @*levels-unlocked*)
+                         (partial -end-level *levels-unlocked*)
+                         :shutdown? true)
+    (.start))))

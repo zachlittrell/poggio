@@ -31,7 +31,7 @@
       (first)
       (.getElements)
       (second)))
-     
+
 (defn parent
   "Returns the previous element before textfield-entry."
   [textfield-entry]
@@ -54,6 +54,7 @@
       first
       text
       (Integer/parseInt)))
+
 
 (defn set-line-number!
   "Sets the line-number to be (f (line-number textfield-entry))"
@@ -78,6 +79,10 @@
       (second)
       (text-field-text)))
       
+
+(defn scroll-to-entry! [textfield-entry]
+  (let [line-number (line-number textfield-entry)]
+    ))
 
 (defmacro do-entries [[sym entry] & body]
   `(loop [~sym ~entry]

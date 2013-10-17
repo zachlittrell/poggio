@@ -42,7 +42,14 @@
             "duration" duration*
             "rest" rest*
             "rest?" rest?*
-            "middle-c" middle-c*}
+            "middle-c" middle-c*
+            "middle-d" middle-d*
+            "middle-e" middle-e*
+            "middle-f" middle-f*
+            "middle-g" middle-g*
+            "middle-a" middle-a*
+            "middle-b" middle-b*
+            "high-c"   high-c*}
    "Number" {"add" add*
              "subtract" subtract*
              "multiply" multiply*

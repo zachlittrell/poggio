@@ -30,9 +30,26 @@
                   (docstr [["n" "a note"]]
                     "n's duration.")))
 
-(def middle-c* (code-pog-fn []
-                  (docstr [] "middle c for a quarter note")
-                  "(note 60 0.25)"))
+(defmacro defnote 
+  ([letter pitch]
+   `(defnote ~letter ~pitch "middle"))
+  ([letter pitch modifier]
+    (let [name (name letter)
+          var-name (symbol (str modifier "-" name "*"))
+          str-name (str modifier  " " name)]
+    `(def ~var-name (code-pog-fn []
+                      (docstr [] (str ~str-name " for a quarter note"))
+                      (str "(note " ~pitch " 0.25)"))))))
+
+(defnote c 60)
+(defnote d 62)
+(defnote e 64)
+(defnote f 65)
+(defnote g 67)
+(defnote a 69)
+(defnote b 71)
+(defnote c 72 "high")
+
 
 ;;(def octave-up (code-pog-fn []
 ;;                  (docstr [["n" "a note"]]

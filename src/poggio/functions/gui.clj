@@ -501,14 +501,15 @@
 
 
       :compute {:on-left-click #(try
-                                  (-> (get-pog-fn (select made-screen "fn-pad")
+                                  (let [pog-fn (get-pog-fn (select made-screen "fn-pad")
                                                   @*current-f*
                                                   @*fn-map*)
-                                       (invoke* , (into {}
-                                                   (for [[module, fs] @*fn-map*
-                                                         f fs]
-                                                     f))
-                                                []))
+                                        new-env (into {}
+                                                  (for [[module fs] @*fn-map*
+                                                     f fs]
+                                                    f))]
+                                    (reset! internal-core-env new-env)
+                                    (invoke* pog-fn new-env []))
                                   (catch Exception e
                                     (my-alert! e)))}
                         )

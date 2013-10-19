@@ -13,8 +13,8 @@
           :height "15%"))
 
 (def levels
-  [["Levels/level1.clj" "Introduction"]
-   ["Levels/level2.clj" "Musica"]])
+  [["Levels/orientation.clj" "Orientation"]
+   ["Levels/level2.clj" "Manipulation"]])
 
 (defn enable! [screen max-level-unlocked]
   (doseq [[file name] (take (inc max-level-unlocked)

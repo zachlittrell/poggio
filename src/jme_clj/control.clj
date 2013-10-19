@@ -79,3 +79,14 @@
   ([spatial time-out f success fail]
    (computation-timer (computation-control time-out f success fail)
                       spatial)))
+
+(defn one-shot!
+  "Attaches a control to spatial that runs f as soon as possible and then removes it."
+  [spatial f]
+  (-> (control-timer spatial 0 f)
+      (start!)))
+
+(defmacro do-once! 
+  "Wraps body in a function that is given to one-shot!"
+  [spatial & body]
+  `(one-shot! ~spatial (fn [] ~@body)))

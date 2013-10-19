@@ -59,6 +59,7 @@
              wait-time
              init-wait-time
            on-value! queue? transformer-id valid-input-type queue-init param
+             on-error!
            handle-continuation?
            app]
     :or {param "globules"
@@ -78,7 +79,6 @@
   (reify
     LazyPogFn
     (lazy-invoke [_ env {player "player"
-                         on-error!  "on-error!"
                          balls param}]
       (if (and player (< 16
                          (.distance (.getPhysicsLocation player)
@@ -130,7 +130,14 @@
          {:name param
           :type clojure.lang.Seqable}))
     (docstring [_]
-      docstring))]
+      (if-not queue?
+        (docstr [["values" "a list of values"]]
+            (str "Spits out a globule for each value in globules."))
+        ;;TODO add string explicitly stating constraints on cannon.
+        (str "Spits out a globule for each value passed to it."
+          (if (empty? queue-init) ""
+            (str " Starts with the values given by " queue-init ".")))
+        )))]
     pog-fn
     ))
 

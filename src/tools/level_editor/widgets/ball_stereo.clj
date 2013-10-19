@@ -79,6 +79,7 @@
                                                          :x))
                       :queue? true
                       :transformer-id ""
+                      :on-error! on-error!
                       :queue-init []
                       :param "globules"
                       :handle-continuation? false

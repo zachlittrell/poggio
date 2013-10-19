@@ -54,7 +54,11 @@
              "subtract" subtract*
              "multiply" multiply*
              "divide" divide*
+             "inc" inc*
+             "dec" dec*
              "remainder" mod*
+             "even?" even?*
+             "odd?" odd?*
              "less-than?" less-than?*
              "greater-than?" greater-than?*
              "equal?" equal?*}

@@ -24,7 +24,7 @@
 (def blue-value* (fn->pog-fn (fn [c] (* (blue c) 255)) "blue-value" 
                              [{:name "c"
                                :type RGBA}]
-                           (docstr [["c" "a color"]] "the green value of c")))
+                           (docstr [["c" "a color"]] "the blue value of c")))
 
 (def red* (code-pog-fn []
               (docstr [] "the color red")

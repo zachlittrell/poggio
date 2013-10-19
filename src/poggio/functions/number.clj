@@ -26,6 +26,16 @@
                  {:name "y" :type Number}]
                 (docstr [["x" "a number"] ["y" "a number"]]
                   "the remainder of x/y")))
+
+(def even?* (code-pog-fn ["n"]
+              (docstr [["n" "an integer"]]
+                      "true if n is even.")
+              "(equal? (remainder n 2) 0)"))
+
+(def odd?* (code-pog-fn ["n"]
+              (docstr [["n" "an integer"]]
+                      "true if n is odd.")
+              "(not (even? n))"))
             
 
 (def inc* (code-pog-fn ["n"]

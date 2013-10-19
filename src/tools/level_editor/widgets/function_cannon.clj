@@ -102,6 +102,7 @@
                                            (float velocity)
                                            (float mass))
                        :init-wait-time 0.5
+                       :on-error! on-error!
                        :queue? queue?
                        :transformer-id transform-id
                        :valid-input-type valid-input-type

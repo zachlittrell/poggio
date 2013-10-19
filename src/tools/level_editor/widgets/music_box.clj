@@ -74,6 +74,7 @@
                       :wait-time wait-note
                       :queue? queue? 
                       :transformer-id transformer-id
+                      :on-error! on-error!
           :valid-input-type org.jfugue.Note 
           :queue-init queue-init
           :param "notes"))

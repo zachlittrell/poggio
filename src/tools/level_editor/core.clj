@@ -220,6 +220,8 @@
                                                   view-button])))))
 
 (defn -main [& args]
+  (.setLevel (java.util.logging.Logger/getLogger "com.jme3")
+             java.util.logging.Level/WARNING)
   (-> (make-gui)
       (show!)))
 

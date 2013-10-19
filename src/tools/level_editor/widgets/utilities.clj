@@ -60,6 +60,8 @@
              init-wait-time
            on-value! queue? transformer-id valid-input-type queue-init param
              on-error!
+             on-invoke!
+             interactive?
            handle-continuation?
            app]
     :or {param "globules"
@@ -91,6 +93,7 @@
               (stop! (:timer state))))
           (when-not (and (= (:state state) :active)
                          queue?)
+            (when on-invoke! (on-invoke!))
             (let [new-timer (fn new-timer [balls]
                              (do-list-timer spatial balls valid-input-type
                                        env transformer
@@ -122,7 +125,7 @@
     PogFn
     (parameters [_]
       (|_|?
-         (when-not queue?
+         (when-not (or queue? (false? interactive?))
            {:name "player"
             :type Warpable})
          {:name "on-error!"

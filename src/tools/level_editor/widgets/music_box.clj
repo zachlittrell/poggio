@@ -16,11 +16,12 @@
         [tools.level-editor.widgets utilities]))
 
 (defn play-note! [app *stereos* on-error! player note]
+  (.stream player (note->music-string note))
   (let [[stereo & stereos] @*stereos*]
-    (.stream player (note->music-string note))
-    (when (seq stereo)
-      (invoke* (spatial-pog-fn (select app stereo)) [on-error! (list note)]))
-    (reset! *stereos* stereos)))
+    (when-not (rest? note)
+      (when (seq stereo)
+        (invoke* (spatial-pog-fn (select app stereo)) [on-error! (list note)]))
+      (reset! *stereos* stereos))))
 
 (defn wait-note 
   [note]
@@ -43,6 +44,7 @@
                                transformer-id
                                queue?
                                queue-init
+                               interactive?
                                      ]}]
  (let [loc (Vector3f. (* x 16) -16 (* z 16))
        dir (angle->quaternion direction :y)
@@ -53,7 +55,8 @@
                           :local-translation loc
                           :local-rotation dir)
        player (org.jfugue.StreamingPlayer.)
-       *muted?* (atom false)]
+       *muted?* (atom false)
+       *stereos* (atom nil)]
    (.stream player (pattern 
                      (org.jfugue.Instrument. org.jfugue.Instrument/GUITAR)))
    (context/add-end-level-watch! app #(.close player))
@@ -66,13 +69,15 @@
                       :app app
                       :on-value! (partial play-note! 
                                           app
-                                          (atom (cycle stereos)) 
+                                          *stereos*
                                           on-error!
                                           player)
+                      :on-invoke! #(reset! *stereos* (cycle stereos))
                       :handle-continuation? false
                       :init-wait-time 0.5
                       :wait-time wait-note
                       :queue? queue? 
+                      :interactive? (not (false? interactive?))
                       :transformer-id transformer-id
                       :on-error! on-error!
           :valid-input-type org.jfugue.Note 
@@ -91,7 +96,9 @@
                {:id :transformer-id :type :string :label "Transformer"}
                {:id :queue? :type :boolean :label "Queue?"}
                {:id :queue-init :type [:string :multi-line? true]
-                                :label "Queue Init"}]
+                                :label "Queue Init"}
+               {:id :interactive? :type [:boolean :init true]
+                                  :label "Interactive?"}]
    :build build-music-box
    })
 

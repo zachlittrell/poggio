@@ -14,7 +14,7 @@
 
 (def levels
   [["Levels/orientation.clj" "Orientation"]
-   ["Levels/level2.clj" "Manipulation"]])
+   ["Levels/manipulation.clj" "Manipulation"]])
 
 (defn enable! [screen max-level-unlocked]
   (doseq [[file name] (take (inc max-level-unlocked)

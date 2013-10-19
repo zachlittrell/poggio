@@ -153,7 +153,7 @@
     (doseq [item init]
       (let [w  (widget :init item)]
         (add! grid w (remove w))))
-    (.setRows (.getLayout grid) (/ (count init) 2))
+    (.setRows (.getLayout grid) (count init) )
     (border-panel :center (scrollable grid)
                   :size [30 :by 200]
                   :north (action :name "Add"

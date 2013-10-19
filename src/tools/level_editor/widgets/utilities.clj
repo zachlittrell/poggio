@@ -147,11 +147,21 @@
   (equal? [eq obj]))
 
 (extend-protocol Equable
+  Number
+  (equal? [n1 n2]
+    (== n1 n2))
+  ColorRGBA
+  (equal? [c1 c2]
+    (rgb-equal? c1 c2))
   clojure.lang.Seqable
   (equal? [seq1 seq2]
-    (when (and (not-empty seq1) (not-empty seq2)
-               (equal? (first seq1) (first seq2)))
-      (recur (next seq1) (next seq2)))))
+    (if (empty? seq1)
+      (empty? seq2)
+      (if (empty? seq2)
+        false
+        (when (equal? (first seq1)
+                      (first seq2))
+          (recur (next seq1) (next seq2)))))))
 
 (defn open-on-pattern-processor [target-ids pattern]
   (let [*buffer* (atom (ring-buffer (count pattern)))

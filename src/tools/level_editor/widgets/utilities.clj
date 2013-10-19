@@ -109,7 +109,7 @@
                                                 (start! timer))))))
                                          
                                        (fn [error]
-                                         (my-error! error)
+                                         (my-error!)
                                          (on-error! error)
                                          (reset! *state* {:state :inactive}))
                                        (fn [timer]
@@ -131,10 +131,16 @@
           :type clojure.lang.Seqable}))
     (docstring [_]
       docstring))]
-    (when (and queue? (not-empty queue-init))
-      (invoke* pog-fn core-env [nil (code-pog-fn [] "" queue-init)]))
     pog-fn
     ))
+
+(defn start-do-list!?
+  [spatial queue? queue-init]
+  (when (and queue? (not-empty queue-init))
+    (do-once! spatial
+      (invoke* (spatial-pog-fn spatial)
+               core-env
+               [nil (code-pog-fn [] "" queue-init)]))))
 
 (defn str->encoding [^String s]
   (condp re-matches s

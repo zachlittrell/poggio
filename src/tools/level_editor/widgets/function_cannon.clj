@@ -106,7 +106,9 @@
                        :transformer-id transform-id
                        :valid-input-type valid-input-type
                        :queue-init init-queue
-                       :param "values")))))
+                       :param "values")))
+   (start-do-list!? cannon queue? init-queue)
+   cannon))
 
  
 (def function-cannon-template

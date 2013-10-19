@@ -11,12 +11,14 @@
         [jme-clj animate bitmap-text control geometry material model node physics physics-control selector transform]
         [nifty-clj popup]
         [poggio.functions core parser modules scenegraph color utilities]
-        [seesawx core]))
+        [seesawx core]
+        [tools.level-editor.widgets utilities]))
 
 (def globule-shape (Sphere. 32 32 (float 0.4)))
 (def num-ball-color (ColorRGBA. 1 1 1 0.5))
 (def num-font-color (ColorRGBA. 0 0 0 0.5))
 
+;;TODO move this stuff into utilities
 (defprotocol Ballable
   (modify-ball! [val app font ball-node ball]))
 
@@ -65,57 +67,6 @@
                         (.mult (quaternion->direction-vector dir)
                                vel))))
 
-(defn cannon-timer [app *queue* transform cannon-error! valid-input-type font spatial state nozzle-loc dir velocity mass balls env on-error!]
-  (let [*balls* (atom balls)]
-    (control-timer spatial 0.5 false
-      (fn []
-          (let [timer (computation-timer spatial
-                        5
-                        (fn []
-                          (let [balls (value @*balls* env)]
-                            (assert! (implements? clojure.lang.Seqable balls))
-                            (when-not (empty? balls)
-                            (let [ball (transform (first balls))
-                                  more-balls (rest balls)]
-                              (assert! (implements? valid-input-type ball))
-                              [ball more-balls]))))
-                        ;;Success
-                        (fn [result]
-                          (let-weave result
-                            [ball (first result)
-                             more-balls (second result)]
-                            [queue @*queue*
-                             more-balls queue]
-                          [ball] :>> 
-                             (do
-                               (shoot-globule! app on-error! font nozzle-loc dir velocity mass ball)
-                               (swap! *balls* (constantly more-balls)))
-                          [queue] :>>
-                            (do
-                              (reset! *balls* queue)
-                              (reset! *queue* [])
-                              (if (empty? queue)
-                                (reset! state {:state :inactive})))
-                           (let [timer (cannon-timer app *queue* transform
-                                                     cannon-error!
-                                                     valid-input-type
-                                                    font spatial state
-                                                    nozzle-loc dir
-                                                    velocity mass more-balls
-                                                    env
-                                                    on-error!)]
-                            (swap! state (constantly {:timer timer
-                                                      :state :active}))
-                            (start! timer))))
-                          ;;Failure
-                          (fn [error]
-                            (cannon-error!)
-                            (on-error! error)
-                            (swap! state (constantly {:state :inactive}))))]
-            (swap! state (constantly {:state :active
-                                      :timer timer}))
-            (start! timer))))))
-
 
 (defn build-function-cannon [{:keys [x z id direction velocity mass app
                                      queue?
@@ -127,19 +78,9 @@
        dir (angle->quaternion direction :y)
        ball-font (render-back! (bitmap-font :asset-manager app))
        control (RigidBodyControl. 0.0)
-       *state* (atom {:state :inactive})
-       *queue* (atom [])
        valid-input-type (cond (empty? constraint) (union-impl RGBA Number)
                            (= constraint "color") RGBA
                            (= constraint "number") Number)
-       [cannon-error!
-        transformer] (if (empty? transform-id) [(constantly nil) identity]
-                       [(fn []
-                          (on-bad-transform!
-                            (spatial-pog-fn (select app transform-id))))
-                        (fn [x] 
-                         (transform
-                           (spatial-pog-fn (select app transform-id)) x))])
        cannon (model :asset-manager app
                 :model-name "Models/Laser/Laser.scene"
                 :name id
@@ -147,61 +88,26 @@
                 :local-rotation dir
                      :controls [control])]
    (doto cannon
-     (attach-pog-fn!* (reify
-                          LazyPogFn
-                          (lazy-invoke [_ env {player "player"
-                                               balls "globules"}]
-                            (if (and player (< 16
-                                               (.distance (.getPhysicsLocation player)
-                                                       (.getWorldTranslation cannon))))
-                              (on-error! (Exception. "You must be closer to interact with this."))
-                            (let [state* @*state*]
-                                (when (= (:state state*) :active)
-                                  (if queue?
-                                    (swap! *queue* concat balls)
-                                    (stop! (:timer state*))))
-                              (when-not (and (= (:state state*) :active)
-                                             queue?)
-                                (let [timer (cannon-timer app *queue*
-                                                    transformer
-                                                          cannon-error!
-                                                          valid-input-type
-                                                    ball-font cannon *state*
-                                                           (.add loc 
-                                                             (.mult dir 
-                                                                    (Vector3f. 0 4 2.1)))
-                                                          dir
-                                                          (float velocity)
-                                                          (float mass)
-                                                          balls
-                                                          env
-                                                          on-error!)]
-                                (swap! *state* (constantly {:state :active
-                                                          :timer timer}))
-                                 (start! timer))))))
-                         PogFn
-                         (parameters [_]
-                          ;;We don't want the user to interact with the cannon
-                          ;;if this cannon is queued
-                          (|_|?
-                             (when-not queue?
-                               {:name "player"
-                                :type Warpable})
-                             {:name "on-error!"
-                              :type clojure.lang.IFn}
-                             {:name "globules"
-                             :type clojure.lang.Seqable}))
-                          (docstring [_]
-                          (docstr [["globules" "a list of values"]]
-                                  (str "Spits out a globule for each values in globules."
-                                       " Globules can be " (if (empty? constraint)
-                                                             "numbers or colors" constraint))))
- 
-                          )))
-   (when (and queue? (not-empty init-queue))
-     (invoke* (spatial-pog-fn cannon) core-env [nil (code-pog-fn [] ""
-                                                        init-queue)]))
-   cannon))
+     (attach-pog-fn!*
+       (do-list-pog-fn :spatial cannon
+                       :app app
+                       :on-value! (partial shoot-globule!
+                                           app
+                                           on-error!
+                                           ball-font
+                                           (.add loc
+                                              (.mult dir
+                                                     (Vector3f. 0 4 2.1)))
+                                           dir
+                                           (float velocity)
+                                           (float mass))
+                       :init-wait-time 0.5
+                       :queue? queue?
+                       :transformer-id transform-id
+                       :valid-input-type valid-input-type
+                       :queue-init init-queue
+                       :param "values")))))
+
  
 (def function-cannon-template
   {:image (image-pad [100 100]

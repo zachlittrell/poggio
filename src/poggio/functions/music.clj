@@ -32,11 +32,15 @@
 
 (defmacro defnote 
   ([letter pitch]
-   `(defnote ~letter ~pitch "middle"))
+   `(defnote ~letter ~pitch ""))
   ([letter pitch modifier]
     (let [name (name letter)
-          var-name (symbol (str modifier "-" name "*"))
-          str-name (str modifier  " " name)]
+          [var-modifier str-modifier] (if (empty? modifier) 
+                                    ["" ""]
+                                    [(str modifier "-")
+                                     (str modifier " ")])
+          var-name (symbol (str var-modifier name "*"))
+          str-name (str str-modifier name)]
     `(def ~var-name (code-pog-fn []
                       (docstr [] (str ~str-name " for a quarter note"))
                       (str "(note " ~pitch " 0.25)"))))))

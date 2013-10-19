@@ -29,8 +29,6 @@
    (ColorRGBA. 0.6 1.0 0 1.0)])
    
 (defn shoot-globule! [app on-error! loc dir note]
-  (println "HELLLLLOOO"
-           (pitch note) (mod (pitch note) 12))
   (let [c (if (rest? note) ColorRGBA/White (note-number->color
                                              (mod (pitch note) 12)))
         d (duration note)]

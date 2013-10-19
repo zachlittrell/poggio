@@ -4,7 +4,7 @@
   (:use [control assert bindings timer]
         [data coll color object ring-buffer]
         [jme-clj control selector transform physics]
-        [poggio.functions core modules utilities color scenegraph]))
+        [poggio.functions core modules parser utilities color scenegraph]))
 
 (defn do-list-timer 
   "Returns a control-timer for spatial that iterates through xs.
@@ -73,7 +73,8 @@
           (if (empty? transformer-id)
             [(constantly nil) identity]
             [#(on-bad-transform! (spatial-pog-fn (select app transformer-id)))
-             #(transform (spatial-pog-fn (select app transformer-id)) %)])]
+             #(transform (spatial-pog-fn (select app transformer-id)) %)])
+        pog-fn
   (reify
     LazyPogFn
     (lazy-invoke [_ env {player "player"
@@ -129,7 +130,11 @@
          {:name param
           :type clojure.lang.Seqable}))
     (docstring [_]
-      docstring))))
+      docstring))]
+    (when (and queue? (not-empty queue-init))
+      (invoke* pog-fn core-env [nil (code-pog-fn [] "" queue-init)]))
+    pog-fn
+    ))
 
 (defn str->encoding [^String s]
   (condp re-matches s

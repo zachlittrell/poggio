@@ -40,6 +40,9 @@
 
 (defn build-music-box [{:keys [x z id direction stereos app
                                on-error!
+                               transformer-id
+                               queue?
+                               queue-init
                                      ]}]
  (let [loc (Vector3f. (* x 16) -16 (* z 16))
        dir (angle->quaternion direction :y)
@@ -69,10 +72,10 @@
                       :handle-continuation? false
                       :init-wait-time 0.5
                       :wait-time wait-note
-                      :queue? false;;queue? 
-                      :transformer-id "";;transformer-id?
+                      :queue? queue? 
+                      :transformer-id transformer-id
           :valid-input-type org.jfugue.Note 
-          :queue-init []
+          :queue-init queue-init
           :param "notes"))
    music-box))
 
@@ -83,7 +86,11 @@
    :questions [{:id :id        :type :string    :label "ID"}
                {:id :direction :type :direction :label "Direction"}
                {:id :stereos   :type [:list
-                                      :type :string] :label "Stereos"}]
+                                      :type :string] :label "Stereos"}
+               {:id :transformer-id :type :string :label "Transformer"}
+               {:id :queue? :type :boolean :label "Queue?"}
+               {:id :queue-init :type [:string :multi-line? true]
+                                :label "Queue Init"}]
    :build build-music-box
    })
 

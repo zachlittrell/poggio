@@ -23,7 +23,9 @@
   {"Logic" {"if" if*
             "true" true*
             "false" false*
-            "not" not*}
+            "not" not*
+            "and" and*
+            "or" or*}
    "List" {"cons" cons*
            "concat" concat*
            "nil"  empty-list*
@@ -68,7 +70,8 @@
             "color" color*
             "r-value" red-value*
             "g-value" green-value*
-            "b-value" blue-value*}
+            "b-value" blue-value*
+            "color-equal?" color-equal?*}
    "Functions" {"function" lambda*}
    "Value" {"id" id*
             "let" let*}

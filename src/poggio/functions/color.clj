@@ -37,3 +37,11 @@
 (def blue* (code-pog-fn [] 
               (docstr [] "the color blue")
               "(color 0 0 255)"))
+
+(def color-equal?* (code-pog-fn [{:name "c1" :type RGBA}
+                                {:name "c2" :type RGBA}]
+                    (docstr [["c1" "a color"] ["c2" "a color"]]
+                      "true if c1 is equal to c2.")
+"(and (and (equal? (r-value c1) (r-value c2))
+           (equal? (g-value c1) (g-value c2)))
+      (equal? (b-value c1) (b-value c2)))"))

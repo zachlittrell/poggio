@@ -5,7 +5,7 @@
                 (docstr [["x" "a value"]]
                         "x")
             "x"))
-(def equal?* (fn->pog-fn = "equal?" [{:name "o1"
+(def equal?* (fn->pog-fn == "equal?" [{:name "o1"
                                       :type Number}
                                      {:name "o2"
                                       :type Number}]))

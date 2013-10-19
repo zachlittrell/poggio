@@ -8,15 +8,23 @@
 (defn textfield-entry 
   "Creates a textfield-entry with line-number, line, and an optional 
    tail textfield entry (which must be a builder)."
-  ([line-number line]
-   (textfield-entry line-number line nil))
-  ([line-number line tail]
+  ([scroll-panel-id line-number line]
+   (textfield-entry scroll-panel-id line-number line nil))
+  ([scroll-panel-id line-number line tail]
    (panel :child-layout :vertical
           :width "100%"
           :panels  (cons (panel :child-layout :horizontal
                                 :width "100%"
                                 :controls [(label :text (str line-number))
                                            (text-field :initial-text line
+                                                       :on-get-focus-effect 
+                                                       (effect
+                                                         :effect-name 
+                                                         "updateScrollpanelPositionToDisplayElement"
+                                                         :effect-parameters
+                                                         {"target"
+                                                          scroll-panel-id})
+
                                                        :font "Interface/Fonts/Monospaced.fnt" ;;I don't think this actually gives me a monospaced font...
                                                        :id (genstr "textbox")
                                                        :width "*")])
@@ -121,12 +129,13 @@
       (.layoutElements parent))))
 
 (declare initialize-entry!)
-(defn new-entry! [nifty entry]
+(defn new-entry! [nifty scroll-panel-id  entry]
   (let [prev-tail (tail entry)
-        new-entry (textfield-entry (inc (line-number entry)) "")]
+        new-entry (textfield-entry scroll-panel-id
+                                   (inc (line-number entry)) "")]
     ;;(.markForRemoval prev-tail)
     (let [new-entry* (build nifty entry new-entry)]
-      (initialize-entry! nifty new-entry*)
+      (initialize-entry! nifty scroll-panel-id new-entry*)
       (swap-cursors! entry new-entry*)
       (when prev-tail
         (.markForMove prev-tail new-entry*
@@ -149,7 +158,8 @@
                                     text ""
                                     width "100%"
                                     height "100%"}}]
-  (let [lines (str/split-lines text)]
+  (let [lines (str/split-lines text)
+        original-id id]
     (scroll-panel :id id
                  :width width
                  :height height
@@ -165,7 +175,7 @@
                                lines (rseq lines)
                                 ]
                           (if-let [[end & front] lines]
-                            (let [field (textfield-entry index end prev)]
+                            (let [field (textfield-entry original-id index end prev)]
                               (recur field
                                      (dec index)
                                      front))
@@ -178,6 +188,23 @@
       (select , "textfield-entries")
       (.getElements)
       (first)))
+
+(defn parent-component 
+  [entry]
+  (first
+    (drop (+ 3 (line-number entry))
+          (iterate #(.getParent %) entry))))
+
+;;(defn scroll-into-view! [entry]
+;;  (let [component (parent-component entry)
+;;        scroll-bar (.findNiftyControl component
+;;                        "#nifty-internal-vertical-scrollbar"
+;;                        de.lessvoid.nifty.controls.Scrollbar)
+;;        min-y (int (.getValue scroll-bar))
+;;        max-y (+ min-y (int (.getWorldPageSize scroll-bar)))
+;;        current-min-y (+ (- (.getY entry) (.getY component))
+;;                         min-y)
+;;        current-max-y (+ (- (.getY entry) (.getY component))
 
 (defn swap-cursors! 
   ([entry tail]
@@ -193,15 +220,18 @@
        (.setCursorPosition tail-control
           (case position
             :end (.length (.getRealText tail-control))
-            (.getCursorPosition entry-logic))))))
+            (.getCursorPosition entry-logic)))
+   ))) ;   (scroll-into-view! tail))))
 
-(defn initialize-entry! [nifty entry]
+        ;;TODO
+        ;;maybe write an accompanying de-initialize?
+(defn initialize-entry! [nifty scroll-panel-id entry]
   (subscribe! nifty (.getId (textfield entry)) 
               :nifty-input-event
     (fn [topic data]
       (condp = (nifty-input-event->keyword data)
         :submit-text 
-          (new-entry! nifty entry)
+          (new-entry! nifty scroll-panel-id  entry)
         :backspace
           (when (= "" (line-text entry))
             (remove-entry! entry)) 
@@ -223,7 +253,9 @@
                          index 1]
                     (when-let [[line & lines] (seq lines)]
                       (recur lines
-                             (build nifty entry (textfield-entry 1 line))
+                             (build nifty entry (textfield-entry 
+                                                  (.getId textfieldx)
+                                                  1 line))
                              (inc index))))]
     (.setText (nifty-control (textfield entry) :text-field) line)
     (if-let [t (tail entry)]
@@ -246,4 +278,4 @@
                                          (select 
                                            (select (.getCurrentScreen nifty) id)
                                            "textfield-entries"))]
-                      (initialize-entry! nifty entry)))}))
+                      (initialize-entry! nifty id entry)))}))

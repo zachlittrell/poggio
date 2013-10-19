@@ -21,6 +21,13 @@
                 (docstr [["x" "a number"] ["y" "a number"]]
                   "x / y")))
 
+(def mod* (fn->pog-fn rem "rem"
+                 [{:name "x" :type Number} 
+                 {:name "y" :type Number}]
+                (docstr [["x" "a number"] ["y" "a number"]]
+                  "the remainder of x/y")))
+            
+
 (def inc* (code-pog-fn ["n"]
               (docstr [["n" "a number"]]
                       "n + 1")

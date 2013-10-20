@@ -49,7 +49,7 @@
                           (handle-timer! new-timer)
                           (start! new-timer))))
                       (on-empty!)))
-                  on-failure!)]
+                  (fn [error] (on-failure! error @*xs*)))]
           (handle-timer! comp-timer)
           (start! comp-timer))))))
 
@@ -94,27 +94,32 @@
           (when-not (and (= (:state state) :active)
                          queue?)
             (when on-invoke! (on-invoke!))
-            (let [new-timer (fn new-timer [balls]
+            (let [on-empty!  (fn [new-timer]
+                              (let [queue @*queue*]
+                                (if (empty? queue)
+                                  (reset! *state* {:state :inactive})
+                                  (do 
+                                    (reset! *queue* [])
+                                    (let [timer (new-timer queue)]
+                                      (reset! *state* {:state :active
+                                                       :timer timer})
+                                      (start! timer))))))
+ 
+                  new-timer (fn new-timer [balls]
                              (do-list-timer spatial balls valid-input-type
                                        env transformer
                                        init-wait-time
                                        wait-time
                                        on-value!
-                                       (fn []
-                                        (let [queue @*queue*]
-                                          (if (empty? queue)
-                                            (reset! *state* {:state :inactive})
-                                            (do 
-                                              (reset! *queue* [])
-                                              (let [timer (new-timer queue)]
-                                                (reset! *state* {:state :active
-                                                                 :timer timer})
-                                                (start! timer))))))
-                                         
-                                       (fn [error]
+                                       (partial on-empty! new-timer) 
+                                       (fn [error leftovers]
                                          (my-error!)
                                          (on-error! error)
-                                         (reset! *state* {:state :inactive}))
+                                         (if queue?
+                                           (reset! *queue*
+                                                   (concat leftovers @*queue*)))
+                                         (on-empty! new-timer)
+                                        ); (reset! *state* {:state :inactive}))
                                        (fn [timer]
                                          (reset! *state*
                                                  {:state :active

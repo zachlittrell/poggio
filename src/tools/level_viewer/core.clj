@@ -118,13 +118,15 @@
 
 (defn set-up-room! [app level nifty on-error!]
   (pause-physics! app)
-  (let [root (.getRootNode app)]
-    (when-not (zero? (.getQuantity root))
-      (.detachChildAt root (dec (.getQuantity root)))))
+  (let [root (.getRootNode app)
+        child (when-not (zero? (.getQuantity root))
+                (.detachChildAt root (dec (.getQuantity root))))]
   (loading-screen! nifty)
   (future
     (try
       (let [space (physics-space app)]
+        (if child
+          (.removeAll space child))
         (let [level (load-level (basic-level
                                   (templates/eval-level
                                   (if (fn? level) (level) level)))
@@ -145,7 +147,7 @@
           (catch Exception e
             (.printStackTrace e)
             (System/exit -1))
-    )))
+    ))))
 
 (defn make-app 
   ([level]

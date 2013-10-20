@@ -27,9 +27,29 @@
    (ColorRGBA. 1.0 0.4 0 1.0)
    ColorRGBA/Yellow
    (ColorRGBA. 0.6 1.0 0 1.0)])
+
+(def aux-note-number->color
+  [(ColorRGBA. 1.0 0.0 0.0 1.0)
+   (ColorRGBA. 1.0 0.0 0.0 1.0)
+
+   (ColorRGBA. 0.0 1.0 0.0 1.0)
+   (ColorRGBA. 0.0 1.0 0.0 1.0)
+
+   (ColorRGBA. 0.0 0.0 1.0 1.0)
+
+   (ColorRGBA. 1.0 1.0 0.0 1.0)
+   (ColorRGBA. 1.0 1.0 0.0 1.0)
+
+   (ColorRGBA.  0.0 1.0 1.0 1.0)
+   (ColorRGBA.  0.0 1.0 1.0 1.0)
+
+   (ColorRGBA. 1.0 0.0 1.0 1.0)
+   (ColorRGBA. 1.0 0.0 1.0 1.0)
+
+   (ColorRGBA. 1.0 1.0 1.0 1.0)])
    
 (defn shoot-globule! [app on-error! loc dir note]
-  (let [c (if (rest? note) ColorRGBA/White (note-number->color
+  (let [c (if (rest? note) ColorRGBA/White (aux-note-number->color
                                              (mod (pitch note) 12)))
         d (duration note)]
     (cannon/shoot-globule! app on-error! nil loc dir
@@ -39,7 +59,7 @@
                           
 
 
-(defn build-ball-stereo [{:keys [x z id target-ids protocol pattern app on-error!]}]
+(defn build-ball-stereo [{:keys [x z id target-ids transformer-id protocol pattern app on-error!]}]
  (let [new-hoop (fn [loc dir id]
                   (let [hoop (model 
                                :asset-manager app
@@ -76,7 +96,7 @@
                                                          FastMath/PI
                                                          :x))
                       :queue? true
-                      :transformer-id ""
+                      :transformer-id transformer-id
                       :on-error! on-error!
                       :queue-init []
                       :param "globules"
@@ -98,7 +118,9 @@
                {:id :protocol :type [:choice
                                      :model [:open-on-pattern
                                              :pass]]
-                              :label "Protocol"}]
+                              :label "Protocol"}
+               {:id :transformer-id :type :string :label "Transformer"}
+               {:id :pattern :type [:list :type :string] :label "Pattern"}]
    :build build-ball-stereo
    })
 

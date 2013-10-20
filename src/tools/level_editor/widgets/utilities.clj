@@ -162,7 +162,12 @@
     #"-?(\d+)(.\d+)?" (bigdec s)
     #"red" ColorRGBA/Red
     #"green" ColorRGBA/Green
-    #"blue" ColorRGBA/Blue))
+    #"blue" ColorRGBA/Blue
+    (if-let [[_ r g b] (re-matches #"color (\d+) (\d+) (\d+)" s)]
+      (ColorRGBA. (float (/ (bigdec r) 255))
+                  (float (/ (bigdec g) 255))
+                  (float (/ (bigdec b) 255))
+                  1.0))))
 
 (defprotocol Equable
   (equal? [eq obj]))

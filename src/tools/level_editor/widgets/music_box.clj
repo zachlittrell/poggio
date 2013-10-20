@@ -83,6 +83,7 @@
           :valid-input-type org.jfugue.Note 
           :queue-init queue-init
           :param "notes"))
+   (start-do-list!? music-box queue? queue-init)
    music-box))
 
 

@@ -53,11 +53,18 @@
                                                              (Vector3f. 0 0 8)))
                     :local-rotation dir
                     :children [screen text*])
+       [protocol transform] (cond (= protocol :pass) [protocol ""]
+                                  (= protocol :pass-with) [:pass transform]
+                                  :else [protocol transform])
        ]
    (.updateLogicalState text* 0)
    (case protocol
      :none node
-     :pass (doto node
+     :pass 
+          (let [t (if (empty? transform) 
+                    [] 
+                    [(code-pog-fn [] "" transform)])]
+          (doto node
            (attach-pog-fn!* 
             (reify PogFn
              (parameters [_] [{:name "player" :type Warpable}
@@ -69,14 +76,18 @@
               (start!
                 (computation-timer node 5
                   (fn []
-                    (invoke* message env []))
+                    (invoke* message env t))
                   (fn [result]
                     (doseq [target-id target-ids]
                       (when-let [t (select app target-id)]
-                        (invoke* (spatial-pog-fn t) {} [{:on-error! on-error!
-                                                         :value result}]))))
+                        (let [pog-fn (spatial-pog-fn t)]
+                          (if (== (count (parameters pog-fn)) 1)
+                           (invoke* pog-fn {} 
+                                    [{:on-error! on-error!
+                                      :value result}])
+                            (invoke* pog-fn {} [nil result]))))))
                   (fn [error]
-                    (on-error! error))))))))
+                    (on-error! error)))))))))
 
      :hold (let [default-transform {:transform (code-pog-fn [] "" transform)
                                     :env core-env}
@@ -171,7 +182,8 @@
                                   :text "POGGIO INSTITUTE\n================\n"
                                   :multi-line? true] :label "Text"}
                {:id :protocol :type [:choice
-                                     :model [:none :open :pass :hold]] :label "Protocol"}
+                                     :model [:none :open :pass :pass-with
+                                             :hold]] :label "Protocol"}
                {:id :transform :type [:string :text "(function x x)" :multi-line? true] :label "Transform"}
                {:id :success? :type [:string :multi-line? true] :label "Success Test"}
                {:id :parameter :type [:string :text "message"] :label "Parameter"}

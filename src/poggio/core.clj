@@ -1,6 +1,6 @@
 (ns poggio.core
   (:use [clojure.java io]
-        [jme-clj audio]
+        [jme-clj audio physics physics-providers physics-control]
         [nifty-clj [builders :exclude [text]] elements events]
         [poggio main-menu]
         [poggio.functions gui])
@@ -20,6 +20,8 @@
     (.stop app))
   (when-not (is-current-screen? nifty "loading-screen")
    ; (clean! (.getCurrentScreen nifty) nifty)
+    (pause-physics! app)
+    (.removeAll (physics-space app) (.getRootNode app))
     (.detachAllChildren (.getRootNode app))
     (if success?
       ;;We only increase the index if this was a 

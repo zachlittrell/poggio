@@ -5,7 +5,7 @@
 (def false* (constantly* false (docstr [] "false")))
 (def not* (code-pog-fn ["b"] (docstr [["b" "a boolean"]]
                                      "the opposite of b.")
-            "(if b true false)"))
+            "(if b false true)"))
 
 (def and* (code-pog-fn ["b1" "b2"]
               (docstr [["b1" "a boolean"]

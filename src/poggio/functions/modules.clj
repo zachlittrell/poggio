@@ -37,6 +37,7 @@
            "reduce" reduce*
            "flatten" flatten*
            "map" map*
+           "filter" filter*
            "single" single*
            "pair" pair*}
    "Music" {"note" note*

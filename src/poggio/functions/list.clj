@@ -92,4 +92,13 @@
    nil
    (cons (f (head xs)) (map f (tail xs))))"))
 
-
+(def filter* (code-pog-fn ["f" "xs"]
+            (docstr [["f" "a unary function"]
+                     ["xs" "a list"]]
+              "a list with only elements s.t. (f element) returns true")
+"(if (empty? xs)
+  nil
+  (if (f (head xs))
+    (cons (head xs)
+          (filter f (tail xs)))
+    (filter f (tail xs))))"))

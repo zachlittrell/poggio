@@ -49,7 +49,7 @@
    {:direction -3.081961940458624,
     :protocol :none,
     :text
-    "LIBRARIES\n=========\n\nPOWERED BY:\n\ninstaparse\n\nJFugue\n\njMonkeyEngine\n\nNiftyGUi\n\nSeesaw\n",
+    "LIBRARIES\n=========\n\nPOWERED BY:\n\ninstaparse\n\nJFugue\n\njMonkeyEngine\n\nNiftyGui\n\nSeesaw\n",
     :parameter "message",
     :text-color {:red 127, :green 255, :blue 0},
     :z 9,

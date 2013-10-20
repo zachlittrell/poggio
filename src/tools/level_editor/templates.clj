@@ -1,6 +1,7 @@
 (ns tools.level-editor.templates
   (:use [tools.level-editor.widgets 
          [ball-stereo :only [ball-stereo-template]]
+         [controller :only [controller-template]]
          [function-cannon :only [function-cannon-template]]
          [globule-receiver :only [globule-receiver-template]]
          [glass-door :only [glass-door-template]]
@@ -18,7 +19,8 @@
    :music-box music-box-template
    :ball-stereo ball-stereo-template
    :sound-barrier sound-barrier-template
-   :color-screen color-screen-template))
+   :color-screen color-screen-template
+   :controller controller-template))
 
 (defn eval-level 
   "Replaces widgets key in level-map with build functions"

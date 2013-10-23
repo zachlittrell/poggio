@@ -3,7 +3,7 @@
            [java.awt.image BufferedImage]
            [javax.swing ImageIcon])
   (:use [clojure pprint]
-        [data string]
+        [data bit string]
         [seesaw chooser core]
         [seesawx core]
         [tools.level-editor templates]
@@ -80,34 +80,55 @@
   
 
 (defn item-panel []
-  (listbox :model (concat (vals default-item-icons)
-                          (map template->item-icon keyword->widget-template))))
+  (let [model (concat (vals default-item-icons)
+                      (map template->item-icon keyword->widget-template))
+        item-panel (listbox :model model)]
+    (listen item-panel
+      :key-pressed (fn [e]
+                     (when (== (.getKeyCode e)
+                               java.awt.event.KeyEvent/VK_DELETE)
+                       (let [sel (selection item-panel)]
+                         (when-not (some (partial identical? sel) model)
+                           (.removeElement (config item-panel :model)
+                                           sel))))))
+
+    item-panel))
 
 (defn update-selected! [item-box e]
-  (config! (.getComponent e)
-      :icon (condp == (.getButton e)
-              java.awt.event.MouseEvent/BUTTON3
-              (let [icon (.getIcon (.getComponent e))
-                    m (meta icon)
-                    answers (:answers m)]
-                (if answers
-                  (image-icon* (.getImage icon)
-                     (if-let [answers (apply get-values
-                                             (answer-questions (:questions m)
-                                                               answers))]
-                       (assoc m :answers answers)
-                       m))
-                  icon))
-              java.awt.event.MouseEvent/BUTTON1
-              (let [icon (selection item-box)
-                     m (meta icon)
-                     questions (:questions m)
-                     answers (when questions
-                               (apply get-values questions))]
-                (if (and (seq questions) (not answers))
-                 (.getIcon (.getComponent e))
-                 (image-icon* (.getImage icon)
-                              (assoc m :answers answers)))))))
+  (if (contains-bitmask? (.getModifiers e)
+                         java.awt.event.InputEvent/CTRL_MASK)
+    (.addElement (config  item-box :model )
+                 (let [icon (.getIcon (.getComponent e))
+                       m (meta icon)]
+                    (image-icon* (.getImage icon)
+                                 (assoc m :questions (answer-questions
+                                                       (:questions m)
+                                                       (:answers m))))))
+    (config! (.getComponent e)
+        :icon (condp == (.getButton e)
+                java.awt.event.MouseEvent/BUTTON3
+                (let [icon (.getIcon (.getComponent e))
+                      m (meta icon)
+                      answers (:answers m)]
+                  (if answers
+                    (image-icon* (.getImage icon)
+                       (if-let [answers (apply get-values
+                                               (answer-questions (:questions m)
+                                                                 answers))]
+                         (assoc m :answers answers)
+                         m))
+                    icon))
+                java.awt.event.MouseEvent/BUTTON1
+                  (let [icon (selection item-box)
+                         m (meta icon)
+                         questions (:questions m)
+                         answers (when questions
+                                   (apply get-values questions))]
+                    (if (and (seq questions) (not answers))
+                     (.getIcon (.getComponent e))
+                     (image-icon* (.getImage icon)
+                                  (assoc m :answers answers))))))))
+
 (defn map-panel [item-box]
   (let [items (for [n (range (* max-x max-y))]
                 (label 

@@ -1,27 +1,18 @@
 # poggio 
 
-A puzzle game (very much early in progress) for exploring functional
-programming in a 3d environment.
+A puzzle game for exploring functional programming in a 3d environment.
 
 ## Usage
 
-The basic gist of the game can be seen by running:
+The actual game can be played by running:
 
-lein run -m tools.level-viewer.core test/poggio/test/poggio/levels/sliding\_doors\_level.clj
+lein run -m poggio.core
 
-By right clicking on the cannon, you can access its internal function, which
-takes a list of colors. By hitting compute, the cannon will spit out globules
-for each color in the list.
+You can access the level-editor by running:
 
-Some functions to try:
+lein run -m tools.level-editor.core
 
-cons red ()
-
-triple red green blue
-
-flatten repeat triple red green blue
-
-It's still chock-full of bugs.
+The documentation is light for the level-editor (and will hopefully be improved), but it's a pretty straightforward interface.
 
 ## License
 

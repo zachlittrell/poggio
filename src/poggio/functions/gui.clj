@@ -46,11 +46,15 @@
 (defn modfn [screen]
   (let [modules (nifty-control (select screen "pog-mods-drop") :drop-down)
         functions (nifty-control (select screen "pog-fns-drop") :drop-down)]
-    (when (and (> (.getSelectedIndex modules) 1)
-               (> (.getSelectedIndex functions) 0))
-      ;;TODO
-      ;;allow searched functions to be editted
-      [(.getSelection modules) (.getSelection functions)])))
+    (if (== (.getSelectedIndex modules) 1)
+      (when-not (zero? (.getSelectedIndex functions))
+        (let [search-result (.getSelection functions)]
+          (path-components search-result)))
+      (when (and (> (.getSelectedIndex modules) 1)
+                 (> (.getSelectedIndex functions) 0))
+        ;;TODO
+        ;;allow searched functions to be editted
+        [(.getSelection modules) (.getSelection functions)]))))
 
 (defn function-info []
   {:info (tabs

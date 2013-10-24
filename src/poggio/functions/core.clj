@@ -239,9 +239,10 @@
     seq))
 
 (defn- bind [f env]
-  (reify PogFn
-    (parameters [_] [])
-    (invoke [_ _] (value f env))))
+  (let [*cache* (delay (value f env))]
+    (reify PogFn
+      (parameters [_] [])
+      (invoke [_ _] @*cache*))))
 
 (defn invoke-seq 
   "Invokes the function represented by the seq, with the first argument
@@ -302,14 +303,42 @@
    (invoke [f env]
       (lazy-invoke f env env))))
 
-(def let* 
+(defn late-bind 
+  ([var val env]
+   (late-bind var val env true))
+  ([var val env self-referential?]
+    (let [*cache* (atom nil)
+          *realized?* (atom false)]
+      (reify
+        ObjTypeStringable
+        (obj-type-str [f] (fn->str f))
+        PogFn
+        (parameters [_][])
+        (docstring [_])
+        LazyPogFn
+        (lazy-invoke [self _ _]
+          (if @*realized?*
+            @*cache*
+            (do
+              (reset! *cache* (value val (if self-referential?
+                                           (assoc env var self)
+                                           env)))
+              (reset! *realized?* true)
+              @*cache*))
+          )))))
+
+
+
+(defn let*** [self-referential?]
   (reify
     ObjTypeStringable
     (obj-type-str [f] (fn->str f))
     LazyPogFn
-    (lazy-invoke [_ env args]
-      (value (args "function") (assoc env (:name (args "var"))
-                                          (bind (args "val") env))))
+    (lazy-invoke [_ env {var "var"
+                         val "val"
+                         function "function"}]
+      (value function (assoc env (:name var)
+                                 (late-bind (:name var) val env self-referential?))))
     PogFn
    (parameters [_] [{:name "var"
                      :type PogFnVar}
@@ -321,6 +350,11 @@
              "function executed with variable set to value"))
    (invoke [f env]
       (lazy-invoke f env env))))
+
+
+(def let** (let*** false))
+
+(def let* (let*** true))
 
 (defn- semi-bind [f env]
   (reify PogFn
@@ -338,7 +372,7 @@
                          func "function"}]
       (seq->pog-fn ""
         [(:name var)]
-        (list let* var var (semi-bind func env))
+        (list let** var var (semi-bind func env))
         ))
     PogFn
     (parameters [_] [{:name "var"

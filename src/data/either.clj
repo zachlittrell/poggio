@@ -23,6 +23,8 @@
   [f]
   (try
     (right (f))
+    (catch StackOverflowError e
+      (left (Exception. "Too many functions were called. (Possibly due to an infinite loop).")))
     (catch Exception e
       (left e))))
 

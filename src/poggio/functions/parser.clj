@@ -11,8 +11,11 @@
 (def code-cfg
   (format "<EXPR> = <OWS> VAR <OWS>
                   | <OWS> NUM <OWS>
-                  | <OWS> PGROUP <OWS>
+                  | (<OWS> LAMBDA <OWS>
+                  / <OWS> PGROUP <OWS>)
                   | <OWS> VEC <OWS>
+           BINDING = <LB><OWS>(VAR <OWS>)*<RB>
+           LAMBDA = <LP><OWS><#'function'><OWS>BINDING<OWS>EXPR<RP>
            PGROUP = <LP> EXPR+ <RP>
            VEC = <LB> EXPR* <RB> | <LB> <OWS> <RB>
            NUM = #'-?[0-9]+(\\.[0-9]+)?'
@@ -35,6 +38,11 @@
         (insta/transform {:VAR var*
                           :NUM bigdec
                           :PGROUP (fn [& args] args)
+                          :BINDING (fn [& args] args)
+                          :LAMBDA (fn [binding expr]
+                                    (list lambda* (map->BindingWrapper
+                                                    {:bindings binding})
+                                          expr))
                           :VEC (fn [& args]
                                  (reduce (fn [result next]
                                            (list (var* "cons") next result))

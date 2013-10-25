@@ -184,7 +184,7 @@
                {:id :protocol :type [:choice
                                      :model [:none :open :pass :pass-with
                                              :hold]] :label "Protocol"}
-               {:id :transform :type [:string :text "(function x x)" :multi-line? true] :label "Transform"}
+               {:id :transform :type [:string :text "(function [x] x)" :multi-line? true] :label "Transform"}
                {:id :success? :type [:string :multi-line? true] :label "Success Test"}
                {:id :parameter :type [:string :text "message"] :label "Parameter"}
                {:id :docstring :type [:string :multi-line? true] :label "Docstring"}

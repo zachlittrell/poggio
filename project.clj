@@ -1,7 +1,7 @@
-(defproject poggio "0.1.3-SNAPSHOT"
+(defproject poggio "0.2.0-SNAPSHOT"
   :description "FIXME: write description"
   :repositories {"oss-sonatype" "https://oss.sonatype.org/content/repositories/snapshots/"}
-  :main poggio.core
+;  :main poggio.core
   :profiles {:dev {:dependencies 
                    [[lein-autodoc "0.9.0"]
                    [com.jme3/jME3-testdata "3.0.0.20121220-SNAPSHOT"]]}}
@@ -35,5 +35,5 @@
                  [com.jme3/stack-alloc "3.0.0.20121220-SNAPSHOT"]
                  [com.jme3/vecmath "3.0.0.20121220-SNAPSHOT"]
                  [com.jme3/xmlpull-xpp3 "3.0.0.20121220-SNAPSHOT"]
-                 [instaparse "1.2.2"]
+                 [instaparse "1.2.4"]
                  [seesaw "1.4.3"]])

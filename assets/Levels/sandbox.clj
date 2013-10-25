@@ -40,7 +40,7 @@
     :success-text "",
     :font-size 0.6,
     :transform
-    "(function x\n  (if (equal? x 1)\n    red\n    (if (equal? x 2)\n      green\n      blue)))",
+    "(function [x]\n  (if (equal? x 1)\n    red\n    (if (equal? x 2)\n      green\n      blue)))",
     :end-level? false,
     :target-id "",
     :success? "",

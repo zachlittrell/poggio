@@ -169,6 +169,7 @@
             (lazy-invoke f env args*)
             (invoke f (map/value-map args* #(value % env)))))))))
 
+
 (defn partial*
   "Partially applies a Pog function using args-map, which
    maps applied parameters to their values."
@@ -363,25 +364,52 @@
     (lazy-invoke [_ env* args*]
       (value f (merge env env*)))))
 
+(defn undefined? [already-named? var]
+  (not (contains? already-named? var)))
+
+(defmethod error-message undefined? [f [already-named? var]]
+  (str "Cannot have duplicate parameter names."))
+
+(defrecord BindingWrapper [bindings])
+
 (def lambda*
   (reify
     ObjTypeStringable
     (obj-type-str [f] (fn->str f))
     LazyPogFn
-    (lazy-invoke [_ env {var "var"
+    (lazy-invoke [_ env {vars "vars"
                          func "function"}]
-      (seq->pog-fn ""
-        [(:name var)]
-        (list let** var var (semi-bind func env))
-        ))
+      (let [[body var-names] (loop [vars (:bindings (value vars))
+                                    already-named? #{}
+                                    var-names []
+                                    body nil]
+                               (if (empty? vars)
+                                 [body var-names]
+                                 (do
+                                   (let [var (first vars)
+                                         more (rest vars)
+                                         var-name (:name var)]
+                                     (assert! (undefined? already-named? var-name))
+                                     (recur  more
+                                            (conj already-named? var-name)
+                                            (conj var-names var-name)
+                                            (if body
+                                              (list let** var var 
+                                                    body)
+                                              (list let** var var
+                                                    (semi-bind func env))))))
+                                 ))]
+        (seq->pog-fn ""
+          var-names 
+          body ;(list let** var var (semi-bind func env))
+          )))
     PogFn
-    (parameters [_] [{:name "var"
-                      :type PogFnVar}
+    (parameters [_] ["vars"
                      "function"])
     (docstring [_]
-      (docstr [["var" "a variable"]
+      (docstr [["var" "variables"]
                ["function" "a function to execute"]]
-              "a new 1-argument function that sets var and executes function."))))
+              "a new function that sets vars and executes function."))))
 
 (defn constantly* 
   ([obj]

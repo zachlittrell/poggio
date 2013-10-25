@@ -19,7 +19,8 @@
 
 (defn try-right
   "Returns the result of computing f in a Right object,
-   or the resulting exception in a Left object."
+   or the resulting exception in a Left object.
+   Note, it also captures StackOverflowErrors."
   [f]
   (try
     (right (f))
@@ -27,6 +28,10 @@
       (left (Exception. "Too many functions were called. (Possibly due to an infinite loop).")))
     (catch Exception e
       (left e))))
+
+(defmacro on-right
+  [& body]
+  `(try-right (fn [] ~@body)))
 
 (defn on-either
   "Returns the result of applying the value of either to right-fn

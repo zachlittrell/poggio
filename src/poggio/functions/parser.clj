@@ -34,10 +34,15 @@
   (let [parse-tree (parser code)]
     (if (insta/failure? parse-tree)
       (left (:line parse-tree))
-      (right 
-        (insta/transform {:VAR var*
+      ;;TODO prevent PGROUP from grabbing lambdas
+      (on-right 
+        (insta/transform {:VAR (fn [arg] 
+                                 (if (= arg "function")
+                                   (throw (Exception. "Variables cannot be named function.\n(Possibly you entered a function incorrectly?)"))
+                                   (var* arg)))
                           :NUM bigdec
-                          :PGROUP (fn [& args] args)
+                          :PGROUP (fn [& args] 
+                                      args)
                           :BINDING (fn [& args] args)
                           :LAMBDA (fn [binding expr]
                                     (list lambda* (map->BindingWrapper
@@ -57,4 +62,6 @@
             code-seq
             code))
       (fn [failure]
-        (throw (Exception. (str failure)))))))
+        (throw (Exception. (if (instance? Exception failure)
+                             (.getMessage failure)
+                             (str failure))))))))

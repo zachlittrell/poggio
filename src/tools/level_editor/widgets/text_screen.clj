@@ -90,7 +90,8 @@
                     (on-error! error)))))))))
 
      :hold (let [default-transform {:transform (code-pog-fn [] "" transform)
-                                    :env core-env}
+                                    :env core-env
+                                    :*cache* (atom nil)}
                  *transformer* (atom  default-transform)]
              (.setText text* (str text "\n\nUSING DEFAULT FUNCTION:\n\n"
                                  (source-code (:transform default-transform))))
@@ -101,14 +102,19 @@
                     (docstring [_] docstring)
                 Transform
                 (transform [_ obj]
-                  (let [{:keys [transform on-error! env]} @*transformer*]
+                  (let [{:keys [transform on-error! env *cache*]} @*transformer*]
+                    (if-let [transform @*cache*]
                       (invoke* transform env [obj])
+                      (let [transform (reset! *cache* (value transform env))]
+                        (invoke* transform env [obj])
+                        ))
                     ))
                 (on-bad-transform! [_]
                     (.setText text* (str text
                                          "\n\nUSING DEFAULT FUNCTION:\n\n"
                                          (source-code (:transform default-transform))))
-                    (reset! *transformer* default-transform))
+                    (reset! *transformer* (assoc default-transform
+                                                 :*cache* (atom nil))))
                 LazyPogFn
                 (lazy-invoke [_ env {player "player"
                                      on-error! "on-error!"
@@ -118,6 +124,7 @@
                                        (source-code message)))
                   (reset! *transformer* {:transform message
                                          :on-error! on-error!
+                                         :*cache* (atom nil)
                                          :env env})
                              )))
              node)

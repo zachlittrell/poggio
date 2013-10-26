@@ -95,15 +95,24 @@
     item-panel))
 
 (defn update-selected! [item-box e]
-  (if (contains-bitmask? (.getModifiers e)
+  (cond
+    (contains-bitmask? (.getModifiers e)
+                       java.awt.event.InputEvent/SHIFT_MASK)
+    (let [icon (.getIcon (.getComponent e))
+          m (meta icon)
+          new-icon (image-icon* (.getImage icon)
+                                (assoc m :questions (answer-questions
+                                                      (:questions m)
+                                                      (:answers m))))]
+      (.addElement (config item-box :model) new-icon)
+      (selection! item-box new-icon)
+      (scroll! item-box :to [:row (.getSelectedIndex item-box)]))
+    (contains-bitmask? (.getModifiers e)
                          java.awt.event.InputEvent/CTRL_MASK)
-    (.addElement (config  item-box :model )
-                 (let [icon (.getIcon (.getComponent e))
-                       m (meta icon)]
-                    (image-icon* (.getImage icon)
-                                 (assoc m :questions (answer-questions
-                                                       (:questions m)
-                                                       (:answers m))))))
+        ;;CLEAR!
+        (config! (.getComponent e)
+                 :icon default-image)
+    :else
     (config! (.getComponent e)
         :icon (condp == (.getButton e)
                 java.awt.event.MouseEvent/BUTTON3
@@ -171,15 +180,7 @@
                         {:name name
                          :answers (assoc answers :x column
                                                  :z row)}))
-                 ;;(build [column row] answers)))
-      ;;prelude (for-grid-panel [[row column component] map-panel
-      ;;                         :let [icon (config component :icon)
-      ;;                               m (meta icon)
-      ;;                               prelude (:prelude m)]
-      ;;                         :when prelude]
-      ;;          prelude)
         ]
-          ;(list* 'do prelude)
           {:loc loc
            :dir dir
            :walls walls

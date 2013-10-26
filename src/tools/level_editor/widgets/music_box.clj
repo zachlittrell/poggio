@@ -45,6 +45,7 @@
                                queue?
                                queue-init
                                interactive?
+                               muted?
                                      ]}]
  (let [loc (Vector3f. (* x 16) -16 (* z 16))
        dir (angle->quaternion direction :y)
@@ -62,6 +63,7 @@
    (context/add-end-level-watch! app #(.close player))
    (set-user-data! music-box "player" player)
    (set-user-data! music-box "*muted?*" *muted?*)
+   (set-volume! music-box muted?)
    (.scale music-box 8.0 8.0 8.0)
    (.addControl music-box control)
    (attach-pog-fn!* music-box
@@ -94,6 +96,7 @@
                {:id :direction :type :direction :label "Direction"}
                {:id :stereos   :type [:list
                                       :type :string] :label "Stereos"}
+               {:id :muted?    :type :boolean   :label "Muted?"}
                {:id :transformer-id :type :string :label "Transformer"}
                {:id :queue? :type :boolean :label "Queue?"}
                {:id :queue-init :type [:string :multi-line? true]

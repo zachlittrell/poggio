@@ -497,7 +497,7 @@
     :success-text "",
     :font-size 0.6,
     :transform
-    "(function c\n  (if (color-equal? c red)\n    2\n    2))",
+    "(function [c]\n  (if (color-equal? c red)\n    2\n    2))",
     :end-level? false,
     :success? "",
     :error-text "",

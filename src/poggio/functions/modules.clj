@@ -31,6 +31,8 @@
            "nil"  empty-list*
            "tail" tail*
            "head" head*
+           "take" take*
+           "drop" drop*
            "empty?" empty?*
            "repeat" repeat*
            "triple" triple*

@@ -63,14 +63,15 @@
                         "a list with the elements a, b, and c")
                 "(cons a (cons b (cons c nil)))"))
 
-(def reduce* (code-pog-fn ["f" "xs" "init"]
+;;TODO maybe include a left fold 
+(def reduce* (code-pog-fn ["f" "init" "xs"]
                 (docstr [["f" "a binary function"]
-                         ["xs" "a list"]
-                         ["init" "an initial value"]]
-                  "the result of f (head xs) (reduce f (tail xs) init)")
+                         ["init" "an initial value"]
+                         ["xs" "a list"]]
+                  "the result of f (head xs) (reduce f init (tail xs)). Think of it as folding xs up from the right side.")
 "(if (empty? xs)
    init
-   (f (head xs) (reduce f (tail xs) init)))"))
+   (f (head xs) (reduce f init (tail xs))))"))
 
 (def concat* (code-pog-fn ["xs" "ys"]
                 (docstr [["xs" "a list"] ["ys" "a list"]]
@@ -82,7 +83,7 @@
 (def flatten* (code-pog-fn ["xs"]
                 (docstr [["xs" "a list of lists"]]
                         "a list of xs's lists joined together")
-                "(reduce concat xs nil)"))
+                "(reduce concat [] xs)"))
 
 (def map* (code-pog-fn ["f" "xs"]
             (docstr [["f" "a unary function"]
@@ -102,3 +103,19 @@
     (cons (head xs)
           (filter f (tail xs)))
     (filter f (tail xs))))"))
+
+(def take* (code-pog-fn ["n" "xs"]
+              (docstr [["n" "a non-negative number"]
+                       ["xs" "a list"]]
+                "a list of the first n items of xs, or all of xs if there aren't n items")
+"(if (or (less-than? n 1) (empty? xs))
+   nil
+   (cons (head xs) (take (dec n) (tail xs))))"))
+
+(def drop* (code-pog-fn ["n" "xs"]
+              (docstr [["n" "a non-negative number"]
+                       ["xs" "a list"]]
+                "xs without the first n items.")
+"(if (or (less-than? n 1) (empty? xs))
+   xs
+   (drop (dec n) (tail xs)))"))

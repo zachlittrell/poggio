@@ -104,6 +104,17 @@
           (filter f (tail xs)))
     (filter f (tail xs))))"))
 
+(def get* (code-pog-fn ["i" "xs"]
+              (docstr [["i" "a non-negative number"]
+                       ["xs" "a list"]]
+                "the ith element of xs. The first element is at index 0.")
+             "(head (drop i xs))"))
+
+(def size* (code-pog-fn ["xs"]
+              (docstr [["xs" "a list"]]
+                "the number of elements in xs.")
+             "(if (empty? xs) 0 (inc (size (tail xs))))"))
+
 (def take* (code-pog-fn ["n" "xs"]
               (docstr [["n" "a non-negative number"]
                        ["xs" "a list"]]
@@ -119,3 +130,8 @@
 "(if (or (less-than? n 1) (empty? xs))
    xs
    (drop (dec n) (tail xs)))"))
+
+(def cycle* (code-pog-fn ["xs"]
+              (docstr [["xs" "a list"]]
+                "returns the elements of xs repeated over and over again."))
+  "(flatten (repeat xs))")

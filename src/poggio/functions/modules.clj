@@ -31,6 +31,8 @@
            "nil"  empty-list*
            "tail" tail*
            "head" head*
+           "get" get*
+           "size" size*
            "take" take*
            "drop" drop*
            "empty?" empty?*
@@ -41,7 +43,8 @@
            "map" map*
            "filter" filter*
            "single" single*
-           "pair" pair*}
+           "pair" pair*
+           "cycle" cycle*}
    "Music" {"note" note*
             "pitch" pitch*
             "duration" duration*

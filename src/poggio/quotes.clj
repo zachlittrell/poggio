@@ -38,4 +38,12 @@
   :quote "We often discover what will do, by finding out what will not do; and probably he who never made a mistake never made a discovery."}
  {:author "Euclid"
   :quote "The whole is greater than the part."}
+ {:author "Sir Andrew John Wiles"
+  :quote "However impenetrable it seems, if you don't try it, then you can never do it."}
+ {:author "Horace"
+  :quote "He who has begun has half done. Dare to be wise; begin!"}
+ {:author "Walt Disney"
+  :quote "It's kind of fun to do the impossible."}
+ {:author "Randy Pausch"
+  :quote "Experience is what you get when you didn't get what you wanted."}
  ])

@@ -40,6 +40,7 @@
            "triple" triple*
            "reduce" reduce*
            "flatten" flatten*
+           "iterate" iterate*
            "map" map*
            "filter" filter*
            "single" single*

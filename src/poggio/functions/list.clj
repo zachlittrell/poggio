@@ -135,3 +135,9 @@
               (docstr [["xs" "a list"]]
                 "returns the elements of xs repeated over and over again.")
   "(flatten (repeat xs))"))
+
+(def iterate* (code-pog-fn ["f" "init"]
+                (docstr [["f" "a 1-argument function"]
+                         ["init" "a value"]]
+                  "returns the infinite list [init (f init) (f (f init)) ...]")
+"(cons init (iterate f (f init)))"))

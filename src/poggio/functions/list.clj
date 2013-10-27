@@ -133,5 +133,5 @@
 
 (def cycle* (code-pog-fn ["xs"]
               (docstr [["xs" "a list"]]
-                "returns the elements of xs repeated over and over again."))
-  "(flatten (repeat xs))")
+                "returns the elements of xs repeated over and over again.")
+  "(flatten (repeat xs))"))

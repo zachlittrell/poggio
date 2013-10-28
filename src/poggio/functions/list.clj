@@ -133,11 +133,63 @@
 
 (def cycle* (code-pog-fn ["xs"]
               (docstr [["xs" "a list"]]
-                "returns the elements of xs repeated over and over again.")
+                "the elements of xs repeated over and over again.")
   "(flatten (repeat xs))"))
 
 (def iterate* (code-pog-fn ["f" "init"]
                 (docstr [["f" "a 1-argument function"]
                          ["init" "a value"]]
-                  "returns the infinite list [init (f init) (f (f init)) ...]")
+                  "the infinite list [init (f init) (f (f init)) ...]")
 "(cons init (iterate f (f init)))"))
+
+(def any?* (code-pog-fn ["f" "xs"]
+               (docstr [["f" "a 1-argument function"]
+                        ["xs" "a list"]]
+                "true if there is an x in xs where (f x) returns true.")
+"(if (empty? xs)
+   false
+   (or (f (head xs)) (any? f (tail xs))))"))
+
+(def all?* (code-pog-fn ["f" "xs"]
+              (docstr [["f" "a 1-argument function"]
+                       ["xs" "a list"]]
+                "true if (f x) returns true for every x in xs ")
+"(if (empty? xs)
+   true
+  (and (f (head xs)) (all? f (tail xs))))"))
+
+(def zip* (code-pog-fn  ["xs" "ys"]
+            (docstr [["xs" "a list"]
+                     ["ys" "a list"]]
+              "returns every element of xs zipped up one by one with an element of ys until it runs out of elements.")
+"(if (any? empty? [xs ys])
+  nil
+  (cons [(head xs) (head ys)] 
+       (zip (tail xs) (tail ys))))"))
+
+(def zip3* (code-pog-fn ["xs" "ys" "zs"]
+              (docstr [["xs" "a list"]["ys" "a list"]["zs" "a list"]]
+                "every element of xs zipped up one by one with an element of ys and zs until it runs out of elements.")
+"(if (any? empty? [xs ys zs])
+  nil
+  (cons [(head xs) (head ys) (head zs)] 
+        (zip3 (tail xs) (tail ys) (tail zs))))"))
+
+(def zip-with* (code-pog-fn ["f" "xs" "ys"]
+                  (docstr [["f" "a 2-argument function"]
+                           ["xs" "a list"] ["ys" "a list"]]
+                  "each element of xs one by one applied to f along with an element of ys, until it runs out of elemnts.")
+"(map (function [result] 
+         (f (get 0 result)
+            (get 1 result)))
+      (zip xs ys))"))
+(def zip3-with* (code-pog-fn ["f" "xs" "ys" "zs"]
+                  (docstr [["f" "a 3-argument function"]
+                           ["xs" "a list"] ["ys" "a list"]["zs" "a list"]]
+                  "each element of xs one by one applied to f along with an element of ys and zs, until it runs out of elemnts.")
+"(map (function [result] 
+         (f (get 0 result)
+            (get 1 result)
+            (get 2 result)))
+      (zip3 xs ys zs))"))
+

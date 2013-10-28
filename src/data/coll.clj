@@ -75,6 +75,12 @@
   [f & colls]
   (apply map f colls))
 
+(defn index
+  "Returns a list mapping each element with its index.
+   Example: (index [:a :b :c]) -> ([0 :a] [1 :b] [2 :c])"
+  [xs]
+  (zip (iterate inc 0) xs))
+
 (defn perm-match
   "Returns the first permutation of coll such that applying
    each corresponding predicate in preds with an element in 

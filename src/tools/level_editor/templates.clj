@@ -1,6 +1,7 @@
 (ns tools.level-editor.templates
   (:use [tools.level-editor.widgets 
          [ball-stereo :only [ball-stereo-template]]
+         [cellular-automaton :only [cellular-automaton-template]]
          [controller :only [controller-template]]
          [function-cannon :only [function-cannon-template]]
          [globule-receiver :only [globule-receiver-template]]
@@ -19,6 +20,7 @@
    :music-box music-box-template
    :ball-stereo ball-stereo-template
    :sound-barrier sound-barrier-template
+   :cellular-automaton cellular-automaton-template
    :color-screen color-screen-template
    :controller controller-template))
 

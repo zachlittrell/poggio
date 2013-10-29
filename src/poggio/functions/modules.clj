@@ -45,7 +45,9 @@
            "filter" filter*
            "single" single*
            "pair" pair*
-           "cycle" cycle*}
+           "cycle" cycle*
+           "any?" any?*
+           "all?" all?*}
    "Music" {"note" note*
             "pitch" pitch*
             "duration" duration*

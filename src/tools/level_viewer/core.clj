@@ -239,8 +239,4 @@
                         (.start)))))
         
 (defn -main [& args]
-  (let [level (if (empty? args)
-                (eval (read-string (input "Enter level map")))
-                (load-string (slurp (first args))))]
-    (let [app (make-app level)]
-            (.start app))))
+  (view-level (slurp (first args))))

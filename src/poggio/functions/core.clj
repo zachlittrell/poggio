@@ -82,6 +82,10 @@
   (implements? [p child]
     (is-pog-fn? child parameter-count)))
 
+(defn pog-fn-type 
+  [parameter-count]
+  (PogFnType. parameter-count))
+
 (defmethod error-message is-pog-fn? [f [f* count]]
   (error-message implements? [(PogFnType. count) f*]))
 
@@ -416,6 +420,12 @@
    (constantly* obj nil))
   ([obj docstring]
     (fn->pog-fn (constantly obj) "constant"  [] docstring)))
+
+(defn delay-invoke*
+  [f & args]
+  (seq->pog-fn ""
+    []
+    (list* f args)))
 
 (defn comp*
   "Composes two PogFunctions."

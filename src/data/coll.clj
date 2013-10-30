@@ -118,6 +118,15 @@
                                         branch
                                         leaf)))))))
 
+(defn is-size? 
+  "Returns true if xs is exactly size i"
+  [i xs]
+  (if (empty? xs)
+    (zero? i)
+    (if (zero? i)
+      false
+      (recur (dec i) (rest xs)))))
+
 
 (defn nested-leaf-map
   "Maps f onto each element in xs, or in subsequences."

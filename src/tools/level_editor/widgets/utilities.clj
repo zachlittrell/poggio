@@ -82,7 +82,7 @@
     LazyPogFn
     (lazy-invoke [_ env {player "player"
                          balls param}]
-      (if (and player (< 16
+      (if (and player (< 20
                          (.distance (.getPhysicsLocation player)
                                     (.getWorldTranslation spatial))))
         (on-error! (Exception. "You must be closer to interact with this."))

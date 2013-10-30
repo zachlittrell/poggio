@@ -10,7 +10,8 @@
         [jme-clj animate bitmap-text control geometry material model node physics physics-control selector transform]
         [nifty-clj popup]
         [poggio.functions core scenegraph parser modules color utilities value]
-        [seesawx core]))
+        [seesawx core]
+        [tools.level-editor.widgets utilities]))
 
 (def cell-shape (Box. 0.2 0.2 0.2))
 (defn add-row! [app node generation-count generation-number current-generation]
@@ -33,12 +34,15 @@
       (recur more position))))
 
 (defn compute-generation [rule previous]
-  (for [[left old right] (zip (concat [false] previous)
+    (for [[left old right] (zip (concat [false] previous)
                               previous
                               (concat (rest previous) [false]))]
     (value (invoke* rule core-env [left old right]) core-env)))
 
-(defn build-cellular-automaton [{:keys [x z id direction rule app]}]
+(defn compute-generations [rule init]
+  (iterate (partial compute-generation rule) init))
+
+(defn build-cellular-automaton [{:keys [x z id direction rule on-error! app]}]
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
        control (RigidBodyControl. 0.0)
@@ -47,21 +51,49 @@
                                                              (Vector3f. 0 0 8)))
                     :local-rotation dir
                     )
-       precompute? true
+       precompute? false
        generations 15
        initial-generation (concat (repeat generations false) [true]
                                   (repeat generations false))
        width (inc (* 2 generations))
-       rule (value (code-pog-fn [] "" rule) core-env)]
+       rule (value (code-pog-fn [] "" rule) core-env)
+       generation-computer (fn->pog-fn (comp (partial take (inc generations))
+                                             (comp index compute-generations)) "" 
+                                       ["rule" "init"])
+       compute-rows* (do-list-pog-fn 
+                        :spatial node
+                        :init-wait-time 0.5
+                        :queue? false
+                        :transformer-id ""
+                        ;;:valid-input-type 
+                        :queue-init []
+                        :interactive? false
+                        :on-error! on-error!
+                        :app app
+                        :on-value!
+                          (fn [[index row]]
+                            (add-row! app
+                                      node
+                                      (inc generations)
+                                      index
+                                      row)))]
    (when precompute?
      (add-row! app node (inc generations) 0 initial-generation)
      (loop [generation 1
             previous initial-generation]
        (when (<= generation generations)
-         (let [next-generation (compute-generation rule previous)]
+         (let [next-generation (value (compute-generation rule previous) core-env)]
            (add-row! app node (inc generations) generation next-generation)
            (recur (inc generation) next-generation)))
        ))
+   (attach-pog-fn! node
+      (reify 
+        PogFn
+        (parameters [_] [{:name "rule" :type (pog-fn-type 3)}])
+        (docstring [_] "")
+        LazyPogFn
+        (lazy-invoke [_ env {{rule :value} "rule"}]
+          (invoke* compute-rows* env [on-error! (delay-invoke* generation-computer rule (constantly* initial-generation))]))))
    node
     ))
 
@@ -70,6 +102,7 @@
             (.drawString "‱" 49 49))
    :questions [{:id :id :type :string :label "ID"}
                {:id :direction :type :direction :label "Direction"}
+
                {:id :rule :type [:string :multi-line? true
                                  :init 
 "(function [left old right] 

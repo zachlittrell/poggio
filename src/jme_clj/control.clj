@@ -82,11 +82,17 @@
 
 (defn one-shot!
   "Attaches a control to spatial that runs f as soon as possible and then removes it."
-  [spatial f]
-  (-> (control-timer spatial 0 f)
-      (start!)))
+  ([spatial f]
+   (one-shot! spatial 0 f))
+  ([spatial delay f]
+    (-> (control-timer spatial delay f)
+        (start!))))
 
-(defmacro do-once! 
+(defmacro do-once!*
   "Wraps body in a function that is given to one-shot!"
+  [spatial delay & body]
+   `(one-shot! ~spatial ~delay (fn [] ~@body)))
+
+(defmacro do-once!
   [spatial & body]
-  `(one-shot! ~spatial (fn [] ~@body)))
+  `(do-once!* ~spatial 0 ~@body))

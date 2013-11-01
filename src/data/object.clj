@@ -35,6 +35,17 @@
   Implementable
   (implements? [p child] (some #(implements? % child) types)))
 
+(defrecord IntersectionImpl
+  [types]
+  Implementable
+  (implements? [p child] (every? identity (zip-with implements?
+                                                    types
+                                                    (repeat child)))))
+
+(defrecord PredicateImpl
+  [pred type-str]
+  Implementable
+  (implements? [p child] (pred child)))
 
 (defmulti type-str identity)
 
@@ -66,6 +77,10 @@
 (extend-protocol GeneralTypeStringable
   UnionImpl
   (general-type-str [u] (str/join " or " (map type-str (:types u))))
+  IntersectionImpl
+  (general-type-str [i] (str/join " and " (map type-str (:types i))))
+  PredicateImpl
+  (general-type-str [p] (:type-str p))
   Class
   (general-type-str [c] (.getSimpleName c))
   clojure.lang.PersistentArrayMap
@@ -81,10 +96,17 @@
 (defn union-impl [& types]
   (UnionImpl. types))
 
-(defrecord IntersectionImpl
-  [types]
-  Implementable
-  (implements? [p child] (every? identity (zip-with implements?
-                                                    types
-                                                    (repeat child)))))
+(defn intersection-impl [& types]
+  (IntersectionImpl. types))
 
+(defn predicate-impl [type-str p]
+  (PredicateImpl. p type-str))
+
+(defn all-type? 
+  ([type]
+   (all-type? identity type))
+  ([transform type]
+    (predicate-impl 
+      (str "with every element is " (type-str type))
+      (comp (partial every? (partial implements? type))
+            transform))))

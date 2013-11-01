@@ -58,13 +58,14 @@
   [& {:keys [spatial 
              wait-time
              init-wait-time
-           on-value! queue? transformer-id valid-input-type queue-init param
+           on-value! queue? transformer-id transformer valid-input-type queue-init param
              on-error!
              on-invoke!
              interactive?
            handle-continuation?
            app]
     :or {param "globules"
+         transformer identity
          valid-input-type Object}}]
   (let [*state* (atom {:state :inactive})
         *queue* (atom [])
@@ -74,7 +75,7 @@
                     #(do (on-value! %1) (%2)))
         [my-error! transformer]
           (if (empty? transformer-id)
-            [(constantly nil) identity]
+            [(constantly nil) transformer]
             [#(on-bad-transform! (spatial-pog-fn (select app transformer-id)))
              #(transform (spatial-pog-fn (select app transformer-id)) %)])
         pog-fn

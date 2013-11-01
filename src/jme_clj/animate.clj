@@ -4,7 +4,7 @@
            [com.jme3.cinematic.events MotionEvent]
            [com.jme3.math Vector3f])
   (:use [data vector]
-        [jme-clj physics physics-control]))
+        [jme-clj control physics physics-control]))
 
 (defprotocol MotionPathProvider
   (motion-path [p] "Returns a MotionPath."))
@@ -34,10 +34,14 @@
 (defn follow-path!
   "Sets the spatial to follow the path, which should implement the
    MotionPathProvider protocol, with time duration. Returns the
-   MotionEvent object controlling teh animation."
-  [spatial time path]
-  (doto (MotionEvent. spatial (motion-path path) time LoopMode/DontLoop)
-    (.play)))
+   MotionEvent object controlling the animation."
+  ([spatial time path]
+   (follow-path! spatial 0 time path))
+  ([spatial delay time path]
+   (let [me (MotionEvent. spatial (motion-path path) time LoopMode/DontLoop)]
+     (if (zero? delay)
+       (doto me (.play))
+       (do-once!* spatial delay (.play me))))))
 
 
 (defn visibility!

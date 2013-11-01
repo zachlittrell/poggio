@@ -1,7 +1,7 @@
 (ns poggio.functions.core
   (:require [data.map :as map])
   (:use [control assert bindings io]
-        [data coll object string]
+        [data coll maybe object string]
         [poggio.functions utilities]))
 
 (def internal-core-env (atom nil))
@@ -312,8 +312,7 @@
   ([var val env]
    (late-bind var val env true))
   ([var val env self-referential?]
-    (let [*cache* (atom nil)
-          *realized?* (atom false)]
+    (let [*cache* (atom nothing)]
       (reify
         ObjTypeStringable
         (obj-type-str [f] (fn->str f))
@@ -322,14 +321,13 @@
         (docstring [_])
         LazyPogFn
         (lazy-invoke [self _ _]
-          (if @*realized?*
-            @*cache*
-            (do
-              (reset! *cache* (value val (if self-referential?
-                                           (assoc env var self)
-                                           env)))
-              (reset! *realized?* true)
-              @*cache*))
+          (if-just-let [cache @*cache*]
+            cache
+            (let [cache (value val (if self-referential?
+                                     (assoc env var self)
+                                     env))]
+              (reset! *cache* (just cache))
+              cache))
           )))))
 
 

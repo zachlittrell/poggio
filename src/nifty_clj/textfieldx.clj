@@ -247,16 +247,20 @@
   "Sets the text of this textfieldx."
   [nifty textfieldx text]
   (let [[line & lines] (or (seq (str/split-lines text)) [""])
+        scroll-panel-id (.getId textfieldx)
         entry (first-entry textfieldx)
         add-rest #(loop [lines lines
                          entry entry
-                         index 1]
+                         index 2]
                     (when-let [[line & lines] (seq lines)]
-                      (recur lines
-                             (build nifty entry (textfield-entry 
-                                                  (.getId textfieldx)
-                                                  1 line))
-                             (inc index))))]
+                      (let [new-entry* (build nifty entry
+                                             (textfield-entry 
+                                               scroll-panel-id
+                                               index
+                                               line))]
+                        (initialize-entry! nifty scroll-panel-id new-entry*)
+                        (recur lines new-entry*
+                               (inc index)))))]
     (.setText (nifty-control (textfield entry) :text-field) line)
     (if-let [t (tail entry)]
       (.markForRemoval t

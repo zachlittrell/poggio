@@ -397,7 +397,7 @@
                   :align :right
                   :panels
                   [(panel :child-layout :vertical
-                          :height "30%"
+                          :height "25%"
                           :controls [(label :id "fn-pad-param"
                                             :width "100%"
                                             :text ""
@@ -405,12 +405,21 @@
                                      pad-textfieldx]
                           )
                    (panel
-                     :height "10%"
+                     :height "7%"
                      :child-layout :center
                      :align :left
                      :control
                         (button :label "Send"
                                   :id "compute"))
+                   (panel
+                     :height "7%"
+                     :child-layout :horizontal
+                     :align :left
+                     :controls
+                       [(button :label "Clear"
+                                :id "clear")
+                        (button :label "Save"
+                                :id "save")])
                    (panel :id "fn-controls"
                           :child-layout :vertical
                           :height "45%"
@@ -441,7 +450,8 @@
                          (.selectItem module))
                      (-> (select made-screen "fn-build-name")
                          (nifty-control :text-field)
-                         (.setText fn-name))
+                         (.setText (if (= fn-name " ") ""
+                                       fn-name)))
                      (if (not= "" fn-name)
                        (let [f (get-in fn-map [module fn-name])]
                          (-> (select made-screen "fn-build-params")
@@ -541,8 +551,25 @@
                            (my-alert! (str "Code error on line " 
                                            (.getMessage e)))
                            ))}
-
-
+      :save {:on-left-click (fn []
+                              (set-bench! "User" " "
+                                (update-in @*fn-map* ["User"]
+                                  assoc " "
+                                  (reify 
+                                    Sourceable
+                                    (source-code [_] 
+                                      (-> (select made-screen "fn-pad")
+                                          (first-entry)
+                                          (lines)))
+                                    PogFn
+                                    (docstring [_] "")
+                                    (parameters [_] []))
+                                    ))
+                              (.setVisible (select made-screen "fn-build-pad")
+                                           true))}
+      :clear {:on-left-click #(set-lines! nifty
+                                          (select made-screen "fn-pad")
+                                          "")}
       :compute {:on-left-click #(try
                                   (let [pog-fn (get-pog-fn (select made-screen "fn-pad")
                                                   @*current-f*

@@ -1,7 +1,7 @@
 (ns data.map
   "Functions for modifying Clojure maps
    and sequences of pairs."
-  (:refer-clojure :exclude [keys merge vals])
+  (:refer-clojure :exclude [keys merge vals contains?])
   (:require [clojure.core :as core]))
 
 (defn seq->pairs
@@ -14,6 +14,7 @@
   "Protocol for operations on map-like structures"
   (keys [m] "Returns the keys of m.")
   (vals [m] "Returns the values of m.")
+  (contains? [m key] "Returns true if m has key.")
   (key-map [m key-fn] "Returns a MapLike copy of m with
                        key-fn mapped on m's keys.")
   (value-map [m val-fn] "Returns a MapLike copy of m with
@@ -30,6 +31,7 @@
   nil
   (keys [_] nil)
   (vals [_] nil)
+  (contains? [_ key] nil)
   (key-map [_ _] nil)
   (value-map [_ _] nil)
   (key-filter [_ _] nil)
@@ -39,6 +41,7 @@
   clojure.lang.ISeq
   (keys [m] (map first m))
   (vals [m] (map second m))
+  (contains? [m key] (empty? (filter (partial = key) (keys m))))
   (key-map [m key-fn] (map (juxt (comp key-fn first) second) m))
   (value-map [m val-fn] (map (juxt first (comp val-fn second)) m))
   (key-filter [m key-pred] (filter (comp key-pred first) m))
@@ -51,6 +54,7 @@
   clojure.lang.IPersistentMap
   (keys [m] (core/keys m))
   (vals [m] (core/vals m))
+  (contains? [m key] (core/contains? m key))
   (key-map [m key-fn] (into {} (key-map (seq m) key-fn)))
   (value-map [m val-fn] (into {} (value-map (seq m) val-fn)))
   (key-filter [m key-pred] (into {} (key-filter (seq m) key-pred)))
@@ -77,3 +81,11 @@
       (recur more
              (assoc m' (conj (m' val) key)))
       m')))
+
+
+(defn difference 
+  [m & more]
+  (if (empty? more)
+    m
+   (recur (key-filter m (comp not (partial contains? (first more))))
+          (next more))))

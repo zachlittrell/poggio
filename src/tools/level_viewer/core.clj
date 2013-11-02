@@ -20,6 +20,7 @@
          physics-control]
         [seesaw [core :only [input]]]))
 
+(def init-gui-key "init-gui")
 
 (def level-end-key "is-level-end?")
 
@@ -86,7 +87,7 @@
   (doseq [[key [atom  _]] key-ops]
     (input/on-key!* input-manager :action key
       [_ name is-pressed? tpf]
-      (swap! atom (constantly is-pressed?))))
+      (reset! atom is-pressed?)))
   (input/on-mouse-button!* input-manager :action MouseInput/BUTTON_RIGHT
       [_ name is-pressed? tpf]
       (when is-pressed?
@@ -137,6 +138,9 @@
           (doto level
             (.addLight (ambient-light :color (.mult ColorRGBA/White 1.3))))
          (.add space player)
+         (when-let [initialize! (get-user-data! root init-gui-key)]
+           (initialize!)
+           (remove-user-data! root init-gui-key))
           ;;This is to make sure the loading screen is done fading in
          (Thread/sleep 1000)
         (.enqueue app
@@ -199,16 +203,18 @@
     (let [[display nifty] (nifty this true)
           {:keys [set-current-function!
                   function-screen
-                  alert!]} (function-screen nifty
-                                        (assoc core-modules
-                                          "TEST" 
-                                          {"BAD" (fn->pog-fn 
-                                                   (fn [foo]
-                                                     (Thread/sleep 6000)
-                                                     [red*])
-                                                   "bad"
-                                                   ["foo"]
-                                                   (apply str (repeat 100 "str")))}))]
+                  alert!
+                  initialize!]} (function-screen nifty core-modules
+                                        ;;(assoc core-modules
+                                        ;;  "TEST" 
+                                        ;;  {"BAD" (fn->pog-fn 
+                                        ;;           (fn [foo]
+                                        ;;             (Thread/sleep 6000)
+                                        ;;             [red*])
+                                        ;;           "bad"
+                                        ;;           ["foo"]
+                                        ;;           (apply str (repeat 100 "str")))})
+                                            )]
         (.addScreen nifty "function-screen" function-screen)
         (.addScreen nifty "loading-screen" (build-screen nifty (loading-gui)))
  
@@ -225,6 +231,7 @@
         ;(set-up-room! level nifty)
         (set-up-collisions!))
       (setup! this nifty alert!)
+      (set-user-data! (.getRootNode this) init-gui-key initialize!)
       (set-user-data! (.getRootNode this) end-level-key (partial end-level! this nifty))
 
                    ))))

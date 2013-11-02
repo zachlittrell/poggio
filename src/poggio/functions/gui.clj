@@ -1,10 +1,48 @@
 (ns poggio.functions.gui
   (:import [de.lessvoid.nifty.screen DefaultScreenController])
   (:require [clojure.string :as str]
+            [data.map :as map]
             [nifty-clj [builders :as builders]]) 
-  (:use [data coll object]
+  (:use [clojure.java io]
+        [data coll object]
         [nifty-clj [builders :exclude [text]] elements events textfieldx]
         [poggio.functions core parser modules]))
+
+(def function-save-file "user-functions")
+(defn save-user-functions! [fn-map]
+  (future
+    (locking function-save-file
+      (try
+      (spit function-save-file
+            (into {}
+              (for [
+                    [module fns] fn-map
+                    :let [fns* (do
+                                 (map/difference fns (core-modules module)))]
+                    :when (not-empty fns*)]
+                [module (into {} (map/value-map 
+                                   fns* 
+                                   #(array-map
+                                      :parameters (parameters %)
+                                      :docstring (docstring %)
+                                      :source-code (source-code %))))])))
+        
+       (catch Exception e (.printStackTrace e) )))))
+
+(defn load-user-functions! [*fn-map*]
+  (locking function-save-file
+    (when (.exists (file function-save-file))
+      (loop [fn-map @*fn-map*
+             user-map (read-string (slurp function-save-file))]
+        (if-let [[[module fns] & more] (seq user-map)]
+          (recur (update-in fn-map [module] 
+                            (partial merge 
+                                     (map/value-map fns
+                                        #(code-pog-fn (:parameters %)
+                                                      (:docstring %)
+                                                      (:source-code %)))))
+                 more)
+          (reset! *fn-map* fn-map))))))
 
 (defn clean-all! [screen nifty]
   (.hideWithoutEffect (select screen "alert-panel")) 
@@ -497,6 +535,7 @@
                                           code)]
                              (swap! *fn-map* assoc-in [module fn-name]
                                              pog-fn)
+                             (save-user-functions! @*fn-map*)
                              (invalidate! made-screen module fn-name true))))
                          (catch Exception e
                            (my-alert! (str "Code error on line " 
@@ -525,5 +564,6 @@
          (set-pog-fn! (select made-screen "fn-pad-param")
                       nifty f name)
          (.setVisible (select made-screen "fn-panels") true)))
+     :initialize! (partial load-user-functions! *fn-map*)
      :function-screen made-screen
      :alert! my-alert!}))

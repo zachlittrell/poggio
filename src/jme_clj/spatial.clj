@@ -23,10 +23,17 @@
 (defrecord UserData [data]
   com.jme3.export.Savable)
 
-(defn set-user-data! [^Spatial spatial key obj]
+(defn set-user-data! 
+  [^Spatial spatial key obj]
   (.setUserData  spatial key (UserData. obj)))
 
-(defn has-user-data? [^Spatial spatial key]
+(defn remove-user-data! 
+  [^Spatial spatial key]
+  (.setUserData spatial key nil))
+
+
+(defn has-user-data? 
+  [^Spatial spatial key]
   (not (.getUserData spatial key)))
 
 (defn get-user-data! [^Spatial spatial key]

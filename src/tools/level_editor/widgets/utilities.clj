@@ -217,9 +217,10 @@
       (let [val* (transform val)]
         (doseq [target-id target-ids]
           (when-let [target (spatial-pog-fn (select app target-id))]
-            (invoke* target (if (== 1 (count (parameters target)))
-                              [val*]
-                              [nil val*]))))))))
+            (invoke* target (case (count (parameters target))
+                              1 [val*]
+                              2 [nil val*]
+                              3 [nil nil val*]))))))))
 
 
 (defn globule-processor-pog-fn

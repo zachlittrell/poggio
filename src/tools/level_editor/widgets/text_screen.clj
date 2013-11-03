@@ -163,8 +163,8 @@
                                                (doseq [target-id target-ids]
                                                  (when-let [target (select app 
                                                                            target-id)]
-                                                   (invoke* (spatial-pog-fn target )
-                                                                   [false])))
+                                                   (invoke* (spatial-pog-fn target)
+                                                                   [nil nil true])))
                                                )
 
                                                ))

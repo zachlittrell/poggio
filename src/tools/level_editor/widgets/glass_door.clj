@@ -7,8 +7,9 @@
         [data coll color ring-buffer quaternion]
         [jme-clj animate control geometry material model node physics-control selector]
         [nifty-clj popup]
-        [poggio.functions core scenegraph color]
-        [seesawx core]))
+        [poggio.functions core scenegraph color list]
+        [seesawx core]
+        [tools.level-editor.widgets utilities]))
 ;
 (defn door-timer [time speed state door-node initial-location]
   (control-timer door-node time
@@ -75,12 +76,12 @@
    :forward (Vector3f. 0 0 16)
    :backward (Vector3f. 0 0 -16)})
 
-(defn build-glass-door [{:keys [x z id direction distance movement speed time app]}]
+(defn build-glass-door [{:keys [x z id on-error! direction distance movement speed time app]}]
   (let [loc (Vector3f. (* x 16) -8  (* z 16))
         dir (angle->quaternion (clamp-angle direction) :y)
         control (RigidBodyControl. 1.0)
         state (atom {:state :closed})
-        door (geom :shape (Box. 8 8 0.25)
+            door (geom :shape (Box. 8 8 0.25)
                    :name id
                    :local-translation loc
                    :local-rotation dir
@@ -88,21 +89,49 @@
                    :material (material :asset-manager app
                                        :texture {"ColorMap"
                                                  (texture :asset-manager app
-                                                          :texture-key "Textures/water1.png")}))]
+                                                          :texture-key "Textures/water1.png")}))
+        open-door-fn
+          (do-list-pog-fn
+            :spatial door
+            :init-wait-time 0.01
+            :on-value! #(toggle-door! door
+                                      state
+                                      loc
+                                      %
+                                      (movement->vector movement)
+                                      speed
+                                      time
+                                      app)
+            :valid-input-type Boolean
+            :interactive? false
+            :on-error! on-error!
+            :app app)]
     [(doto (transparent! door)
-       (attach-pog-fn! (fn->pog-fn (fn [open?]
-                                       (if (instance? Boolean open?)
-                                       (toggle-door! door
-                                                     state
-                                                     loc
-                                                     open? 
-                                                     (movement->vector
-                                                       movement)
-                                                     speed
-                                                     time app)))
-                                     ""
-                                     [{:name "open?"
-                                       :type Boolean}])))
+       (attach-pog-fn!
+         (reify
+           PogFn
+           (parameters [_] ["player" "on-error!" "open?"])
+           (docstring [_]
+              "Takes: a boolean b.\nReturns: opens the door if b is true and the user is behind the door.")
+           LazyPogFn
+           (lazy-invoke [_ env {open? "open?"}]
+              (invoke* open-door-fn env [nil (delay-invoke* single* open?)])))))
+         
+         ;;(fn->pog-fn (fn [player on-error! open?]
+         ;;                              (if (instance? Boolean open?)
+         ;;                              (toggle-door! door
+         ;;                                            state
+         ;;                                            loc
+         ;;                                            open? 
+         ;;                                            (movement->vector
+         ;;                                              movement)
+         ;;                                            speed
+         ;;                                            time app)))
+         ;;                            ""
+         ;;                            ["player"
+         ;;                             "on-error!"
+         ;;                             {:name "open?"
+         ;;                              :type Boolean}])))
      :kinematic? true]))
 
 (def glass-door-template
@@ -118,10 +147,5 @@
                {:id :speed :type :decimal :label "Speed"}
                {:id :time :type :decimal :label "Time"}]
    :build build-glass-door
-  ;; :prelude `(use '~'tools.level-editor.widgets.glass-door)
-  ;; :build (fn [[x z] {:keys [id direction distance movement speed time]}]
-  ;;         `(do
-  ;;               (fn [app#] 
-  ;;               (build-glass-door {:x ~x :z ~z :id ~id :direction ~direction :distance ~distance :movement ~movement :speed ~speed :time ~time :app app#}))))
    })
 

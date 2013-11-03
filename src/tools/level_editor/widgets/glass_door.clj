@@ -4,8 +4,8 @@
            [com.jme3.math ColorRGBA Vector3f]
            [com.jme3.scene.shape Box])
   (:use [control bindings timer]
-        [data coll color ring-buffer quaternion]
-        [jme-clj animate control geometry material model node physics-control selector]
+        [data coll color either ring-buffer quaternion]
+        [jme-clj animate control geometry material model node physics-control selector transform]
         [nifty-clj popup]
         [poggio.functions core scenegraph color list]
         [seesawx core]
@@ -76,9 +76,20 @@
    :forward (Vector3f. 0 0 16)
    :backward (Vector3f. 0 0 -16)})
 
+(defn behind? [door player]
+  (let [door-loc (doto (.clone (location door))
+                   (.setY 0))
+        player-loc (doto (.clone (location player))
+                     (.setY 0))
+        true-dir (.subtract player-loc door-loc)
+        door-dir (quaternion->direction-vector (rotation door))]
+    (neg? (.dot true-dir door-dir))))
+
+
 (defn build-glass-door [{:keys [x z id on-error! direction distance movement speed time app]}]
   (let [loc (Vector3f. (* x 16) -8  (* z 16))
-        dir (angle->quaternion (clamp-angle direction) :y)
+        direction (clamp-angle direction)
+        dir (angle->quaternion direction :y)
         control (RigidBodyControl. 1.0)
         state (atom {:state :closed})
             door (geom :shape (Box. 8 8 0.25)
@@ -114,24 +125,15 @@
            (docstring [_]
               "Takes: a boolean b.\nReturns: opens the door if b is true and the user is behind the door.")
            LazyPogFn
-           (lazy-invoke [_ env {open? "open?"}]
-              (invoke* open-door-fn env [nil (delay-invoke* single* open?)])))))
-         
-         ;;(fn->pog-fn (fn [player on-error! open?]
-         ;;                              (if (instance? Boolean open?)
-         ;;                              (toggle-door! door
-         ;;                                            state
-         ;;                                            loc
-         ;;                                            open? 
-         ;;                                            (movement->vector
-         ;;                                              movement)
-         ;;                                            speed
-         ;;                                            time app)))
-         ;;                            ""
-         ;;                            ["player"
-         ;;                             "on-error!"
-         ;;                             {:name "open?"
-         ;;                              :type Boolean}])))
+           (lazy-invoke [_ env {open? "open?"
+                                player "player"}]
+            (on-either
+              (on-right
+                (when (and player (not (behind? door player)))
+                  (throw (Exception. "Can only open the door from the other side.")))
+                (invoke* open-door-fn env [nil (delay-invoke* single* open?)]))
+              (constantly nil)
+              on-error!)))))
      :kinematic? true]))
 
 (def glass-door-template

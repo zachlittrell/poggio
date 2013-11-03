@@ -11,7 +11,7 @@
 
 (extend-protocol Warpable
   CharacterControl
-  (location [control] (.getSpatialTranslation control))
+  (location [control] (.getPhysicsLocation control))
   (warp [control loc] (.warp control loc))
   Camera
   (location [cam] (.getLocation cam))

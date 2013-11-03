@@ -139,8 +139,18 @@
                   (let [scroll (select info "#nifty-scrollpanel-child-root")]
                      (set-text! (select info "source-label") 
                       (cond (nil? f) ""
-                            (implements? Sourceable f) (or (source-code f) "")
-                            :else "Source code is unavailable."))
+                            (implements? Sourceable f) 
+                              (str
+                                "Parameters: " (str/join "," 
+                                                      (map name* (parameters f)))
+                                "\n\n"
+                                (or (source-code f) ""))
+                            :else 
+                              (str
+                                "Parameters: " (str/join "," 
+                                                     (map name* (parameters f)))
+                                "\n\n"
+                                "Source code is unavailable.")))
 
                     (set-text! (select info "doc-label") 
                                (if f (docstring f)

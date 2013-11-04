@@ -152,7 +152,15 @@
   (text :multi-line? true
         :editable? false))
 
-(defn code [map-panel]
+(defn texture-field []
+  (grid-panel :columns 1
+              :rows 2
+              :items ["Texture"
+                      (text 
+                            :text "Textures/paper1.jpg"
+                            :id "texture")]))
+
+(defn code [map-panel texture-field]
   (let [player    (.getImage (:player default-item-icons))
         [loc dir] (if-let [[row column c] 
                            (some-in-grid-panel 
@@ -184,32 +192,34 @@
           {:loc loc
            :dir dir
            :walls walls
-           :wall-mat "Textures/wood1.png"
+           :wall-mat (:texture (value texture-field));"Textures/wood1.png"
            :widgets widgets}))
      
 
-(defn view-button [map-panel]
+(defn view-button [map-panel texture-field]
   (action :name "View"
           :handler
           (fn [_]
-            (view-level (eval (code map-panel))))))
+            (view-level (eval (code map-panel texture-field))))))
 
-(defn build-button [map-panel output-panel]
+(defn build-button [map-panel output-panel texture-field]
   (action :name "Build"
           :handler 
           (fn [_]
             (config! output-panel :text
-                     (object->pretty-printed-string (code map-panel))))))
+                     (object->pretty-printed-string (code map-panel texture-field))))))
 
-(defn load-button [map-panel]
+(defn load-button [map-panel texture-field]
   (action :name "Load" 
           :handler
           (fn [_]
              (choose-file 
                :success-fn (fn [_ file]
-                             (load-level! (read-string (slurp file)) map-panel))))))
+                             (let [level (read-string (slurp file))]
+                               (value! texture-field {:texture (:wall-mat level)})
+                               (load-level! level map-panel)))))))
 
-(defn save-button [map-panel]
+(defn save-button [map-panel texture-field]
   (action :name "Save"
           :handler
           (fn [_]
@@ -217,16 +227,17 @@
               :type :save
               :success-fn (fn [_ file]
                             (spit file (object->pretty-printed-string
-                                         (code map-panel))))))))
+                                         (code map-panel texture-field))))))))
 
 (defn make-gui []
   (let [item-box (item-panel)
         map-panel  (map-panel item-box)
         output-panel (output-panel map-panel)
-        load-button (load-button map-panel)
-        save-button (save-button map-panel)
-        build-button (build-button map-panel output-panel)
-        view-button (view-button map-panel)]
+        texture-field (texture-field)
+        load-button (load-button map-panel texture-field)
+        save-button (save-button map-panel texture-field)
+        build-button (build-button map-panel output-panel texture-field)
+        view-button (view-button map-panel texture-field)]
   (frame :title "Poggio Level Editor"
          :on-close :exit
          :size [500 :by 500]
@@ -236,7 +247,8 @@
                                           (scrollable output-panel)
                                           :divider-location 0.5)
                                 :north (flow-panel 
-                                         :items [ load-button
+                                         :items [ texture-field
+                                                  load-button
                                                   save-button
                                                   build-button
                                                   view-button])))))

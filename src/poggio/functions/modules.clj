@@ -71,8 +71,7 @@
              "even?" even?*
              "odd?" odd?*
              "less-than?" less-than?*
-             "greater-than?" greater-than?*
-             "equal?" equal?*}
+             "greater-than?" greater-than?*}
    "Color" {"red" red*
             "green" green*
             "blue" blue*
@@ -80,9 +79,11 @@
             "r-value" red-value*
             "g-value" green-value*
             "b-value" blue-value*
+            ;;TODO remove color-equal?
             "color-equal?" color-equal?*}
    "Functions" {"function" lambda*}
    "Value" {"id" id*
+            "equal?" equal?*
             "let" let*}
    "User" {}})
 

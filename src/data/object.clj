@@ -12,7 +12,7 @@
   Class
   (implements? [p child] (instance? p child))
   clojure.lang.PersistentArrayMap
-  (implements? [p child] (extends? p (class child))))
+  (implements? [p child] (satisfies? p child)))
 
 
 (defn type-mismatches

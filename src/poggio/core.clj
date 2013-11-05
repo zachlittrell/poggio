@@ -33,7 +33,8 @@
         (when (< i (count levels))
           (spit "savefile" i)
           (enable! (.getScreen nifty "main-menu") i))))
-    (.gotoScreen nifty "main-menu")))
+    (.gotoScreen nifty "main-menu")
+    (play! app ["Music/06_Ghosts_I.ogg"])))
 
 (defn -main [& args]
   (.setLevel (java.util.logging.Logger/getLogger "com.jme3") 

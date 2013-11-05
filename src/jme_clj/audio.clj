@@ -79,9 +79,19 @@
         (stop!)))
   SoundtrackDJ
   (play! [dj set-list]
-    (stop! dj)
-    (reset! (:*current-set-list* dj) (cycle set-list)))
+    (let [*current-set-list* (:*current-set-list* dj)
+          set-list (seq set-list)
+          set-list* (seq @*current-set-list*)]
+      ;;Stop it if we're starting with a different song than the one already
+      ;;playing
+      (when (or  (not set-list)
+                 (and set-list*
+                      (not= (first set-list) (first set-list*))))
+        (stop! dj))
+      (reset! *current-set-list* (cycle set-list))))
   (stop! [dj]
-    (reset! (:*current-set-list* dj) nil)
-    (reset! (:*current-audio-node* dj) nil)))
+    (when-let [audio-node @(:*current-audio-node* dj)]
+      (.stop audio-node)
+      (reset! (:*current-set-list* dj) nil)
+      (reset! (:*current-audio-node* dj) nil))))
 

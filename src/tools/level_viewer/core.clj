@@ -7,7 +7,8 @@
            [com.jme3.scene Spatial Geometry]
            [com.jme3.system AppSettings])
            ;[tools.level_viewer.context LevelContext])
-  (:require [jme-clj.input :as input]
+  (:require [jme-clj.audio :as audio]
+            [jme-clj.input :as input]
             [tools.level-editor.templates :as templates]
             [tools.level-viewer.context :as context])
   (:use [control io]
@@ -128,9 +129,9 @@
       (let [space (physics-space app)]
         (if child
           (.removeAll space child))
-        (let [level (load-level (basic-level
-                                  (templates/eval-level
-                                  (if (fn? level) (level) level)))
+        (let [level* (templates/eval-level
+                       (if (fn? level) (level) level))
+              level (load-level (basic-level level*)
                                 app
                                 on-error!
                                 [(.getCamera app) player]
@@ -147,6 +148,7 @@
           (fn []
              (.attachChild (.getRootNode app) level)
              (start-physics! app)
+             (audio/play! app (:soundtrack level*))
              (.gotoScreen nifty  "function-screen")))))
           (catch Exception e
             (.printStackTrace e)

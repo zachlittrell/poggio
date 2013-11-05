@@ -253,13 +253,14 @@
   "Invokes the function represented by the seq, with the first argument
    as the function, followed by its arguments. Will recursively invoke
    any nested function-sequences."
-  ([seq env args]
+  ([seq env args add-core?]
    (invoke* (seq->partial-pog-fn seq) 
-            (merge @internal-core-env
-              (map/value-map args
-                (fn [f]
-                  (bind f env)
-                    )))
+            (let [env* (map/value-map args
+                            #(bind % env))]
+              (if add-core?
+                (merge @internal-core-env
+                       env*)
+                env*))
             {})))
 
 (defn seq->pog-fn
@@ -270,6 +271,8 @@
   ([name params docstring seq]
    (seq->pog-fn name params docstring seq nil))
   ([name params docstring seq source]
+   (seq->pog-fn name params docstring seq source true))
+  ([name params docstring seq source add-core?]
    (reify
      ObjTypeStringable
      (obj-type-str [f] (fn->str f))
@@ -280,7 +283,7 @@
      (source-code [f] source)
      LazyPogFn
      (lazy-invoke [f env args]
-        (invoke-seq seq (assoc env name f) args))
+        (invoke-seq seq (assoc env name f) args add-core?))
      )))
 
 
@@ -403,8 +406,10 @@
                                  ))]
         (seq->pog-fn ""
           var-names 
+          ""
           body ;(list let** var var (semi-bind func env))
-          )))
+                     ""
+          false)))
     PogFn
     (parameters [_] ["vars"
                      "function"])

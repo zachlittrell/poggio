@@ -193,3 +193,24 @@
             (get 2 result)))
       (zip3 xs ys zs))"))
 
+(def take-while* (code-pog-fn ["f" "xs"]
+                    (docstr [["f" "a 1 argument function"]
+                             ["xs" "a list"]]
+                      "each element x of xs until (f x) returns false.")
+"(if (empty? xs)
+  []
+  (let x (head xs)
+    (if (f x)
+      (cons x (take-while f (tail xs)))
+      [])))"))
+
+(def drop-while* (code-pog-fn ["f" "xs"]
+                    (docstr [["f" "a 1 argument function"]
+                             ["xs" "a list"]]
+                      "all elements of xs discarded until the first element x such that (f x) returns false.")
+"(if (empty? xs)
+  []
+  (if (f (head xs))
+    (drop-while f (tail xs))
+    xs))"))
+

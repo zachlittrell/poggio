@@ -19,3 +19,12 @@
                 "true if b1 or b2 are true.")
               "(if b1 true b2)"))
 
+(def and** (code-pog-fn ["bs"]
+              (docstr [["bs" "a list of booleans"]]
+                "true if for all booleans in bs are true.")
+             "(empty? (drop-while id bs))"))
+
+(def or** (code-pog-fn ["bs"]
+              (docstr [["bs" "a list of booleans"]]
+                "true if at least one boolean in bs is true.")
+            "(any? id bs)"))

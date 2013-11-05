@@ -25,7 +25,9 @@
             "false" false*
             "not" not*
             "and" and*
-            "or" or*}
+            "or" or*
+            "and*" and**
+            "or*" or**}
    "List" {"cons" cons*
            "concat" concat*
            "nil"  empty-list*
@@ -35,6 +37,8 @@
            "size" size*
            "take" take*
            "drop" drop*
+           "take-while" take-while*
+           "drop-while" drop-while*
            "empty?" empty?*
            "repeat" repeat*
            "triple" triple*
@@ -47,7 +51,11 @@
            "pair" pair*
            "cycle" cycle*
            "any?" any?*
-           "all?" all?*}
+           "all?" all?*
+           "zip" zip*
+           "zip3" zip3*
+           "zip-with" zip-with*
+           "zip3-with" zip3-with*}
    "Music" {"note" note*
             "pitch" pitch*
             "duration" duration*

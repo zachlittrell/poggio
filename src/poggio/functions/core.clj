@@ -19,11 +19,13 @@
   (parameters [_] [])
   (invoke [f env] f))
 
+;;TODO move this into TextScreen.
 (defprotocol Transform
   "Protocol for 1 parameter functions. This is a workaround for 
    transformers."
   (on-bad-transform! [f])
-  (transform [f obj]))
+  (transform [f obj])
+  (transformer [f] "This returns the transform itself"))
 
 (defprotocol LazyPogFn
   "Protocol for functions that take their arguments outside of the scope."

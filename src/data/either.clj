@@ -41,3 +41,9 @@
     (right-fn (:value either))
     (left-fn (:value either))))
 
+(defmacro try* [form error on-error]
+  `(on-either
+     (on-right
+       ~form)
+     (constantly nil)
+     (fn [~error] ~on-error))) 

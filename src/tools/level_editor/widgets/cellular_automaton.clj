@@ -49,10 +49,13 @@
                               (concat (rest previous) [false]))]
      (value (invoke* rule core-env [left old right]) core-env)))
 
-(defn compute-generations [rule init]
-  (iterate (partial compute-generation rule) init))
+(defn compute-generations [compute-generation rule init]
+  (iterate #(invoke* compute-generation core-env [rule %]) init))
 
-(defn build-cellular-automaton [{:keys [x z id direction rule on-error! app]}]
+(defn build-cellular-automaton 
+  [{:keys [x z id direction rule on-error! 
+           generations-id row-id rule-id init-id 
+           protocol app]}]
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
        control (RigidBodyControl. 0.0)
@@ -63,16 +66,56 @@
                     )
        precompute? false
        generations 15
-       initial-generation (concat (repeat generations false) [true]
-                                  (repeat generations false))
+       [init init-error]
+         (if (empty? init-id)
+           [(constantly* (concat (repeat generations false) [true]
+                                (repeat generations false)))
+            (constantly nil)]
+           [(fn->pog-fn (comp transformer
+                             (partial spatial-pog-fn-from app init-id))
+                       [] "")
+            #(on-bad-transform! (spatial-pog-fn-from app init-id))])
        width (inc (* 2 generations))
-       rule (value (code-pog-fn [] "" rule) core-env)
+       [rule rule-error] 
+         (if (empty? rule-id)
+             (when-not (empty? rule)
+                [(code-pog-fn [] "" rule)
+                 (constantly nil)])
+              [(fn->pog-fn (comp transformer
+                                (partial spatial-pog-fn-from app rule-id)))
+               #(on-bad-transform! (spatial-pog-fn-from app rule-id))])
        *rule-env* (atom nil)
-       generation-computer (fn->pog-fn (comp (partial take (inc generations))
-                                             (comp index compute-generations)) "" 
-                                       [{:name "rule"
-                                         :type (pog-fn-type 3)}
-                                        "init"])
+       [rower rower-error]
+         (if (empty? row-id)
+           [(fn->pog-fn compute-generation 
+                        ""
+                        [{:name "rule"
+                          :type (pog-fn-type 3)}
+                         "init"])
+            (constantly nil)]
+           [(fn->pog-fn (comp transformer
+                              (partial spatial-pog-fn-from app row-id)))
+            #(on-bad-transform! (spatial-pog-fn-from app row-id))])
+       [generator generator-error]
+         (if (empty? generations-id)
+           [(fn->pog-fn compute-generations
+                        ""
+                        [{:name "rower"
+                          :type (pog-fn-type 2)}
+                         {:name "rule" 
+                          :type (pog-fn-type 3)}
+                         "init"])
+            (constantly nil)]
+           [(fn->pog-fn (comp transformer
+                              (partial spatial-pog-fn-from app generations-id)))
+            #(on-bad-transform! (spatial-pog-fn-from app generations-id))])
+       generation-computer 
+           (fn->pog-fn (comp (partial take (inc generations))
+                             index) 
+                       "" 
+                       [{:name "generations"
+                         :type clojure.lang.Seqable}
+                        ])
        compute-rows* (do-list-pog-fn 
                         :spatial node
                         :init-wait-time 0.3
@@ -99,9 +142,9 @@
                                       index
                                       row)))]
    (when precompute?
-     (add-row! app node (inc generations) 0 initial-generation)
+     (add-row! app node (inc generations) 0 init)
      (loop [generation 1
-            previous initial-generation]
+            previous init]
        (when (<= generation generations)
          (let [next-generation (value (compute-generation rule previous) core-env)]
            (add-row! app node (inc generations) generation next-generation)
@@ -110,17 +153,31 @@
    (attach-pog-fn! node
       (reify 
         PogFn
-        (parameters [_] [{:name "rule" :type (pog-fn-type 3)}])
+        (parameters [_] ["argument"])
         (docstring [_] "")
         LazyPogFn
-        (lazy-invoke [_ env {{rule :value} "rule"}]
+        (lazy-invoke [_ env {{arg :value} "argument"}]
           (reset! *rule-env* env)
-          (on-either
-            (on-right
-              (invoke* compute-rows* env [on-error! (delay-invoke* generation-computer rule (constantly* initial-generation))]))
-            (constantly nil)
-            (fn [e] (on-error! e))
-            ))))
+           (try*
+             (let [[rule init rower generator]
+                     (case protocol
+                       :all-transform
+                         [rule init rower generator]
+                       :rule
+                         [arg init rower generator]
+                       :init
+                         [rule arg rower generator]
+                       :rower
+                         [rule init arg generator]
+                       :generator
+                         [rule init rower arg])]
+               (invoke* compute-rows* env 
+                  [on-error!
+                   (delay-invoke* generation-computer 
+                      (delay-invoke* generator rower rule init))]))
+             e
+             (do
+               (on-error!))))))
    node
     ))
 
@@ -133,7 +190,16 @@
                {:id :rule :type [:string :multi-line? true
                                  :init 
 "(function [left old right] 
-   (not old))"] :label "Rule"}]
+   (not old))"] :label "Rule"}
+               {:id :rule-id :type :string :label  "Rule Transform Id"}
+               {:id :row-id :type :string :label "Row Transform Id"}
+               {:id :generations-id :type :string :label "Generations Transform Id"}
+               {:id :init-id :type :string :label "Init Id"}
+               {:id :protocol :type [:choice
+                                     :model [:all-transform
+                                             :rule
+                                             :init
+                                             :rower
+                                             :generator]]}]
    :build build-cellular-automaton
    })
-

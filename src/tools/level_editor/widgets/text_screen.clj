@@ -101,6 +101,15 @@
                                     "on-error!" parameter])
                     (docstring [_] docstring)
                 Transform
+                (transformer [_]
+                   (let [{:keys [transform on-error! env *cache*]} @*transformer*]
+                    (if-let [transform @*cache*]
+                      transform
+                      (let [transform (reset! *cache* (value transform env))]
+                        transform
+                        ))
+                    ))
+
                 (transform [_ obj]
                   (let [{:keys [transform on-error! env *cache*]} @*transformer*]
                     (if-let [transform @*cache*]

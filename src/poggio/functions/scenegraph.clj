@@ -1,6 +1,6 @@
 (ns poggio.functions.scenegraph
   (:import [com.jme3.scene Spatial Node])
-  (:use [jme-clj spatial]
+  (:use [jme-clj selector spatial]
         [poggio.functions core]))
 
 (def pog-fn-name-key "node-pog-fn-key")
@@ -34,7 +34,9 @@
   ([spatial]
     (has-user-data? spatial pog-fn-key)))
 
-
+(defn spatial-pog-fn-from [node id]
+  (-> (select node id)
+      (spatial-pog-fn)))
 
 (defn pog-fn->node
   "Returns a Node that implements PogFn protocol, and delegates

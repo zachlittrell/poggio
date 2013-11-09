@@ -59,10 +59,23 @@
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
        control (RigidBodyControl. 0.0)
+       cell-node (node*)
        node (node*  :name id
                     :local-translation (.subtract loc (.mult dir
                                                              (Vector3f. 0 0 8)))
                     :local-rotation dir
+                    :children [cell-node
+                               (geom :shape (Quad. 16 16)
+                                     :material (material 
+                                                 :asset-manager app
+                                                 :texture
+                                                 {"ColorMap" 
+                                                  (texture 
+                                                    :asset-manager app
+                                                    :texture-key 
+                                                    "Textures/tile2.jpg")})
+                                     :local-translation
+                                       (Vector3f. -8 0 0.01))]
                     )
        precompute? false
        generations 15
@@ -117,7 +130,7 @@
                          :type clojure.lang.Seqable}
                         ])
        compute-rows* (do-list-pog-fn 
-                        :spatial node
+                        :spatial cell-node
                         :init-wait-time 0.3
                         :queue? false
                         :transformer-id ""
@@ -132,22 +145,22 @@
                         :queue-init []
                         :interactive? false
                         :on-error! on-error!
-                        :on-invoke! #(.detachAllChildren ^Spatial node)
+                        :on-invoke! #(.detachAllChildren ^Spatial cell-node)
                         :app app
                         :on-value!
                           (fn [[index row]]
                             (add-row! app
-                                      node
+                                      cell-node
                                       (inc generations)
                                       index
                                       row)))]
    (when precompute?
-     (add-row! app node (inc generations) 0 init)
+     (add-row! app cell-node (inc generations) 0 init)
      (loop [generation 1
             previous init]
        (when (<= generation generations)
          (let [next-generation (value (compute-generation rule previous) core-env)]
-           (add-row! app node (inc generations) generation next-generation)
+           (add-row! app cell-node (inc generations) generation next-generation)
            (recur (inc generation) next-generation)))
        ))
    (attach-pog-fn! node

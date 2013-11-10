@@ -246,3 +246,34 @@
                                :proceed? (:proceed? processor)
                                :transform (:transform processor)
                                :docstring (:docstring processor))))
+
+
+
+(defprotocol Stringable
+  (to-str [s]))
+(declare str**)
+(declare str*)
+(extend-protocol Stringable
+  Object
+  (to-str [o] (str o))
+  ColorRGBA
+  (to-str [c] 
+      (format "(color %s %s %s)"
+        (* 255 (red c)) (* 255 (green c)) 
+        (* 255 (blue c))))
+  clojure.lang.Seqable
+  (to-str [s]
+    (concat ["["]
+            (flatten (interpose " " (map str* s)))
+            ["]"])))
+
+(defn str* 
+  [o]
+  (seq (str** o)))
+(defn str** [o]
+  (if (and (is-pog-fn? o) (> (count (parameters o)) 0))
+    [(format "<%s-parameter function>"
+             (count (parameters o)))]
+    (to-str o)))
+
+

@@ -10,7 +10,8 @@
         [jme-clj animate bitmap-text control geometry material model node physics physics-control selector transform]
         [nifty-clj popup]
         [poggio.functions core scenegraph parser modules color utilities value]
-        [seesawx core]))
+        [seesawx core]
+        [tools.level-editor.widgets utilities]))
 
 (defn add-text! [bitmap-text new-text app end-level?]
   (let [*letters* (atom (seq new-text))]
@@ -26,7 +27,7 @@
             (level-context/end-level! app true))))))))
 
 
-(defn build-text-screen [{:keys [x z id direction text target-ids end-level? app  transform success? parameter docstring success-text error-text text-color font-size protocol]}]
+(defn build-text-screen [{:keys [x z id direction text target-ids end-level? app  transform success? parameter docstring success-text error-text text-color font-size on-error! protocol]}]
   (try
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
@@ -137,6 +138,28 @@
                                          :env env})
                              )))
              node)
+     :cmd-prompt (let [printer (do-list-pog-fn
+                                 :spatial node
+                                 :init-wait-time 0.1
+                                 :on-value! #(.setText text*
+                                              (str (.getText text*) 
+                                                   %))
+                                 :on-invoke! #(.setText text*
+                                                  (str text "\n\n"))
+                                 :on-error! on-error!
+                                 :interactive? false
+                                 :app app)
+                       str** (fn->pog-fn str* ""
+                                  ["o"])] 
+                   (attach-pog-fn!* node
+                      (seq->pog-fn ""
+                        [{:name "player"
+                          :type Warpable}
+                         "on-error!"
+                          parameter]
+                         (list printer (var* "on-error!")
+                          (list str** (var* parameter)))))
+                   node)
      :open (let [success?* (code-pog-fn [parameter] docstring success?)
                 *computation* (atom nil)
                  *done?* (atom false)]
@@ -199,7 +222,8 @@
                                   :multi-line? true] :label "Text"}
                {:id :protocol :type [:choice
                                      :model [:none :open :pass :pass-with
-                                             :hold]] :label "Protocol"}
+                                             :hold
+                                             :cmd-prompt]] :label "Protocol"}
                {:id :transform :type [:string :text "(function [x] x)" :multi-line? true] :label "Transform"}
                {:id :success? :type [:string :multi-line? true] :label "Success Test"}
                {:id :parameter :type [:string :text "message"] :label "Parameter"}

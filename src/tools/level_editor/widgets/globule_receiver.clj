@@ -25,7 +25,8 @@
                                                           (Vector3f. 0 0 8)))
                 :local-rotation dir
                 :controls [control])
-       hoop-ball (.getChild (.getChild hoop "Sphere") "Sphere") ]
+              hoop-ball (.getChild hoop #_(.getChild hoop "Sphere") "Sphere-geom-1") ]
+
    (.setMaterial hoop-ball (material :asset-manager app
                                      :color {"Color" ColorRGBA/White}))
    (doto hoop

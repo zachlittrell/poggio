@@ -70,7 +70,7 @@
                                )]
                     (.scale hoop 1.5 1.5 1.5)
 ;                    (.addControl hoop (RigidBodyControl. 0.0))
-                    [hoop (.getChild (.getChild hoop "Sphere") "Sphere")]))
+                    [hoop (.getChild hoop #_(.getChild hoop "Sphere") "Sphere-geom-1")]))
        [hoop hoop-ball] (new-hoop (Vector3f. 0 -16 2.5)
                                   (angle->quaternion FastMath/PI :x)
                                   id)

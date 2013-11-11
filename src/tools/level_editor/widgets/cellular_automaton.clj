@@ -15,8 +15,9 @@
         [tools.level-editor.widgets utilities]))
 
 (def cell-shape (Box. 0.2 0.2 0.2))
-(defn add-row! [app node generation-count generation-number current-generation]
-  (let [position (Vector3f. -8 (- 16 generation-number 0.2) -0.25)
+(defn add-row! [app node generation-count *cells* target-id pair-id generation-number current-generation delay?]
+  (let [position (Vector3f. -8 (- 16 generation-number 0.2) 
+                            (if delay? -0.25 0))
         row (node*
               :local-translation position)]
   (zero! position)
@@ -38,9 +39,24 @@
                                               "Textures/marble1.jpg"))})
                           :local-translation position)]
           (.attachChild row cell)
-          (follow-path! cell (* i 0.07) 1.75 [position (.add position 0 0 0.25)]))
+          (when delay?
+            (let [mp (motion-path [position (.add position 0 0 0.25)])]
+              (when (and (== generation-number generation-count)
+                         (== i 30)
+                         (not-empty target-id))
+                (.addListener mp
+                    (motion-path-listener
+                      (fn [mc index]
+                          ;;Might want to move this to a thread? For now seems quick enough without.
+                        (when (= @*cells* (transformer (spatial-pog-fn-from app pair-id)))
+                          (invoke* (spatial-pog-fn-from app target-id)
+                                   core-env
+                                   [nil false true])
+                          )))))
+              (follow-path! cell (* i 0.07) 1.75 mp))))
         (recur more position))
       (do
+        (swap! *cells* conj current-generation)
         (attach!* app node row))))))
 
 (defn compute-generation [rule previous]
@@ -55,7 +71,9 @@
 (defn build-cellular-automaton 
   [{:keys [x z id direction rule on-error! 
            generations-id row-id rule-id init-id 
-           protocol app]}]
+           target-id pair-id
+           protocol app
+           precompute?]}]
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
        control (RigidBodyControl. 0.0)
@@ -77,12 +95,11 @@
                                      :local-translation
                                        (Vector3f. -8 0 0.01))]
                     )
-       precompute? false
        generations 15
        [init init-error]
          (if (empty? init-id)
            [(constantly* (concat (repeat generations false) [true]
-                                (repeat generations false)))
+                                 (repeat generations false)))
             (constantly nil)]
            [(fn->pog-fn (comp transformer
                              (partial spatial-pog-fn-from app init-id))
@@ -129,6 +146,7 @@
                        [{:name "generations"
                          :type clojure.lang.Seqable}
                         ])
+       *cells* (atom [])
        compute-rows* (do-list-pog-fn 
                         :spatial cell-node
                         :init-wait-time 0.3
@@ -145,26 +163,36 @@
                         :queue-init []
                         :interactive? false
                         :on-error! on-error!
-                        :on-invoke! #(.detachAllChildren ^Spatial cell-node)
+                        :on-invoke! #(do
+                                       (reset! *cells* [])
+                                       (.detachAllChildren ^Spatial cell-node))
                         :app app
                         :on-value!
                           (fn [[index row]]
                             (add-row! app
                                       cell-node
-                                      (inc generations)
+                                      generations
+                                      *cells*
+                                      target-id
+                                      pair-id
                                       index
-                                      row)))]
+                                      row
+                                      true)))]
    (when precompute?
-     (add-row! app cell-node (inc generations) 0 init)
+     (let [init (value init core-env)]
+     (add-row! app cell-node generations *cells* nil nil 0 init false)
      (loop [generation 1
             previous init]
        (when (<= generation generations)
          (let [next-generation (value (compute-generation rule previous) core-env)]
-           (add-row! app cell-node (inc generations) generation next-generation)
+           (add-row! app cell-node generations *cells* nil nil generation next-generation false)
            (recur (inc generation) next-generation)))
-       ))
+       )))
    (attach-pog-fn! node
       (reify 
+        Transform
+        (transformer [_]
+          @*cells*)
         PogFn
         (parameters [_] ["argument"])
         (docstring [_] "")
@@ -208,11 +236,15 @@
                {:id :row-id :type :string :label "Row Transform Id"}
                {:id :generations-id :type :string :label "Generations Transform Id"}
                {:id :init-id :type :string :label "Init Id"}
+               {:id :precompute? :type :boolean :label "Precompute?"}
                {:id :protocol :type [:choice
                                      :model [:all-transform
                                              :rule
                                              :init
                                              :rower
-                                             :generator]]}]
+                                             :generator]] 
+                :label "Protocol"}
+               {:id :target-id :type :string :label "Target"}
+               {:id :pair-id :type :string :label "Pair"}]
    :build build-cellular-automaton
    })

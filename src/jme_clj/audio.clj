@@ -47,13 +47,14 @@
           set-list @*current-set-list*]
       (when (and (not-empty set-list)
                  (or (not current-audio-node) 
-                     (= com.jme3.audio.AudioNode$Status/Stopped
+                     (= com.jme3.audio.AudioSource$Status/Stopped
                          (.getStatus current-audio-node))))
         (let [[current & more] set-list
               current-audio-node (reset! *current-audio-node*
                                  (audio-node :asset-manager asset-manager
                                              :name current
                                              :buffered? true
+                                             :looping? false
                                              :positional? false))]
           (reset! *current-set-list* more)
           (.play current-audio-node))))))

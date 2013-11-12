@@ -18,7 +18,7 @@
   (equal?** o1 o2 env))
 
 (extend-protocol Equalizable
-   BigDecimal
+  Number
   (equal?** [n1 n2 env]
     (assert! (implements? Number n2))
     (== n1 n2))

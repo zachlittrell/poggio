@@ -4,11 +4,12 @@
            [com.jme3.bullet.control RigidBodyControl]
            [com.jme3.font Rectangle]
            [com.jme3.math ColorRGBA Vector3f]
+           [com.jme3.scene Geometry]
            [com.jme3.scene.shape Box Sphere])
   (:require [clojure.string :as str])
   (:use [control assert bindings timer]
         [data coll color object ring-buffer quaternion]
-        [jme-clj animate bitmap-text control geometry material model node physics physics-control selector transform]
+        [jme-clj animate bitmap-text control geometry material model node physics physics-control selector spatial transform]
         [nifty-clj popup]
         [poggio.functions core parser modules scenegraph color utilities]
         [seesawx core]
@@ -82,7 +83,9 @@
                            (= constraint "color") RGBA
                            (= constraint "number") Number)
        cannon (model :asset-manager app
-                :model-name "Models/Laser/Laser.scene"
+                :model-name (if queue?
+                              "Models/Laser/Laser_inactive.scene"
+                              "Models/Laser/Laser.scene")
                 :name id
                 :local-translation loc
                 :local-rotation dir

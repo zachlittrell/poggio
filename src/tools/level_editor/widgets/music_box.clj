@@ -51,7 +51,11 @@
        dir (angle->quaternion direction :y)
        control (RigidBodyControl. 0.0)
        music-box (model :asset-manager app
-                          :model-name "Models/MusicBox/gramophone.scene"
+                          :model-name 
+                            (if (or (false? interactive?)
+                                    queue?)
+                              "Models/MusicBox/gramophone_inactive.scene"
+                              "Models/MusicBox/gramophone.scene")
                           :name id
                           :local-translation loc
                           :local-rotation dir)

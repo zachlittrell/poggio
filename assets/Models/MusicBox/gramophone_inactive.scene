@@ -1,0 +1,74 @@
+<scene exported_by="mysticcabbage" formatVersion="1.0.1" previous_export_time="1380991180.926571" export_time="1380992231.369161" >
+	<nodes >
+		<node name="Model" >
+			<position y="0.000000" x="0.000000" z="-0.000000" />
+			<rotation qy="0.707107" qx="0.000000" qz="-0.000000" qw="0.707107" />
+			<scale y="0.001000" x="0.001000" z="0.001000" />
+			<game >
+				<sensors />
+				<actuators />
+			</game>
+			<node name="Group1" >
+				<position y="0.000000" x="0.000000" z="-0.000000" />
+				<rotation qy="0.000000" qx="0.000000" qz="-0.000000" qw="1.000000" />
+				<scale y="1.000000" x="1.000000" z="1.000000" />
+				<game >
+					<sensors />
+					<actuators />
+				</game>
+				<node name="mesh1" >
+					<position y="0.000000" x="0.000000" z="-0.000000" />
+					<rotation qy="0.000000" qx="0.000000" qz="-0.000000" qw="1.000000" />
+					<scale y="1.000000" x="1.000000" z="1.000000" />
+					<game >
+						<sensors />
+						<actuators />
+					</game>
+					<entity anisotropic_friction="False" lock_trans_y="False" damping_trans="0.03999999910593033" damping_rot="0.10000000149011612" inertia_tensor="0.4000000059604645" actor="False" velocity_min="0.0" lock_trans_z="False" physics_type="STATIC" lock_trans_x="False" meshFile="mesh1-geometry_inactive.mesh" friction_y="1.0" friction_x="1.0" friction_z="1.0" velocity_max="0.0" ghost="False" name="mesh1-geometry" mass_radius="1.0" mass="1.0" lock_rot_x="False" lock_rot_y="False" lock_rot_z="False" />
+				</node>
+				<node name="mesh2" >
+					<position y="0.000000" x="0.000000" z="-0.000000" />
+					<rotation qy="0.000000" qx="0.000000" qz="-0.000000" qw="1.000000" />
+					<scale y="1.000000" x="1.000000" z="1.000000" />
+					<game >
+						<sensors />
+						<actuators />
+					</game>
+					<entity anisotropic_friction="False" lock_trans_y="False" damping_trans="0.03999999910593033" damping_rot="0.10000000149011612" inertia_tensor="0.4000000059604645" actor="False" velocity_min="0.0" lock_trans_z="False" physics_type="STATIC" lock_trans_x="False" meshFile="mesh2-geometry_inactive.mesh" friction_y="1.0" friction_x="1.0" friction_z="1.0" velocity_max="0.0" ghost="False" name="mesh2-geometry" mass_radius="1.0" mass="1.0" lock_rot_x="False" lock_rot_y="False" lock_rot_z="False" />
+				</node>
+				<node name="mesh3" >
+					<position y="0.000000" x="0.000000" z="-0.000000" />
+					<rotation qy="0.000000" qx="0.000000" qz="-0.000000" qw="1.000000" />
+					<scale y="1.000000" x="1.000000" z="1.000000" />
+					<game >
+						<sensors />
+						<actuators />
+					</game>
+					<entity anisotropic_friction="False" lock_trans_y="False" damping_trans="0.03999999910593033" damping_rot="0.10000000149011612" inertia_tensor="0.4000000059604645" actor="False" velocity_min="0.0" lock_trans_z="False" physics_type="STATIC" lock_trans_x="False" meshFile="mesh3-geometry_inactive.mesh" friction_y="1.0" friction_x="1.0" friction_z="1.0" velocity_max="0.0" ghost="False" name="mesh3-geometry" mass_radius="1.0" mass="1.0" lock_rot_x="False" lock_rot_y="False" lock_rot_z="False" />
+				</node>
+			</node>
+		</node>
+	</nodes>
+	<externals >
+		<item type="material" >
+			<file name="/home/mysticcabbage/poggio/assets/Models/MusicBox/material_1_1_0_inactive.material" />
+		</item>
+		<item type="material" >
+			<file name="/home/mysticcabbage/poggio/assets/Models/MusicBox/material_0_16.material" />
+		</item>
+		<item type="material" >
+			<file name="/home/mysticcabbage/poggio/assets/Models/MusicBox/material_2_2_0_inactive.material" />
+		</item>
+		<item type="material" >
+			<file name="/home/mysticcabbage/poggio/assets/Models/MusicBox/material_1_1_8_inactive.material" />
+		</item>
+		<item type="material" >
+			<file name="/home/mysticcabbage/poggio/assets/Models/MusicBox/material_3_3_0.material" />
+		</item>
+	</externals>
+	<environment >
+		<colourBackground r="0.05087608844041824" b="0.05087608844041824" g="0.05087608844041824" />
+		<colourAmbient r="0.0" b="0.0" g="0.0" />
+		<colourDiffuse r="0.05087608844041824" b="0.05087608844041824" g="0.05087608844041824" />
+	</environment>
+</scene>

@@ -13,7 +13,7 @@
             [tools.level-viewer.context :as context])
   (:use [control io]
         [data coll object]
-        [jme-clj audio spatial]
+        [jme-clj audio control spatial]
         [nifty-clj builders]
         [poggio level loading-gui quotes]
         [poggio.functions core color modules list gui scenegraph]
@@ -75,6 +75,9 @@
     (.gotoScreen nifty "loading-screen")))
 
 (defn set-up-keys! [nifty alert! set-current-function! input-manager app camera clickable]
+  (do-once! (.getRootNode app)
+    (.deleteMapping input-manager "FLYCAM_ZoomIn")
+    (.deleteMapping input-manager "FLYCAM_ZoomOut"))
   (.deleteMapping input-manager SimpleApplication/INPUT_MAPPING_EXIT)
   (input/on-key! input-manager :action SimpleApplication/INPUT_MAPPING_EXIT
                                KeyInput/KEY_ESCAPE
@@ -223,13 +226,14 @@
             (doto (.getStateManager this)
              (.attach (BulletAppState.))
              (.attach (soundtrack-dj this)))
+      (doto (.getFlyByCamera this)
+             (.setDragToRotate true))
+
         (set-up-keys! nifty alert! set-current-function!
                       (.getInputManager this)
                       this
                       (.getCamera this) (.getRootNode this))
-            (doto (.getFlyByCamera this)
-        (.setDragToRotate true))
-      (doto this
+                 (doto this
         ;(set-up-room! level nifty)
         (set-up-collisions!))
       (setup! this nifty alert!)

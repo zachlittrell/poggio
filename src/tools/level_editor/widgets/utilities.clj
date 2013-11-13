@@ -158,7 +158,7 @@
     (docstring [_]
       (if-not queue?
         (docstr [["values" "a list of values"]]
-            (str "Spits out a globule for each value in globules."))
+            (str "Spits out a globule for each value in values."))
         ;;TODO add string explicitly stating constraints on cannon.
         (str "Spits out a globule for each value passed to it."
           (if (empty? queue-init) ""
@@ -211,9 +211,11 @@
   (let [*buffer* (atom (ring-buffer (count pattern)))
         encoded-pattern (map str->encoding (when-not (empty? pattern)
                                              (rseq pattern)))]
-    {:docstring (format "Activates %s once it receives %s."
+    {:docstring (if (empty? target-ids)
+                  "" 
+                  (format "Activates %s once it receives %s."
                         (str/join "," target-ids)
-                        (str/join "," pattern))
+                        (str/join "," pattern)))
      :process! (partial swap! *buffer* adjoin )
      :proceed? #(equal? encoded-pattern (lifo @*buffer*))
      :transform (constantly true)}))

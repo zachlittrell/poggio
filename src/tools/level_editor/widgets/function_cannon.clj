@@ -74,7 +74,8 @@
                                      init-queue
                                      constraint
                                      transform-id
-                                     on-error!]}]
+                                     on-error!
+                                     distance]}]
  (let [loc (Vector3f. (* x 16) -16 (* z 16))
        dir (angle->quaternion direction :y)
        ball-font (render-back! (bitmap-font :asset-manager app))
@@ -110,6 +111,7 @@
                        :transformer-id transform-id
                        :valid-input-type valid-input-type
                        :queue-init init-queue
+                       :distance distance
                        :param "values")))
    (start-do-list!? cannon queue? init-queue)
    cannon))
@@ -132,7 +134,9 @@
                {:id :queue?    :type :boolean    :label "Queue?"}
                {:id :init-queue :type [:string :multi-line? true]
                                 :label "Init Queue"}
-               {:id :constraint :type :string  :label "Constraint"}]
+               {:id :constraint :type :string  :label "Constraint"}
+               {:id :distance :type [:integer
+                                     :init 24] :label "Distance"}]
    :build build-function-cannon
    })
 

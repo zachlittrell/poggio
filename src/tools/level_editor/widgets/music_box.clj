@@ -45,6 +45,7 @@
                                queue?
                                queue-init
                                interactive?
+                               distance
                                muted?
                                      ]}]
  (let [loc (Vector3f. (* x 16) -16 (* z 16))
@@ -85,6 +86,7 @@
                       :queue? queue? 
                       :interactive? (not (false? interactive?))
                       :transformer-id transformer-id
+                      :distance distance
                       :on-error! on-error!
           :valid-input-type org.jfugue.Note 
           :queue-init queue-init
@@ -106,7 +108,9 @@
                {:id :queue-init :type [:string :multi-line? true]
                                 :label "Queue Init"}
                {:id :interactive? :type [:boolean :init true]
-                                  :label "Interactive?"}]
+                                  :label "Interactive?"}
+               {:id :distance :type [:integer
+                                     :init 24] :label "Distance"}]
    :build build-music-box
    })
 

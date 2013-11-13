@@ -27,7 +27,9 @@
             (level-context/end-level! app true))))))))
 
 
-(defn build-text-screen [{:keys [x z id direction text target-ids end-level? app  transform success? parameter docstring success-text error-text text-color font-size on-error! protocol]}]
+(defn build-text-screen [{:keys [x z id direction text target-ids end-level? app  transform success? parameter docstring success-text error-text text-color font-size distance on-error! protocol]
+                         :or
+                         {distance 40}}]
   (try
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
@@ -74,6 +76,7 @@
             LazyPogFn
             (lazy-invoke [_ env {player "player" on-error! "on-error!"
                                  message parameter}]
+              (when-close-enough on-error! player node distance
               (start!
                 (computation-timer node 5
                   (fn []
@@ -88,7 +91,7 @@
                                       :value result}])
                             (invoke* pog-fn {} [nil result]))))))
                   (fn [error]
-                    (on-error! error)))))))))
+                    (on-error! error))))))))))
 
      :hold (let [default-transform {:transform (code-pog-fn [] "" transform)
                                     :env core-env
@@ -129,6 +132,7 @@
                 (lazy-invoke [_ env {player "player"
                                      on-error! "on-error!"
                                      message parameter}]
+                  (when-close-enough on-error! player node distance
                   (.setText text* (str text 
                                        "\n\nUSING USER SUBMITTED FUNCTION:\n\n"
                                        (source-code message)))
@@ -136,7 +140,7 @@
                                          :on-error! on-error!
                                          :*cache* (atom nil)
                                          :env env})
-                             )))
+                             ))))
              node)
      :cmd-prompt (let [printer (do-list-pog-fn
                                  :spatial node
@@ -174,6 +178,7 @@
                                    (lazy-invoke [_ env {player "player"
                                                         on-error! "on-error!"
                                                         message parameter}]
+                                    (when-close-enough on-error! player node distance
                                      (when-not @*done?*
                                        (when-let [timer @*computation*]
                                          (stop! timer))
@@ -201,7 +206,7 @@
 
                                                ))
                                        (fn [error]
-                                         (on-error! error))))))))))
+                                         (on-error! error)))))))))))
              node 
             )))
    (catch Exception e
@@ -231,6 +236,8 @@
                {:id :success-text :type [:string :multi-line? true] :label "Success Text"}
                {:id :error-text :type [:string :multi-line? true] :label "Error Text"}
                {:id :target-ids :type [:list :type :string] :label "Target"}
+               {:id :distance :type [:integer
+                                     :init 40] :label "Distance"}
                {:id :end-level? :type :boolean :label "End Level?"}]
    :build build-text-screen
    })

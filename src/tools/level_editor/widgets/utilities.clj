@@ -1,10 +1,28 @@
 (ns tools.level-editor.widgets.utilities
-  (:import [com.jme3.math ColorRGBA])
+  (:import [com.jme3.math ColorRGBA Vector3f])
   (:require [clojure.string :as str])
   (:use [control assert bindings timer]
         [data coll color object ring-buffer]
         [jme-clj control selector transform physics]
         [poggio.functions core modules parser utilities color scenegraph]))
+
+(defn too-far? 
+  ([spatial player]
+   (too-far? spatial player 24))
+  ([spatial player distance]
+   (< distance (.distance ^Vector3f (location player) 
+                          ^Vector3f (location spatial)))))
+
+
+(defmacro when-close-enough 
+  [on-error! player spatial distance & body]
+  `(let [player# ~player
+         spatial# ~spatial
+         distance# ~distance]
+     (if (and player# (pos? distance#) (too-far? spatial# player# distance#))
+       (~on-error! (Exception. "You must be closer to interact with this."))
+       (do
+         ~@body))))
 
 (defn do-list-timer 
   "Returns a control-timer for spatial that iterates through xs.
@@ -62,10 +80,12 @@
              on-error!
              on-invoke!
              interactive?
+             distance
            handle-continuation?
            app]
     :or {param "globules"
          transformer identity
+         distance 24
          valid-input-type Object}}]
   (let [*state* (atom {:state :inactive})
         *queue* (atom [])
@@ -83,10 +103,7 @@
     LazyPogFn
     (lazy-invoke [_ env {player "player"
                          balls param}]
-      (if (and player (< 20
-                         (.distance (.getPhysicsLocation player)
-                                    (.getWorldTranslation spatial))))
-        (on-error! (Exception. "You must be closer to interact with this."))
+      (when-close-enough on-error! player spatial distance
         (let [state @*state*]
           (when (= (:state state) :active)
             (if queue?
@@ -272,8 +289,8 @@
   (seq (str** o)))
 (defn str** [o]
   (if (and (is-pog-fn? o) (> (count (parameters o)) 0))
-    [(format "<%s-parameter function>"
-             (count (parameters o)))]
+     (format "<%s-parameter function>"
+             (count (parameters o)))
     (to-str o)))
 
 

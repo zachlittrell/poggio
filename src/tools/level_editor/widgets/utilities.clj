@@ -187,25 +187,32 @@
                   (float (/ (bigdec b) 255))
                   1.0))))
 
-(defprotocol Equable
+;;This in many ways duplicates the Equalizable protocol in 
+;;poggio.functions.value, but here we do not throw exceptions when
+;;there are type mismatches.
+(defprotocol QuietEquable
   (equal? [eq obj]))
 
-(extend-protocol Equable
+(extend-protocol QuietEquable
   Number
   (equal? [n1 n2]
-    (== n1 n2))
+    (and (implements? Number n2)
+         (== n1 n2)))
   ColorRGBA
   (equal? [c1 c2]
-    (rgb-equal? c1 c2))
+    (and (implements? ColorRGBA c2)
+         (rgb-equal? c1 c2)))
   clojure.lang.Seqable
   (equal? [seq1 seq2]
-    (if (empty? seq1)
-      (empty? seq2)
-      (if (empty? seq2)
-        false
-        (when (equal? (first seq1)
-                      (first seq2))
-          (recur (next seq1) (next seq2)))))))
+    (and (implements? clojure.lang.Seqable seq2)
+      (if (empty? seq1)
+        (empty? seq2)
+        (if (empty? seq2)
+          false
+          (if (equal? (first seq1)
+                        (first seq2))
+            (recur (rest seq1) (rest seq2))
+            false))))))
 
 (defn open-on-pattern-processor [target-ids pattern]
   (let [*buffer* (atom (ring-buffer (count pattern)))

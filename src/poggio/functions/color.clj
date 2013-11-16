@@ -1,12 +1,18 @@
 (ns poggio.functions.color
   (:import [com.jme3.math ColorRGBA])
-  (:use [data color]
-        [poggio.functions core utilities parser utilities]))
+  (:use [control assert]
+        [data color]
+        [poggio.functions core number utilities parser utilities]))
 
-(def color* (fn->pog-fn #(ColorRGBA. (/ %1 255.0) (/ %2 255.0) (/ %3 255.0) 1)
+(def color* (fn->pog-fn #(do
+                           (assert! (in-bounds? %1 0 255))
+                           (assert! (in-bounds? %2 0 255))
+                           (assert! (in-bounds? %3 0 255))
+                           (ColorRGBA. (/ %1 255.0) (/ %2 255.0) (/ %3 255.0) 1))
                         "color"
-                        ;TODO check for numbers within proper range
-                        ["r" "g" "b"]
+                        [{:name "r" :type Number}
+                         {:name "g" :type Number}
+                         {:name "b" :type Number}]
                         (docstr [["r" "a number between 0-255"] 
                                  ["g" "a number between 0-255"]
                                  ["b" "a number between 0-255"]]

@@ -1,5 +1,6 @@
 (ns poggio.functions.utilities
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str])
+  (:use [control assert]))
 
 (defn docstr [param-desc-pairs returned]
   (if (empty? param-desc-pairs)
@@ -9,3 +10,5 @@
                 (for [[param desc] param-desc-pairs]
                   (str desc " called " param)))
       returned)))
+
+

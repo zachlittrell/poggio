@@ -1,32 +1,50 @@
 (ns poggio.functions.music
-  (:use [data notes]
-        [poggio.functions core parser utilities]))
+  (:import [org.jfugue Note])
+  (:use [control assert]
+        [data notes]
+        [poggio.functions core number parser utilities]))
 
-(def note* (fn->pog-fn note "note"
-              ["pitch" "duration"]
+(def note* (fn->pog-fn 
+            (fn [pitch duration]
+              (assert! (in-bounds? pitch 0 127))
+              (assert! (integral? pitch))
+              (assert! (in-bounds? duration 0.1 1.0))
+              (note pitch duration))
+             "note"
+              [{:name "pitch"
+                :type Number}
+               {:name "duration"
+                :type Number}]
               (docstr [["pitch" "a number"]
                        ["duration" "a positive number"]]
                       "a note with the given pitch and duration.")))
 
-(def rest* (fn->pog-fn rest-note "rest"
-              ["duration"]
+(def rest* (fn->pog-fn 
+             (fn [duration]
+               (assert! (in-bounds? duration 0.1 1.0))
+               rest-note) "rest"
+              [{:name "duration"
+                :type Number}]
               (docstr [["duration" "a positive number"]]
                   "a rest for the given duration.")))
 
 (def rest?* (fn->pog-fn rest? "rest?"
-              ["n"]
+              [{:name "n"
+                :type Note}]
               (docstr [["n" "a note"]]
                       "whether n is actually a rest.")))
 
 
 
 (def pitch* (fn->pog-fn pitch "pitch"
-              ["n"]
+              [{:name "n"
+                :type Note}]
               (docstr [["n" "a note"]]
                       "n's pitch.")))
 
 (def duration* (fn->pog-fn duration "duration"
-                  ["n"]
+                  [{:name "n"
+                    :type Note}]
                   (docstr [["n" "a note"]]
                     "n's duration.")))
 

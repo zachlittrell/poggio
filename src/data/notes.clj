@@ -2,7 +2,6 @@
   "Functions for interacting with musical notes."
   (:import [org.jfugue JFugueElement Note Controller Pattern]))
 
-;;TODO enforce limits on pitch and duration's limits
 (defn note
   "Returns a note with given pitch or duration. Default duration
    is a quarter note."

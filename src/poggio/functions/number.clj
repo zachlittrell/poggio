@@ -1,5 +1,24 @@
 (ns poggio.functions.number
-  (:use [poggio.functions core parser utilities]))
+  (:require [clojure.math.numeric-tower :as math])
+  (:use [control assert]
+        [poggio.functions core parser utilities]))
+
+(defn in-bounds? 
+  [n min max]
+  (and (<= min n)
+       (>= max n)))
+
+(defn integral?
+  [n]
+  (== (math/floor n) n))
+
+(defmethod error-message integral?
+  [_ [n]]
+  (str "Expected integer number."))
+
+(defmethod error-message in-bounds?
+  [_ [n min max]]
+  (str "Expected number between " min " and " max))
 
 (def add* (fn->pog-fn +' "add" [{:name "x" :type Number}
                                 {:name "y" :type Number}]

@@ -7,6 +7,7 @@
          [globule-receiver :only [globule-receiver-template]]
          [glass-door :only [glass-door-template]]
          [color-screen :only [color-screen-template]]
+         [model :only [model-template]]
          [music-box :only [music-box-template]]
          [sound-barrier :only [sound-barrier-template]]
          [text-screen :only [text-screen-template]]]))
@@ -22,6 +23,7 @@
    :sound-barrier sound-barrier-template
    :cellular-automaton cellular-automaton-template
    :color-screen color-screen-template
+   :model model-template
    :controller controller-template))
 
 (defn eval-level 

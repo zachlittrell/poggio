@@ -22,7 +22,7 @@
 (def rest* (fn->pog-fn 
              (fn [duration]
                (assert! (in-bounds? duration 0.1 1.0))
-               rest-note) "rest"
+               (rest-note duration)) "rest"
               [{:name "duration"
                 :type Number}]
               (docstr [["duration" "a positive number"]]

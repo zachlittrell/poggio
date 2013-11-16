@@ -75,7 +75,9 @@
                                      constraint
                                      transform-id
                                      on-error!
-                                     distance]}]
+                                     distance]
+                              :or 
+                              {distance 24}}]
  (let [loc (Vector3f. (* x 16) -16 (* z 16))
        dir (angle->quaternion direction :y)
        ball-font (render-back! (bitmap-font :asset-manager app))

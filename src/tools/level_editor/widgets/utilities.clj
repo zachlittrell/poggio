@@ -2,7 +2,7 @@
   (:import [com.jme3.math ColorRGBA Vector3f])
   (:require [clojure.string :as str])
   (:use [control assert bindings timer]
-        [data coll color object ring-buffer]
+        [data coll color notes object ring-buffer]
         [jme-clj control selector transform physics]
         [poggio.functions core modules parser utilities color scenegraph]))
 
@@ -275,6 +275,11 @@
 (extend-protocol Stringable
   Object
   (to-str [o] (str o))
+  org.jfugue.Note
+  (to-str [n]
+    (if (rest? n)
+      (format "(rest %s)" (duration n))
+      (format "(note %s %s)" (pitch n) (duration n))))
   ColorRGBA
   (to-str [c] 
       (format "(color %s %s %s)"

@@ -2,7 +2,7 @@
   :description "FIXME: write description"
   :repositories {"local" ~(str (.toURI (java.io.File. "private_maven")))}
                 ;;{"oss-sonatype" "https://oss.sonatype.org/content/repositories/snapshots/"}
-  :main poggio.core
+;  :main poggio.core
   :profiles {:dev {:dependencies 
                    [[lein-autodoc "0.9.0"]
                     [jME3-testdata "3.0.0.20130526-SNAPSHOT"]
@@ -12,7 +12,7 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/core.match "0.2.0-alpha9"]
                  [org.clojure/math.combinatorics "0.0.3"]
-                 [org.clojure/tools.macro "0.1.1"]
+                 [org.clojure/math.numeric-tower "0.0.2"]
                  [org.clojars.jmeeks/jfugue "4.0.3"]
                 ;;These snapshots are from the JME3 nightly
                  ;;from April 26, 2013.

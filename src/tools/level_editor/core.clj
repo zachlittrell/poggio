@@ -36,7 +36,8 @@
 (defn answer-questions [questions answers]
   (for [{:keys [id type] :as question} questions
         :let [answer (answers id)]]
-    (do
+    (if-not (contains? answers id)
+      question
     (assoc question :type (if (keyword? type)
                             ;;If type was a keyword, we add the init key
                             [type :init answer]

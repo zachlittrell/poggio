@@ -12,7 +12,7 @@
         [poggio.functions core scenegraph color]
         [seesawx core]))
 
-(defn build-sound-barrier [{:keys [x z id direction target-id app]}]
+(defn build-sound-barrier [{:keys [x z id direction target-ids app]}]
   (let [loc (Vector3f. (* x 16) -8  (* z 16))
         dir (angle->quaternion (clamp-angle direction) :y)
         on-ghost-control (GhostControl. (BoxCollisionShape. (Vector3f. 8 8 0.1)))
@@ -34,9 +34,10 @@
                                 (fn [player]
                                   (when (implements? com.jme3.bullet.control.CharacterControl
                                                      player)
-                                    (music-box/set-volume!
-                                      (select app target-id)
-                                      on?)))
+                                    (doseq [target-id target-ids]
+                                      (music-box/set-volume!
+                                        (select app target-id)
+                                        on?))))
                                 "on/off"
                                 ["player"]
                                 "should not see this."))]
@@ -56,7 +57,8 @@
             (.drawString "♯" 49 49))
    :questions [{:id :id :type :string :label "ID"}
                {:id :direction :type :direction :label "Direction"}
-               {:id :target-id :type :string :label "Target"}]
+               {:id :target-ids :type [:list
+                                       :type :string] :label "Targets"}]
    :build build-sound-barrier
    })
 

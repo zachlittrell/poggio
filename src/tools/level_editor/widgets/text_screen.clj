@@ -4,12 +4,13 @@
            [com.jme3.font Rectangle]
            [com.jme3.math ColorRGBA FastMath Vector3f]
            [com.jme3.scene.shape Box Quad]) 
-  (:require [tools.level-viewer.context :as level-context])
+  (:require [clojure.string :as str]
+           [tools.level-viewer.context :as level-context])
   (:use [control assert bindings timer]
         [data coll color object ring-buffer quaternion]
         [jme-clj animate bitmap-text control geometry material model node physics physics-control selector transform]
         [nifty-clj popup]
-        [poggio.functions core scenegraph parser modules color utilities value]
+        [poggio.functions core scenegraph parser modules list number color utilities value]
         [seesawx core]
         [tools.level-editor.widgets utilities]))
 
@@ -161,9 +162,52 @@
                           :type Warpable}
                          "on-error!"
                           parameter]
+                        (docstr [[parameter "a value"]]
+                                (str "prints out " parameter))
                          (list printer (var* "on-error!")
                           (list str** (var* parameter)))))
                    node)
+     :menus (let [menus (read-string transform)
+                  *state* (atom nil)
+                  run-state* (fn->pog-fn 
+                               (fn [state]
+                                 (assert! (integral? state))
+                                 (let [current-state @*state*
+                                       {:keys [states]} (menus current-state)]
+                                   (assert! (in-bounds? state 0 (dec (count states))))
+                                   (:state (states (long state)))))
+                               ""
+                               [{:name "state" :type Number}])
+                    
+                  handle-state! (fn [state]
+                                  (let [{:keys [states label]} (menus state)]
+                                   (reset! *state* state)
+                                   (.setText text* 
+                                      (str text 
+                                           label "\n"
+                                           (str/join "\n"
+                                             (for [[i label]
+                                                   (index (map :label states))]
+                                               (str i ". " label)))))))
+
+                  waiter (do-list-pog-fn
+                           :spatial node
+                           :init-wait-time 0.1
+                           :on-value! handle-state!
+                           :on-error! on-error!
+                           :interactive? false
+                           :app app)]
+              (handle-state! (:start menus))
+              (attach-pog-fn!* node
+                (seq->pog-fn ""
+                  [{:name "player" :type Warpable}
+                   "on-error!"
+                   parameter]
+                  (docstr [[parameter "an integer"]]
+                          "selects the given option.")
+                  (list waiter (var* "on-error!")
+                    (list single* (list run-state* (var* parameter))))))
+              node)
      :open (let [success?* (code-pog-fn [parameter] docstring success?)
                 *computation* (atom nil)
                  *done?* (atom false)]
@@ -228,7 +272,8 @@
                {:id :protocol :type [:choice
                                      :model [:none :open :pass :pass-with
                                              :hold
-                                             :cmd-prompt]] :label "Protocol"}
+                                             :cmd-prompt
+                                             :menus]] :label "Protocol"}
                {:id :transform :type [:string :text "(function [x] x)" :multi-line? true] :label "Transform"}
                {:id :success? :type [:string :multi-line? true] :label "Success Test"}
                {:id :parameter :type [:string :text "message"] :label "Parameter"}

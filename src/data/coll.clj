@@ -78,8 +78,10 @@
 (defn index
   "Returns a list mapping each element with its index.
    Example: (index [:a :b :c]) -> ([0 :a] [1 :b] [2 :c])"
-  [xs]
-  (zip (iterate inc 0) xs))
+  ([xs]
+   (index 0 xs))
+  ([start xs]
+    (zip (iterate inc start) xs)))
 
 (defn perm-match
   "Returns the first permutation of coll such that applying

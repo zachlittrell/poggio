@@ -22,17 +22,35 @@
                             levels)]
     (.enable (select screen file))))
 
+(defn load-level! 
+  [app nifty on-error! *current-level* level-path]
+  (reset! *current-level* level-path)
+  (level-viewer/set-up-room!
+    app
+    #(-> level-path resource slurp load-string)
+    nifty 
+    on-error!))
+
+(defn level-index
+  [level-name]
+  (first (keep-indexed 
+           (fn [index [file name]]
+             (when (= file level-name)
+               index))
+           levels)))
+
+(defn next-level!
+  [app nifty on-error! *current-level*]
+  (let [current-level @*current-level*
+        index (inc (level-index current-level))]
+    (if (< index (count levels))
+      (load-level! app nifty on-error! *current-level* (first (levels (inc index))))
+      (.gotoScreen nifty "main-menu"))))
+
+
+
 (defn main-menu [app nifty on-error! max-level-unlocked *current-level*]
- (let [load-level! (fn [level-path]
-                     (reset! *current-level* level-path)
-                     (level-viewer/set-up-room!
-                       app
-                       #(-> level-path
-                            resource
-                            slurp
-                            load-string)
-                       nifty
-                       on-error!))
+ (let [load-level! (partial load-level! app nifty on-error! *current-level*)
        screen (build-screen nifty
                (screen
                  :layers

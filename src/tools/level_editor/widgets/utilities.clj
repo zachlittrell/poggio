@@ -181,6 +181,8 @@
     #"red" ColorRGBA/Red
     #"green" ColorRGBA/Green
     #"blue" ColorRGBA/Blue
+    #"true" true
+    #"false" false
     (if-let [[_ r g b] (re-matches #"color (\d+) (\d+) (\d+)" s)]
       (ColorRGBA. (float (/ (bigdec r) 255))
                   (float (/ (bigdec g) 255))
@@ -194,6 +196,10 @@
   (equal? [eq obj]))
 
 (extend-protocol QuietEquable
+  Boolean
+  (equal? [b1 b2]
+    (and (implements? Boolean b2)
+         (= b1 b2)))
   Number
   (equal? [n1 n2]
     (and (implements? Number n2)

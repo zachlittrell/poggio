@@ -1,7 +1,7 @@
 (ns poggio.functions.value
   (:import [com.jme3.math ColorRGBA])
   (:use [control assert]
-        [data object color]
+        [data object color notes]
         [poggio.functions core parser utilities]))
 
 (def id* (code-pog-fn ["x"]
@@ -22,6 +22,18 @@
   (equal?** [n1 n2 env]
     (assert! (implements? Number n2))
     (== n1 n2))
+  Boolean
+  (equal?** [b1 b2 env]
+    (assert! (implements? Boolean b2)
+      (= b1 b2)))
+  org.jfugue.Note
+  (equal?** [n1 n2 env]
+    (assert (implements? org.jfugue.Note n2))
+    (and (== (duration n1) (duration n2))
+         (if (rest? n1)
+           (rest? n2)
+           (and (not (rest? n2))
+                (= (pitch n1) (pitch n2))))))
   ColorRGBA
   (equal?** [c1 c2 env]
     (assert! (implements? ColorRGBA c2))

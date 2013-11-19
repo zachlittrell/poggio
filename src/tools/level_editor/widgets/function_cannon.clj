@@ -29,9 +29,14 @@
     (.setMaterial ball 
        (material :asset-manager app
                  :color {"Color" color})))
+  Boolean
+  (modify-ball! [boolean app ball-font ball-node ball]
+    (modify-ball! (str boolean) app ball-font ball-node ball))
   Number
   (modify-ball! [num app ball-font ball-node ball]
-    (let [num-str (str num)]
+    (modify-ball! (str num) app ball-font ball-node ball))
+  String
+  (modify-ball! [num-str app ball-font ball-node ball]
       (.setMaterial ball
           (material :asset-manager app
                     :color {"Color" (ColorRGBA. 1 1 1 0.5)}))
@@ -44,7 +49,7 @@
                                       :color num-font-color
                                       :text  num-str))
       (transparent! ball)
-                  )))
+                  ))
 
 (defn shoot-globule! [app on-error! font loc dir vel mass ball]
   (let [
@@ -82,9 +87,10 @@
        dir (angle->quaternion direction :y)
        ball-font (render-back! (bitmap-font :asset-manager app))
        control (RigidBodyControl. 0.0)
-       valid-input-type (cond (empty? constraint) (union-impl RGBA Number)
+       valid-input-type (cond (empty? constraint) (union-impl RGBA Number Boolean)
                            (= constraint "color") RGBA
-                           (= constraint "number") Number)
+                           (= constraint "number") Number
+                           (= constraint "boolean") Boolean)
        cannon (model :asset-manager app
                 :model-name (if queue?
                               "Models/Laser/Laser_inactive.scene"

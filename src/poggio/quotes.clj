@@ -46,4 +46,10 @@
   :quote "It's kind of fun to do the impossible."}
  {:author "Randy Pausch"
   :quote "Experience is what you get when you didn't get what you wanted."}
+ {:author "Grace Hopper"
+  :quote "A ship in port is safe; but that is not what ships are built for. Sail out to sea and do new things."}
+ {:author "Agatha Christie"
+  :quote "I don't think necessity is the mother of invention — invention, in my opinion, arises directly from idleness, possibly also from laziness. To save oneself trouble."}
+ {:author "Maya Angelou"
+  :quote "You can’t use up creativity. The more you use, the more you have."}
  ])

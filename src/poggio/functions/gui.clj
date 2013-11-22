@@ -9,7 +9,8 @@
         [poggio.functions core parser modules]))
 
 (def function-save-file "user-functions")
-(defn save-user-functions! [fn-map]
+(defn save-user-functions!
+  [fn-map]
   (future
     (locking function-save-file
       (try
@@ -515,6 +516,7 @@
                                            (assoc m module
                                               (dissoc (m module)
                                                       fn-name))))
+                         (save-user-functions! @*fn-map*)
                          (invalidate! made-screen module fn-name))
                        (my-alert! (Exception. "Cannot delete a core function."))))}
       :fn-build-close {:on-left-click

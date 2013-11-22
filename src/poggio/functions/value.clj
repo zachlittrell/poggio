@@ -67,3 +67,8 @@
                          y "y"}]
       (equal?*** (value x env) (value y env) env))))
   
+(def const* 
+  (code-pog-fn ["x"]
+    (docstr [["x" "a value"]]
+            "a 1-argument function that always returns x")
+    "(function [o] x)"))

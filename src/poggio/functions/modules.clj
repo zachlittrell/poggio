@@ -92,6 +92,7 @@
    "Functions" {"function" lambda*}
    "Value" {"id" id*
             "equal?" equal?*
+            "constantly" const*
             "let" let*}
    "User" {}})
 

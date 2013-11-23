@@ -1,5 +1,5 @@
 (ns poggio.functions.modules
-  (:use [poggio.functions boolean core list music number color value])
+  (:use [poggio.functions boolean core functions list music number color value])
   (:require [clojure.string :as str]))
 
 (defn path
@@ -89,7 +89,9 @@
             "b-value" blue-value*
             ;;TODO remove color-equal?
             "color-equal?" color-equal?*}
-   "Functions" {"function" lambda*}
+   "Functions" {"function" lambda*
+                "compose" compose*
+                "partial" partial**}
    "Value" {"id" id*
             "equal?" equal?*
             "constantly" const*

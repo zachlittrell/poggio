@@ -91,7 +91,9 @@
             "color-equal?" color-equal?*}
    "Functions" {"function" lambda*
                 "compose" compose*
-                "partial" partial**}
+                "flip" flip*
+                "partial" partial**
+                "partial3" partial3**}
    "Value" {"id" id*
             "equal?" equal?*
             "constantly" const*

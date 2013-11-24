@@ -107,6 +107,26 @@
     :pattern ["red" "green" "blue"]}}
   {:name :text-screen,
    :answers
+   {:direction -3.1142022451149307,
+    :protocol :none,
+    :text
+    "POGGIO INSTITUTE\n================\n\nYOU CAN SEND THE CANNON A LIST OF COLORS OR NUMBERS.\n\nTHE DOOR OPENS WHEN THE HOOP ABSORBS RED, GREEN, AND BLUE...FOR A WHILE ANYWAY.",
+    :parameter "message",
+    :text-color {:red 127, :green 255, :blue 0},
+    :z 21,
+    :x 16,
+    :success-text "",
+    :font-size 0.6,
+    :transform "(function [x] x)",
+    :end-level? false,
+    :success? "",
+    :error-text "",
+    :docstring "",
+    :distance 40,
+    :id "",
+    :target-ids []}}
+  {:name :text-screen,
+   :answers
    {:direction -1.5643029115666711,
     :protocol :none,
     :text
@@ -129,7 +149,7 @@
    {:direction -1.566166730241185,
     :protocol :none,
     :text
-    "POGGIO INSTITUTE\n================\n\nOR YOU CAN USE FUNCTIONS IN THE List MODULE.\n\n\nEXAMPLE:\n(repeat 3)  \n-- RETURNS AN INFINITE LIST OF 3.\n\n(concat [1 2 3] [4 5 6]) \n-- ADDS THE LISTS TOGETHER TO MAKE [1 2 3 4 5 6]\n\n(flatten [ [1 2 3] [4 5 6] ]\n-- ADDS THE LISTS INSIDE THE LIST TO MAKE [1 2 3 4 5 6]\n",
+    "POGGIO INSTITUTE\n================\n\nOR YOU CAN USE FUNCTIONS IN THE List MODULE.\n\n\nEXAMPLE:\n(repeat 3)  \n-- RETURNS AN INFINITE LIST OF 3\n[3 3 3 3 ...]\n\n(concat [1 2 3] [4 5 6]) \n-- ADDS THE LISTS TOGETHER\n [1 2 3 4 5 6]\n\n(cycle [1 2 3])\n--RETURNS AN INFINITE LIST OF 1 2 3.\n[1 2 3 1 2 3 1....]",
     :parameter "message",
     :text-color {:red 127, :green 255, :blue 0},
     :z 22,
@@ -141,6 +161,7 @@
     :success? "",
     :error-text "",
     :docstring "",
+    :distance 40,
     :id "",
     :target-ids []}}
   {:name :function-cannon,
@@ -170,7 +191,7 @@
     :font-size 0.6,
     :transform "(function [x] x)",
     :end-level? false,
-    :success? "(equal? message 3)",
+    :success? "(equal? 3 message)",
     :error-text "Send the number 3 to open the door.",
     :docstring
     "Takes: a number, n.\nReturns: Opens the door when n = 3.",
@@ -239,7 +260,7 @@
     :font-size 0.6,
     :transform "(function [x] x)",
     :end-level? false,
-    :success? "(equal? product (multiply 555 7))",
+    :success? "(equal? (multiply 555 7) product)",
     :error-text
     "Send 555 times 7 to access the door. Have you tried using (multiply _ _)?",
     :docstring

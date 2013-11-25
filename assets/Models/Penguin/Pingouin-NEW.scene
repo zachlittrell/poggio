@@ -1,0 +1,87 @@
+<scene exported_by="mysticcabbage" formatVersion="1.0.1" previous_export_time="1384843280.891374" export_time="1384875655.399017" >
+	<nodes >
+		<node name="Lamp.002" >
+			<position y="15.890665" x="-5.180144" z="-8.076245" />
+			<rotation qy="-0.707934" qx="0.000336" qz="-0.000319" qw="0.706278" />
+			<scale y="1.000000" x="1.000000" z="1.000000" />
+			<game >
+				<sensors />
+				<actuators />
+			</game>
+			<light shadow="true" type="directional" name="Lamp.002" powerScale="0.10000000149011612" >
+				<position y="15.890665" x="-5.180144" z="-8.076245" />
+				<lightAttenuation range="5000" quadratic="0.0" constant="1.0" linear="0.03333335240683057" />
+				<direction y="-1.0" x="0.001" z="0.0" />
+				<colourDiffuse r="1.0" b="1.0" g="1.0" />
+				<colourSpecular r="1.0" b="1.0" g="1.0" />
+				<colourShadow r="1.0" b="1.0" g="1.0" />
+			</light>
+		</node>
+		<node name="Camera.001" >
+			<position y="4.882044" x="6.000000" z="-5.000000" />
+			<rotation qy="0.785352" qx="0.209277" qz="-0.460451" qw="0.356947" />
+			<scale y="1.000000" x="1.000000" z="1.000000" />
+			<game >
+				<sensors />
+				<actuators />
+			</game>
+			<camera projectionType="perspective" fov="28.841546255021967" name="Camera.002" >
+				<clipping nearPlaneDist="0.10000000149011612" farPlaneDist="100.0" />
+			</camera>
+		</node>
+		<node name="Lamp.003" >
+			<position y="-1.096138" x="3.994547" z="-10.076245" />
+			<rotation qy="-0.000000" qx="0.000000" qz="-0.707107" qw="0.707107" />
+			<scale y="1.000000" x="1.000000" z="1.000000" />
+			<game >
+				<sensors />
+				<actuators />
+			</game>
+			<light shadow="true" type="directional" name="Lamp.003" powerScale="0.3499999940395355" >
+				<position y="-1.096138" x="3.994547" z="-10.076245" />
+				<lightAttenuation range="5000" quadratic="0.0" constant="1.0" linear="0.03333335240683057" />
+				<direction y="-0.0" x="1.0" z="0.0" />
+				<colourDiffuse r="1.0" b="0.7336666584014893" g="1.0" />
+				<colourSpecular r="1.0" b="0.7336666584014893" g="1.0" />
+				<colourShadow r="1.0" b="0.7336666584014893" g="1.0" />
+			</light>
+		</node>
+		<node name="Lamp.001" >
+			<position y="5.903862" x="3.994547" z="-8.076245" />
+			<rotation qy="-0.803314" qx="-0.467408" qz="0.197202" qw="0.311975" />
+			<scale y="1.000000" x="1.000000" z="1.000000" />
+			<game >
+				<sensors />
+				<actuators />
+			</game>
+			<light shadow="true" type="directional" name="Lamp.001" powerScale="0.699999988079071" >
+				<position y="5.903862" x="3.994547" z="-8.076245" />
+				<lightAttenuation range="5000" quadratic="0.0" constant="1.0" linear="0.03333335240683057" />
+				<direction y="-0.485" x="-0.874" z="0.025" />
+				<colourDiffuse r="1.0" b="1.0" g="1.0" />
+				<colourSpecular r="1.0" b="1.0" g="1.0" />
+				<colourShadow r="1.0" b="1.0" g="1.0" />
+			</light>
+		</node>
+		<node name="Plane.010" >
+			<position y="1.667323" x="0.000000" z="-0.058253" />
+			<rotation qy="-0.483477" qx="0.515995" qz="0.515995" qw="0.483477" />
+			<scale y="0.400000" x="0.400000" z="0.400000" />
+			<game >
+				<sensors />
+				<actuators />
+			</game>
+			<entity anisotropic_friction="False" lock_trans_y="False" damping_trans="0.03999999910593033" damping_rot="0.10000000149011612" inertia_tensor="0.4000000059604645" actor="False" velocity_min="0.0" lock_trans_z="False" physics_type="STATIC" lock_trans_x="False" meshFile="Plane.010.mesh" friction_y="1.0" friction_x="1.0" friction_z="1.0" velocity_max="0.0" ghost="False" name="Plane.010" mass_radius="1.0" mass="1.0" lock_rot_x="False" lock_rot_y="False" lock_rot_z="False" />
+		</node>
+	</nodes>
+	<externals >
+		<item type="material" >
+			<file name="/home/mysticcabbage/poggio/assets/Models/Penguin/Material.009.material" />
+		</item>
+	</externals>
+	<environment >
+		<colourBackground r="0.6513168811798096" b="0.6513168811798096" g="0.6513168811798096" />
+		<colourAmbient r="0.0" b="0.0" g="0.0" />
+		<colourDiffuse r="0.6513168811798096" b="0.6513168811798096" g="0.6513168811798096" />
+	</environment>
+</scene>

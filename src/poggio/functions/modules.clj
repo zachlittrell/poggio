@@ -42,7 +42,9 @@
            "empty?" empty?*
            "repeat" repeat*
            "triple" triple*
-           "reduce" reduce*
+;           "reduce" reduce*
+           "fold-left" fold-left*
+           "fold-right" fold-right*
            "flatten" flatten*
            "iterate" iterate*
            "map" map*
@@ -52,6 +54,7 @@
            "cycle" cycle*
            "any?" any?*
            "all?" all?*
+           "one?" one?*
            "zip" zip*
            "zip3" zip3*
            "zip-with" zip-with*

@@ -63,15 +63,37 @@
                         "a list with the elements a, b, and c")
                 "(cons a (cons b (cons c nil)))"))
 
-;;TODO maybe include a left fold 
-(def reduce* (code-pog-fn ["f" "init" "xs"]
-                (docstr [["f" "a binary function"]
-                         ["init" "an initial value"]
-                         ["xs" "a list"]]
-                  "the result of f (head xs) (reduce f init (tail xs)). Think of it as folding xs up from the right side.")
+;;;;TODO maybe include a left fold 
+;;(def reduce* (code-pog-fn ["f" "init" "xs"]
+;;                (docstr [["f" "a binary function"]
+;;                         ["init" "an initial value"]
+;;                         ["xs" "a list"]]
+;;                  "the result of f (head xs) (reduce f init (tail xs)). Think of it as folding xs up from the right side.")
+;;"(if (empty? xs)
+;;   init
+;;   (f (head xs) (reduce f init (tail xs))))"))
+
+(def fold-left*
+  (code-pog-fn
+    ["f" "init" "xs"]
+    (docstr [["f" "a 2-argument function"]
+             ["init" "an initial value"]
+             ["xs" "a list"]]
+      "the result of reducing xs from left to right.")
 "(if (empty? xs)
-   init
-   (f (head xs) (reduce f init (tail xs))))"))
+  init
+  (fold-left* f (f init (head xs)) (tail xs)))"))
+
+(def fold-right*
+  (code-pog-fn
+    ["f" "init" "xs"]
+    (docstr [["f" "a 2-argument function"]
+             ["init" "an initial value"]
+             ["xs" "a list"]]
+      "the result of reducing xs from right to left.")
+"(if (empty? xs)
+  init
+  (f (head xs) (fold-right f init (tail xs))))"))
 
 (def concat* (code-pog-fn ["xs" "ys"]
                 (docstr [["xs" "a list"] ["ys" "a list"]]
@@ -83,7 +105,7 @@
 (def flatten* (code-pog-fn ["xs"]
                 (docstr [["xs" "a list of lists"]]
                         "a list of xs's lists joined together")
-                "(reduce concat [] xs)"))
+                "(fold-right concat [] xs)"))
 
 (def map* (code-pog-fn ["f" "xs"]
             (docstr [["f" "a unary function"]
@@ -157,6 +179,13 @@
 "(if (empty? xs)
    true
   (and (f (head xs)) (all? f (tail xs))))"))
+
+(def one?*
+  (code-pog-fn ["f" "xs"]
+      (docstr [["f" "a 1-argument function"]
+               ["xs" "a list"]]
+        "true if (f x) returns true for only one x in xs")
+"(equal? 1 (size (filter f xs)))"))
 
 (def zip* (code-pog-fn  ["xs" "ys"]
             (docstr [["xs" "a list"]

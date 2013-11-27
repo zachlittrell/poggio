@@ -42,7 +42,7 @@
                     :color {"Color" (ColorRGBA. 1 1 1 0.5)}))
       (.attachChild ball-node 
                                 (bitmap-text 
-                                      :size (/ 1.0 (count num-str) 2.0)
+                                      :size (/ 0.65 (inc (count num-str)))
                                       :font ball-font
                                       :box (Rectangle. -0.3 0.3 0.3 0.3)
                                       :alignment :center
@@ -80,6 +80,7 @@
                                      constraint
                                      transform-id
                                      on-error!
+                                     interactive?
                                      distance]
                               :or 
                               {distance 24}}]
@@ -118,6 +119,7 @@
                        :queue? queue?
                        :transformer-id transform-id
                        :valid-input-type valid-input-type
+                       :interactive? interactive?
                        :queue-init init-queue
                        :distance distance
                        :param "values")))
@@ -143,6 +145,7 @@
                {:id :init-queue :type [:string :multi-line? true]
                                 :label "Init Queue"}
                {:id :constraint :type :string  :label "Constraint"}
+               {:id :interactive? :type :boolean :label "Interactive?"}
                {:id :distance :type [:integer
                                      :init 24] :label "Distance"}]
    :build build-function-cannon

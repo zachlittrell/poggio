@@ -168,12 +168,18 @@
     ))
 
 (defn start-do-list!?
-  [spatial queue? queue-init]
-  (when (and queue? (not-empty queue-init))
-    (do-once! spatial
-      (invoke* (spatial-pog-fn spatial)
-               core-env
-               [nil (code-pog-fn [] "" queue-init)]))))
+  ([spatial queue? queue-init]
+   (start-do-list!? spatial queue? queue-init false))
+  ([spatial queue? queue-init delay?]
+    (when (and queue? (not-empty queue-init))
+      (if delay?
+        (do-once! spatial
+          (invoke* (spatial-pog-fn spatial)
+                   core-env
+                   [nil (code-pog-fn [] "" queue-init)]))
+        (invoke* (spatial-pog-fn spatial)
+                 core-env
+                 [nil (code-pog-fn [] "" queue-init)])))))
 
 (defn str->encoding [^String s]
   (condp re-matches s
@@ -234,7 +240,7 @@
      :transform (constantly true)}))
 
 (defn pass-processor [target-ids]
-  {:docstring (format "Passes globules to %s." (str/join "," target-ids))
+  {:docstring (format "Passes values to %s." (str/join "," target-ids))
    :process! (constantly nil)
    :proceed? (constantly true)
    :transform list})

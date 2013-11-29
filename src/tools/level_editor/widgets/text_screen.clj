@@ -14,6 +14,14 @@
         [seesawx core]
         [tools.level-editor.widgets utilities]))
 
+(defn size? [coll n]
+  (and (implements? clojure.lang.Seqable coll)
+       (== n (count coll))))
+
+(defmethod error-message size?
+  [f [coll n]]
+  (str "Expected list of size " n))
+
 (defn add-text! [bitmap-text new-text app end-level?]
   (let [*letters* (atom (seq new-text))]
     (start!
@@ -28,7 +36,7 @@
             (level-context/end-level! app true))))))))
 
 
-(defn build-text-screen [{:keys [x z id direction text target-ids end-level? app  transform success? parameter docstring success-text error-text text-color font-size distance on-error! protocol]
+(defn build-text-screen [{:keys [x z id direction text target-ids end-level? app  transform success? parameter docstring success-text error-text text-color font-size distance split? on-error! protocol]
                          :or
                          {distance 40}}]
   (try
@@ -81,11 +89,18 @@
               (start!
                 (computation-timer node 5
                   (fn []
-                    (invoke* message env t))
+                    (let [result (invoke* message env t)]
+                      (if split?
+                        (assert! (size? result (count target-ids))))
+                      result))
                   (fn [result]
-                    (doseq [target-id target-ids]
+                    (doseq [[i target-id] (index target-ids)]
                       (when-let [t (select app target-id)]
-                        (let [pog-fn (spatial-pog-fn t)]
+                        (let [pog-fn (spatial-pog-fn t)
+                              result (if split? 
+                                       (do
+                                         (nth result i) )
+                                       result)]
                           (if (== (count (parameters pog-fn)) 1)
                            (invoke* pog-fn {} 
                                     [{:on-error! on-error!
@@ -281,6 +296,7 @@
                {:id :success-text :type [:string :multi-line? true] :label "Success Text"}
                {:id :error-text :type [:string :multi-line? true] :label "Error Text"}
                {:id :target-ids :type [:list :type :string] :label "Target"}
+               {:id :split? :type :boolean :label "Split?"}
                {:id :distance :type [:integer
                                      :init 40] :label "Distance"}
                {:id :end-level? :type :boolean :label "End Level?"}]

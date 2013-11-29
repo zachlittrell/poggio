@@ -145,7 +145,8 @@
                {:id :init-queue :type [:string :multi-line? true]
                                 :label "Init Queue"}
                {:id :constraint :type :string  :label "Constraint"}
-               {:id :interactive? :type :boolean :label "Interactive?"}
+               {:id :interactive? :type [:boolean
+                                         :init true] :label "Interactive?"}
                {:id :distance :type [:integer
                                      :init 24] :label "Distance"}]
    :build build-function-cannon

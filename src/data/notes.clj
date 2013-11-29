@@ -1,6 +1,7 @@
 (ns data.notes
   "Functions for interacting with musical notes."
-  (:import [org.jfugue JFugueElement Note Controller Pattern]))
+  (:import [org.jfugue JFugueElement Note Controller Pattern])
+  (:use [control assert]))
 
 (defn note
   "Returns a note with given pitch or duration. Default duration
@@ -21,10 +22,20 @@
   [^Note n]
   (.isRest n))
 
+(defn not-rest?
+  "Returns true if the notes is not a rest."
+  [n]
+  (not (rest? n)))
+
+(defmethod error-message not-rest?
+  [f [n]]
+  "Expected note. Received rest.")
+
 (defn pitch 
   "Returns the pitch of the note."
   [^Note note]
-  (.getValue note))
+  ;;(assert! (not-rest? note))
+  (long (.getValue note)))
 
 (defn duration
   "Returns the duration of the note."

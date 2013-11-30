@@ -261,7 +261,7 @@
     :y 1,
     :target-ids ["Door Prime"],
     :protocol :open-on-pattern,
-    :pattern ["2" "3" "5" "7" "11" "13" "17" "19" "23" "29"]}}
+    :pattern ["red" "red" "green" "red" "green"]}}
   {:name :text-screen,
    :answers
    {:direction 1.5707963267948966,
@@ -284,14 +284,14 @@
     :target-ids []}}
   {:name :text-screen,
    :answers
-   {:direction -1.5221621412898891,
+   {:direction -3.119974400353286,
     :protocol :none,
     :text
-    "POGGIO INSTITUTE\n================\n\nSEND TO THE CANNON A LIST OF THE FIRST 10 PRIMES OVER AND OVER AGAIN.\n\nRECALL PRIMES ARE INTEGERS GREATER THAN 1 WITH NO DIVISOR BESIDES 1 AND ITSELF.\n\n2, 3, AND 5 ARE PRIME.\n\n1, 4, 6, AND 9 ARE NOT.\n\n\"IF YOU CHEAT, I'LL KNOW IT\"\n~ YOUR MOTHER.",
+    "POGGIO INSTITUTE\n================\n\nTHE DOOR OPENS WHEN THE HOOP RECEIVES red, red, green, red, green.",
     :parameter "message",
     :text-color {:red 127, :green 255, :blue 0},
-    :z 11,
-    :x 7,
+    :z 10,
+    :x 10,
     :success-text "",
     :font-size 0.6,
     :split? false,
@@ -301,20 +301,42 @@
     :error-text "",
     :docstring "",
     :distance 40,
-    :id "Pascal Triangle Transformer",
+    :id "",
+    :target-ids []}}
+  {:name :text-screen,
+   :answers
+   {:direction -1.5221621412898891,
+    :protocol :hold,
+    :text
+    "POGGIO INSTITUTE\n================\n\nSEND A FUNCTION THAT:\n\nRETURNS red WHEN GIVEN A PRIME NUMBER\n\nRETURNS green WHEN GIVEN A NON-PRIME NUMBER.\n\n\"DON'T LET ME DOWN.\"\n~ YOUR MOTHER.",
+    :parameter "fn",
+    :text-color {:red 127, :green 255, :blue 0},
+    :z 11,
+    :x 7,
+    :success-text "",
+    :font-size 0.6,
+    :split? false,
+    :transform "id",
+    :end-level? false,
+    :success? "",
+    :error-text "",
+    :docstring
+    "Takes: a 1-argument function called fn.\nReturns: Modifies what the cannon spits using fn.",
+    :distance 40,
+    :id "Prime Transformer",
     :target-ids []}}
   {:name :function-cannon,
    :answers
    {:direction 1.5707963267948966,
-    :init-queue "",
+    :init-queue "(cycle [2 17 4 3 6])",
     :constraint "",
     :z 11,
     :velocity 75,
     :x 10,
-    :transform-id "",
+    :transform-id "Prime Transformer",
     :interactive? true,
     :mass 0.5,
-    :queue? false,
+    :queue? true,
     :inspection "",
     :distance 24,
     :id "Prime Cannon"}}
@@ -323,7 +345,7 @@
    {:direction 1.5707963267948966,
     :protocol :none,
     :text
-    "POGGIO INSTITUTE\n================\n\nOR JUST SEARCH FOR FUNCTIONAL PROGRAMMING LANGUAGES AND ENJOY THE JOURNEY.",
+    "POGGIO INSTITUTE\n================\n\nOR JUST SEARCH FOR FUNCTIONAL PROGRAMMING LANGUAGES AND ENJOY THE JOURNEY.\n\nHERE ARE SOME OTHER LANGUAGES YOU MIGHT WANT TO LOOK AT:\n\nPython\nRacket\nScheme\nCommon Lisp\nML\n",
     :parameter "message",
     :text-color {:red 127, :green 255, :blue 0},
     :z 11,
@@ -338,6 +360,28 @@
     :docstring "",
     :distance 40,
     :id "",
+    :target-ids []}}
+  {:name :text-screen,
+   :answers
+   {:direction -0.02757921239974079,
+    :protocol :menus,
+    :text
+    "POGGIO INSTITUTE\n================\n\nSEND THE NUMBER OF YOUR CHOICE\n",
+    :parameter "choice",
+    :text-color {:red 127, :green 255, :blue 0},
+    :z 12,
+    :x 7,
+    :success-text "",
+    :font-size 0.6,
+    :split? false,
+    :transform
+    "{:start 0\n  0\n   {:label \"THE FOLLOWING INFO MAY BE HELPFUL.\"\n     :states [{:label \"Prime Numbers\" :state 1}\n                  {:label \"remainder\" :state 2}]}\n  1\n    {:label \"Prime Numbers\\n\\nPrime numbers are integers greater than 1 who are evenly divided only by 1 and itself.\\n\\n1,4,6, AND 9 ARE NOT PRIME.\\n\\n2,5, AND 7 ARE PRIME.\"\n      :states [{:label \"GO BACK\" :state 0}]}\n  2\n    {:label \"remainder\\n\\n(remainder x y) RETURNS THE REMAINDER OF DIVIDING x BY y.\\n\\n(remainder 5 2) RETURNS 1.\"\n      :states [{:label \"GO BACK\" :state 0}]}}",
+    :end-level? false,
+    :success? "",
+    :error-text "",
+    :docstring "",
+    :distance 40,
+    :id "Help Menu",
     :target-ids []}}
   {:name :text-screen,
    :answers

@@ -15,7 +15,7 @@
         [tools.level-editor.widgets utilities]))
 
 (def cell-shape (Box. 0.2 0.2 0.2))
-(defn add-row! [app node generation-count *cells* target-id pair-id generation-number current-generation delay?]
+(defn add-row! [app node generation-count *cells* target-id pair-id generation-number current-generation delay? end-protocol]
   (let [position (Vector3f. -8 (- 16 generation-number 0.2) 
                             (if delay? -0.25 0))
         row (node*
@@ -48,11 +48,17 @@
                     (motion-path-listener
                       (fn [mc index]
                           ;;Might want to move this to a thread? For now seems quick enough without.
+                        (case end-protocol
+                        :pass-last-row
+                          (invoke* (spatial-pog-fn-from app target-id)
+                                   core-env
+                                   [nil false current-generation])
+                        :open
                         (when (= @*cells* (transformer (spatial-pog-fn-from app pair-id)))
                           (invoke* (spatial-pog-fn-from app target-id)
                                    core-env
                                    [nil false true])
-                          )))))
+                          ))))))
               (follow-path! cell (* i 0.07) 1.75 mp))))
         (recur more position))
       (do
@@ -73,10 +79,12 @@
            generations-id row-id rule-id init-id 
            target-id pair-id
            protocol app
+           end-protocol
            precompute?]}]
  (let [loc (Vector3f. (* x 16) -16  (* z 16))
        dir (angle->quaternion (clamp-angle direction) :y)
        control (RigidBodyControl. 0.0)
+       end-protocol (or end-protocol :open)
        cell-node (node*)
        node (node*  :name id
                     :local-translation (.subtract loc (.mult dir
@@ -177,15 +185,16 @@
                                       pair-id
                                       index
                                       row
-                                      true)))]
+                                      true
+                                      end-protocol)))]
    (when precompute?
      (let [init (value init core-env)]
-     (add-row! app cell-node generations *cells* nil nil 0 init false)
+     (add-row! app cell-node generations *cells* nil nil 0 init false end-protocol)
      (loop [generation 1
             previous init]
        (when (<= generation generations)
          (let [next-generation (value (compute-generation rule previous) core-env)]
-           (add-row! app cell-node generations *cells* nil nil generation next-generation false)
+           (add-row! app cell-node generations *cells* nil nil generation next-generation false end-protocol)
            (recur (inc generation) next-generation)))
        )))
    (attach-pog-fn! node
@@ -244,6 +253,10 @@
                                              :rower
                                              :generator]] 
                 :label "Protocol"}
+               {:id :end-protocol :type [:choice
+                                         :model [:open
+                                                 :pass-last-row]]
+                :label "End Protocol"}
                {:id :target-id :type :string :label "Target"}
                {:id :pair-id :type :string :label "Pair"}]
    :build build-cellular-automaton

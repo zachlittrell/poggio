@@ -243,3 +243,10 @@
     (drop-while f (tail xs))
     xs))"))
 
+(def range* (code-pog-fn ["a" "b"]
+               (docstr [["a" "an integer"]
+                        ["b" "an integer"]]
+                "all integers between a and b.")
+"(if (greater-than? a b)
+   []
+   (cons a (range (inc a) b)))"))

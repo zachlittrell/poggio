@@ -40,6 +40,7 @@
            "take-while" take-while*
            "drop-while" drop-while*
            "empty?" empty?*
+           "range" range*
            "repeat" repeat*
            "triple" triple*
 ;           "reduce" reduce*

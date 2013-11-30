@@ -560,7 +560,7 @@
                              (save-user-functions! @*fn-map*)
                              (invalidate! made-screen module fn-name true))))
                          (catch Exception e
-                           (my-alert! (str "Code error on line " 
+                           (my-alert! (str 
                                            (.getMessage e)))
                            ))}
       :save {:on-left-click (fn []

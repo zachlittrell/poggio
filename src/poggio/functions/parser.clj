@@ -33,7 +33,7 @@
 (defn parse [code]
   (let [parse-tree (parser code)]
     (if (insta/failure? parse-tree)
-      (left (:line parse-tree))
+      (left (str "Code error on line " (:line parse-tree)))
       ;;TODO prevent PGROUP from grabbing lambdas
       (on-right 
         (insta/transform {:VAR (fn [arg] 

@@ -265,6 +265,9 @@
                 env*))
             {})))
 
+(defprotocol Inspectable
+  (inspect [i]))
+
 (defn seq->pog-fn
   "Returns a PogFn that invokes the function represented by seq.
    See invoke-seq for details"
@@ -276,6 +279,8 @@
    (seq->pog-fn name params docstring seq source true))
   ([name params docstring seq source add-core?]
    (reify
+     Inspectable
+       (inspect [_] seq)
      ObjTypeStringable
      (obj-type-str [f] (fn->str f))
      PogFn

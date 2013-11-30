@@ -110,13 +110,14 @@
    {:direction -3.1142022451149307,
     :protocol :none,
     :text
-    "POGGIO INSTITUTE\n================\n\nYOU CAN SEND THE CANNON A LIST OF COLORS OR NUMBERS.\n\nTHE DOOR OPENS WHEN THE HOOP ABSORBS RED, GREEN, AND BLUE...FOR A WHILE ANYWAY.",
+    "POGGIO INSTITUTE\n================\n\nYOU CAN SEND THE CANNON A LIST OF COLORS OR NUMBERS.\n\nTHE DOOR OPENS WHEN THE HOOP ABSORBS RED, GREEN, AND BLUE...FOR A WHILE ANYWAY.\n\n(CONSIDER USING cycle)",
     :parameter "message",
     :text-color {:red 127, :green 255, :blue 0},
     :z 21,
     :x 16,
     :success-text "",
     :font-size 0.6,
+    :split? false,
     :transform "(function [x] x)",
     :end-level? false,
     :success? "",
@@ -137,25 +138,7 @@
     :x 12,
     :success-text "",
     :font-size 0.6,
-    :transform "(function [x] x)",
-    :end-level? false,
-    :success? "",
-    :error-text "",
-    :docstring "",
-    :id "",
-    :target-ids []}}
-  {:name :text-screen,
-   :answers
-   {:direction -1.566166730241185,
-    :protocol :none,
-    :text
-    "POGGIO INSTITUTE\n================\n\nOR YOU CAN USE FUNCTIONS IN THE List MODULE.\n\n\nEXAMPLE:\n(repeat 3)  \n-- RETURNS AN INFINITE LIST OF 3\n[3 3 3 3 ...]\n\n(concat [1 2 3] [4 5 6]) \n-- ADDS THE LISTS TOGETHER\n [1 2 3 4 5 6]\n\n(cycle [1 2 3])\n--RETURNS AN INFINITE LIST OF 1 2 3.\n[1 2 3 1 2 3 1....]",
-    :parameter "message",
-    :text-color {:red 127, :green 255, :blue 0},
-    :z 22,
-    :x 13,
-    :success-text "",
-    :font-size 0.6,
+    :split? false,
     :transform "(function [x] x)",
     :end-level? false,
     :success? "",
@@ -163,6 +146,28 @@
     :docstring "",
     :distance 40,
     :id "",
+    :target-ids []}}
+  {:name :text-screen,
+   :answers
+   {:direction -1.6313961937849872,
+    :protocol :menus,
+    :text
+    "POGGIO INSTITUTE\n================\n\nSEND THE NUMBER OF THE CHOICE YOU WANT TO VIEW",
+    :parameter "message",
+    :text-color {:red 127, :green 255, :blue 0},
+    :z 22,
+    :x 13,
+    :success-text "",
+    :font-size 0.6,
+    :split? false,
+    :transform
+    "{:start 0,\n 0\n {:label\n  \"YOU CAN ALSO USE FUNCTIONS FROM THE List MODULE\"\n  :states\n  [{:state 1, :label \"repeat\"}\n   {:state 2, :label \"concat\"}\n   {:state 3, :label \"cycle\"}]},\n 1\n {:label\n  \"repeat\\n\\nRETURNS AN INFINITE LIST OF A VALUE OVER AND OVER AGAIN.\\n\\n(repeat 3)\\nRETURNS [3 3 3 3 ...]\",\n  :states [{:state 0, :label \"Go Back\"}]},\n 2\n {:label\n  \"concat\\n\\nTAKES TWO LISTS AND MAKES THEM INTO ONE LIST.\\n\\n(concat [1 2 3] [4 5 6])\\nRETURNS [1 2 3 4 5 6]\",\n  :states [{:state 0, :label \"Go Back\"}]}\n 3\n {:label\n  \"cycle\\n\\nRETURNS AN INFINITE LIST OF A LIST'S ELEMENTS OVER AND OVER AGAIN.\\n\\n(repeat [1 2 3])\\nRETURNS [1 2 3 1 2 3...]\",\n  :states [{:state 0, :label \"Go Back\"}]}\n\n}\n",
+    :end-level? false,
+    :success? "",
+    :error-text "",
+    :docstring "",
+    :distance 40,
+    :id "Help Menu",
     :target-ids []}}
   {:name :function-cannon,
    :answers
@@ -219,11 +224,13 @@
     :x 7,
     :success-text "",
     :font-size 0.6,
+    :split? false,
     :transform "(function [x] x)",
     :end-level? false,
     :success? "",
     :error-text "",
     :docstring "",
+    :distance 40,
     :id "",
     :target-ids []}}
   {:name :text-screen,
@@ -258,6 +265,7 @@
     :success-text
     "\nGOOD JOB. BELIEVE IT OR NOT, WE'VE HAD SUBJECTS STARVE AT THIS JUNCTURE.",
     :font-size 0.6,
+    :split? false,
     :transform "(function [x] x)",
     :end-level? false,
     :success? "(equal? (multiply 555 7) product)",
@@ -265,6 +273,7 @@
     "Send 555 times 7 to access the door. Have you tried using (multiply _ _)?",
     :docstring
     "Takes: a number called n.\nReturns: Opens Test Door 2 when n = 500 times 7.",
+    :distance 40,
     :id "Door Console 2",
     :target-ids ["Test Door 2"]}}
   {:name :globule-receiver,

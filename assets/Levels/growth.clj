@@ -1,5 +1,6 @@
 {:loc [2 1],
  :dir -0.7631795980707292,
+ :soundtrack ["Music/16 - Japan Tsunami Fundraiser - ambient_samurai-Senses_Planned_For_Oblivion.ogg"]
  :walls
  #{[4 3] [6 5] [8 7] [12 11] [14 13] [17 16] [1 0] [5 5] [9 9] [14 14]
    [16 16] [1 1] [4 5] [6 7] [8 9] [10 11] [11 12] [13 14] [15 16]
@@ -343,13 +344,13 @@
     :font-size 0.6,
     :split? false,
     :transform "(function [x] x)",
-    :end-level? false,
+    :end-level? true,
     :success? "message",
     :error-text "Just send true!",
     :docstring
     "Takes: A boolean called message.\nReturns: Opens the door when message is true.",
     :distance 40,
-    :id "",
+    :id "Exit Transformer",
     :target-ids ["Exit Door"]}}
   {:name :text-screen,
    :answers

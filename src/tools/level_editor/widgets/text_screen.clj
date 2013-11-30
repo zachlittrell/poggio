@@ -198,8 +198,8 @@
                                   (let [{:keys [states label]} (menus state)]
                                    (reset! *state* state)
                                    (.setText text* 
-                                      (str text 
-                                           label "\n"
+                                      (str text "\n"
+                                           label "\n\n"
                                            (str/join "\n"
                                              (for [[i label]
                                                    (index (map :label states))]

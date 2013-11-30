@@ -3,24 +3,24 @@
  :walls
  #{[6 5] [18 17] [20 19] [23 22] [2 2] [3 3] [5 5] [10 10] [18 18]
    [19 19] [23 23] [3 4] [4 5] [6 7] [7 8] [9 10] [20 21] [1 2] [3 5]
-   [7 9] [8 10] [18 20] [19 21] [20 22] [22 24] [4 7] [7 10] [12 15]
+   [7 9] [8 10] [17 19] [19 21] [20 22] [22 24] [4 7] [7 10] [12 15]
    [13 16] [20 23] [22 25] [0 3] [3 7] [11 15] [13 17] [15 19] [16 20]
-   [20 24] [22 26] [0 4] [2 7] [3 8] [6 11] [10 15] [13 18] [14 19]
-   [16 21] [17 22] [19 24] [21 26] [0 5] [1 6] [3 9] [5 11] [9 15]
-   [11 17] [13 19] [16 22] [17 23] [20 26] [0 6] [3 10] [4 11] [8 15]
-   [10 17] [11 18] [14 21] [17 24] [18 25] [10 18] [11 19] [13 21]
-   [14 22] [17 25] [19 27] [7 16] [11 20] [12 21] [13 22] [18 27]
-   [6 16] [13 23] [17 27] [6 17] [10 21] [13 24] [14 25] [16 27] [6 18]
-   [9 21] [13 25] [14 26] [15 27] [6 19] [9 22] [6 20] [7 21] [9 23]
-   [13 27] [6 21] [7 22] [9 24] [12 27] [7 23] [9 25] [10 26] [12 28]
-   [7 24] [10 27] [12 29] [7 25] [10 28] [8 27] [11 30] [6 26] [9 29]
-   [18 6] [6 27] [10 31] [17 6] [18 7] [19 8] [20 9] [6 28] [7 29]
-   [9 31] [16 6] [18 8] [20 10] [7 30] [8 31] [13 4] [15 6] [20 11]
-   [7 31] [12 4] [13 5] [14 6] [16 8] [20 12] [11 4] [13 6] [15 8]
-   [23 16] [10 4] [14 8] [15 9] [19 13] [20 14] [21 15] [22 16] [23 17]
-   [9 4] [13 8] [15 10] [19 14] [21 16] [23 18] [9 5] [12 8] [15 11]
-   [17 13] [23 19] [9 6] [15 12] [16 13] [17 14] [19 16] [23 20] [7 5]
-   [8 6] [9 7] [11 9] [17 15] [18 16] [23 21]},
+   [18 22] [20 24] [22 26] [0 4] [2 7] [3 8] [6 11] [10 15] [13 18]
+   [14 19] [16 21] [17 22] [19 24] [21 26] [0 5] [1 6] [3 9] [5 11]
+   [9 15] [11 17] [13 19] [16 22] [17 23] [20 26] [0 6] [3 10] [4 11]
+   [8 15] [10 17] [11 18] [14 21] [17 24] [18 25] [10 18] [11 19]
+   [13 21] [14 22] [17 25] [19 27] [7 16] [11 20] [12 21] [13 22]
+   [18 27] [6 16] [13 23] [17 27] [6 17] [10 21] [13 24] [14 25]
+   [16 27] [6 18] [9 21] [13 25] [14 26] [15 27] [6 19] [9 22] [6 20]
+   [7 21] [9 23] [13 27] [6 21] [7 22] [9 24] [12 27] [7 23] [9 25]
+   [10 26] [12 28] [7 24] [10 27] [12 29] [7 25] [10 28] [8 27] [11 30]
+   [6 26] [9 29] [18 6] [6 27] [10 31] [17 6] [18 7] [19 8] [20 9]
+   [6 28] [7 29] [9 31] [16 6] [18 8] [20 10] [7 30] [8 31] [13 4]
+   [15 6] [20 11] [7 31] [12 4] [13 5] [14 6] [16 8] [20 12] [11 4]
+   [13 6] [15 8] [23 16] [10 4] [14 8] [15 9] [19 13] [20 14] [21 15]
+   [22 16] [23 17] [9 4] [13 8] [15 10] [19 14] [21 16] [23 18] [9 5]
+   [12 8] [15 11] [17 13] [23 19] [9 6] [15 12] [16 13] [17 14] [19 16]
+   [23 20] [7 5] [8 6] [9 7] [11 9] [17 15] [18 16] [23 21]},
  :wall-mat "Textures/tile1.png",
  :widgets
  [{:name :text-screen,
@@ -245,7 +245,7 @@
     :stereos ["hs1" "hs2" "hs3"],
     :z 9,
     :x 5,
-    :muted? true,
+    :muted? false,
     :interactive? true,
     :queue-init
     "(cycle \n  [(rest 1)\n    e d c d e e e \n    (rest 0.25)\n    d d d\n    (rest 0.25)\n    e g g\n    (rest 0.25)\n    e d c d e e e e d d e d c])",
@@ -264,23 +264,25 @@
     :pattern []}}
   {:name :text-screen,
    :answers
-   {:direction -3.0824899699792057,
-    :protocol :none,
+   {:direction 3.1336246947282715,
+    :protocol :menus,
     :text
-    "POGGIO INSTITUTE\n================\n\nYOU CAN PICK APART A LIST USING head AND tail.\n\n(head [1 2 3]) -- RETURNS 1\n\n(tail [1 2 3]) -- RETURNS [2 3]",
+    "POGGIO INSTITUTE\n================\n\nSEND THE NUMBER OF THE CHOICE YOU WANT TO VIEW",
     :parameter "message",
     :text-color {:red 127, :green 255, :blue 0},
     :z 9,
     :x 10,
     :success-text "",
     :font-size 0.6,
-    :transform "(function [x] x)",
+    :split? false,
+    :transform
+    "{:start 0,\n 0\n {:label\n  \"THE FOLLOWING FUNCTIONS CAN PICK APART LISTS\",\n  :states\n  [{:state 1, :label \"head\"}\n   {:state 2, :label \"tail\"}]},\n 1\n {:label\n  \"head\\n\\nRETURNS THE FIRST ELEMENT OF A LIST.\\n\\n(head [1 2 3]) -- RETURNS 1.\",\n  :states [{:state 0, :label \"Go Back\"}]},\n 2\n {:label\n  \"tail\\n\\nRETURNS ALL ELEMENTS OF A LIST EXCEPT THE FIRST.\\n\\n(tail [1 2 3]) -- RETURNS [2 3].\",\n  :states [{:state 0, :label \"Go Back\"}]}\n}\n",
     :end-level? false,
     :success? "",
     :error-text "",
     :docstring "",
     :distance 40,
-    :id "",
+    :id "Help Menu List",
     :target-ids []}}
   {:name :text-screen,
    :answers
@@ -413,7 +415,7 @@
    {:direction 0.01212061854209015,
     :protocol :pass-with,
     :text
-    "POGGIO INSTITUTE\n================\nSEND A FUNCTION THAT TAKES A LIST OF LIST OF INTEGERS, FILTERS OUT INTEGERS OUTSIDE THE RANGE OF 0-127, AND CONVERTS EACH INTEGER INTO A NOTE.\n\nSO, EXAMPLE:\n\n(fn [ [60 62] [-1 64] ]) \nRETURNS [[c d] [e]]\n\n(YOU MAY WANT TO USE greater-than? and less-than?)\n\n(greater-than? 5 3) -- RETURNS true.",
+    "POGGIO INSTITUTE\n================\nSEND A FUNCTION THAT TAKES A LIST OF LIST OF INTEGERS, FILTERS OUT INTEGERS OUTSIDE THE RANGE OF 0-127, AND CONVERTS EACH INTEGER INTO A NOTE.\n\nSO, EXAMPLE:\n\n(fn [ [60 62] [-1 64] ]) \nRETURNS [[c d] [e]]\n",
     :parameter "fn",
     :text-color {:red 127, :green 255, :blue 0},
     :z 16,
@@ -432,6 +434,28 @@
     :id "Transformer Cuatro",
     :target-ids
     ["Music Box Cuatro" "Music Box Cinco" "Music Box Seis"]}}
+  {:name :text-screen,
+   :answers
+   {:direction -1.5507187037813726,
+    :protocol :menus,
+    :text
+    "POGGIO INSTITUTE\n================\n\nSEND THE NUMBER OF THE CHOICE YOU WANT TO VIEW",
+    :parameter "message",
+    :text-color {:red 127, :green 255, :blue 0},
+    :z 16,
+    :x 9,
+    :success-text "",
+    :font-size 0.6,
+    :split? false,
+    :transform
+    "{:start 0,\n 0\n {:label\n  \"THE FOLLOWING FUNCTIONS CAN COMPARE NUMBERS\",\n  :states\n  [{:state 1, :label \"greater-than?\"}\n   {:state 2, :label \"less-than?\"}]},\n 1\n {:label\n  \"RETURNS true IF THE FIRST NUMBER IS BIGGER THAN THE SECOND.\\n\\n(greater-than? 5 2) RETURNS true.\\n\\n(greater-than? 2 2) RETURNS false.\",\n  :states [{:state 0, :label \"Go Back\"}]},\n 2\n {:label\n  \"RETURNS true IF THE FIRST NUMBER IS SMALLERTHAN THE SECOND.\\n\\n(greater-than? 2 5) RETURNS true.\\n\\n(greater-than? 2 2) RETURNS false.\",\n  :states [{:state 0, :label \"Go Back\"}]},\n}\n",
+    :end-level? false,
+    :success? "",
+    :error-text "",
+    :docstring "",
+    :distance 40,
+    :id "Help Menu List",
+    :target-ids []}}
   {:name :sound-barrier,
    :answers
    {:z 16,
@@ -481,36 +505,39 @@
     :id "Music Box Seis"}}
   {:name :text-screen,
    :answers
-   {:direction 1.5707963267948966,
-    :protocol :none,
+   {:direction 1.570796326794896,
+    :protocol :menus,
     :text
-    "POGGIO INSTITUTE\n================\n\nYOU CAN GET THE PITCH AND DURATION OF A NOTE USING pitch AND duration.\n",
+    "POGGIO INSTITUTE\n================\n\nSEND THE NUMBER OF THE CHOICE YOU WANT TO VIEW",
     :parameter "message",
     :text-color {:red 127, :green 255, :blue 0},
     :z 18,
     :x 19,
     :success-text "",
     :font-size 0.6,
-    :transform "(function [x] x)",
+    :split? false,
+    :transform
+    "{:start 0,\n 0\n {:label\n  \"THE FOLLOWING FUNCTIONS MAY BE USEFUL\",\n  :states\n  [{:state 1, :label \"pitch\"}\n   {:state 2, :label \"duration\"}\n   {:state 3, :label \"map\"}]},\n 1\n {:label\n  \"pitch\\n\\nRETURNS THE PITCH OF A NOTE.\",\n  :states [{:state 0, :label \"Go Back\"}]},\n 2\n {:label\n  \"duration\\n\\nRETURNS THE DURATION OF A NOTE.\",\n  :states [{:state 0, :label \"Go Back\"}]}\n 3\n {:label\n  \"map\\n\\nRETURNS BACK A GIVEN LIST WITH EACH ELEMENT PROCESSED BY A FUNCTION.\\n\\n(map inc [1 2 3]) RETURNS [2 3 4]\\n\\n(map pitch [c d e]) RETURNS [60 62 64]\",\n  :states [{:state 0, :label \"Go Back\"}]}\n}\n",
     :end-level? false,
     :success? "",
     :error-text "",
     :docstring "",
     :distance 40,
-    :id "",
+    :id "Help Menu Note List",
     :target-ids []}}
   {:name :text-screen,
    :answers
    {:direction 1.5707963267948966,
     :protocol :pass-with,
     :text
-    "POGGIO INSTITUTE\n================\nSEND A FUNCTION THAT TAKES IN A LIST OF PITCHES AND RETURNS THE LIST OF NOTES WITH THOSE PITCHES.\n\nIT'D BEHOOVE YOU TO USE map.\n\nEXAMPLE:\n(function [xs]\n  (map\n    (function [x]\n      (note 60 (duration x)))\n    xs)))\n\nTAKES IN A LIST AND CONVERTS EACH ELEMENT INTO A NOTE WITH PITCH 60 AND THE DURATION OF THE OLD ELEMENT.",
+    "POGGIO INSTITUTE\n================\nSEND A FUNCTION THAT TAKES IN A LIST OF PITCHES AND RETURNS THE LIST OF NOTES WITH THOSE PITCHES.\n\nIT'D BEHOOVE YOU TO USE map.\n",
     :parameter "fn",
     :text-color {:red 127, :green 255, :blue 0},
     :z 18,
     :x 20,
     :success-text "",
     :font-size 0.6,
+    :split? false,
     :transform "[62 62 64 62 60]",
     :end-level? false,
     :success? "",
@@ -569,6 +596,40 @@
     :protocol :open-on-pattern,
     :transformer-id "",
     :pattern ["green" "green" "blue" "green" "red"]}}
+  {:name :music-box,
+   :answers
+   {:direction 1.5707963267948966,
+    :stereos [],
+    :z 20,
+    :x 17,
+    :muted? false,
+    :interactive? true,
+    :queue-init "",
+    :queue? false,
+    :transformer-id "",
+    :distance 24,
+    :id ""}}
+  {:name :model,
+   :answers
+   {:z 20,
+    :x 18,
+    :id "",
+    :model-name "Models/Penguin/Pingouin-NEW.scene",
+    :direction -3.113822016996372,
+    :x-delta 0.0,
+    :y-delta 0.0,
+    :z-delta 0.0,
+    :collidable? false}}
+  {:name :glass-door,
+   :answers
+   {:z 20,
+    :x 20,
+    :id "",
+    :direction -0.06442683942555355,
+    :distance 0.0,
+    :movement :up,
+    :speed 0.0,
+    :time 0.0}}
   {:name :glass-door,
    :answers
    {:z 21,
@@ -678,13 +739,14 @@
    {:direction -0.009569085907610575,
     :protocol :pass-with,
     :text
-    "POGGIO INSTITUTE\n================\n\nSEND A FUNCTION THAT TAKES A LIST OF NOTES AND RETURNS THE LIST OF NOTES WITHOUT NOTES WITH THE SAME PITCH AS a.\n\nYOU CAN USE filter FOR THIS\n\nEXAMPLE:\n(function [xs]\n  (filter\n    (function [n]\n      (equal? (duration n) 1))\n    xs))\n\nTAKES IN A LIST AND RETURNS ALL NOTES WHOSE DURATION EQUAL 1.\n\n(BE WARNED THAT THE NOTES MAY HAVE DIFFERENT DURATIONS)",
+    "POGGIO INSTITUTE\n================\n\nSEND A FUNCTION THAT TAKES A LIST OF NOTES AND RETURNS THE LIST OF NOTES WITHOUT NOTES WITH THE SAME PITCH AS a.\n\nYOU CAN USE filter FOR THIS\n\n(BE WARNED THAT THE NOTES MAY HAVE DIFFERENT DURATIONS)",
     :parameter "fn",
     :text-color {:red 127, :green 255, :blue 0},
     :z 25,
     :x 15,
     :success-text "",
     :font-size 0.6,
+    :split? false,
     :transform
     "[e d c (note (pitch a) 0.1) d e (note (pitch a) 1) e  e a]",
     :end-level? false,
@@ -707,6 +769,27 @@
     :x 8,
     :success-text "",
     :font-size 0.6,
+    :transform "(function [x] x)",
+    :end-level? false,
+    :success? "",
+    :error-text "",
+    :docstring "",
+    :distance 40,
+    :id "",
+    :target-ids []}}
+  {:name :text-screen,
+   :answers
+   {:direction 0.024839610504088883,
+    :protocol :none,
+    :text
+    "POGGIO INSTITUTE\n================\n\nfilter\n\nfilter RETURNS A GIVEN LIST ONLY WITH ELEMENTS THAT PASS A TEST.\n\n(filter even? [1 2 3 4]) RETURNS [2 4]\n",
+    :parameter "message",
+    :text-color {:red 127, :green 255, :blue 0},
+    :z 26,
+    :x 15,
+    :success-text "",
+    :font-size 0.6,
+    :split? false,
     :transform "(function [x] x)",
     :end-level? false,
     :success? "",

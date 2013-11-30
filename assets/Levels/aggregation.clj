@@ -205,14 +205,14 @@
     :x 2,
     :id "",
     :direction -1.6156093540546363,
-    :target-id "hmb1"}}
+    :target-ids "hmb1"}}
   {:name :sound-barrier,
    :answers
    {:z 26,
     :x 12,
     :id "",
     :direction -1.5548614206888203,
-    :target-id "Restful Music Box"}}
+    :target-ids "Restful Music Box"}}
   {:name :globule-receiver,
    :answers
    {:z 26,
@@ -360,7 +360,7 @@
     :x 26,
     :id "",
     :direction 3.0933844201587752,
-    :target-id "Octave Music Box"}}
+    :target-ids "Octave Music Box"}}
   {:name :text-screen,
    :answers
    {:direction -3.1088175091857173,
@@ -472,7 +472,7 @@
     :x 17,
     :id "",
     :direction -3.134926085685925,
-    :target-id "Restful Music Box"}}
+    :target-ids "Restful Music Box"}}
   {:name :text-screen,
    :answers
    {:direction -3.1206533060790846,

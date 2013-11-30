@@ -93,7 +93,7 @@
                            (= constraint "number") Number
                            (= constraint "boolean") Boolean)
        cannon (model :asset-manager app
-                :model-name (if queue?
+                :model-name (if (or (false? interactive?) queue?)
                               "Models/Laser/Laser_inactive.scene"
                               "Models/Laser/Laser.scene")
                 :name id

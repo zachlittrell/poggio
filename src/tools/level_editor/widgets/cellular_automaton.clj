@@ -52,7 +52,7 @@
                         :pass-last-row
                           (invoke* (spatial-pog-fn-from app target-id)
                                    core-env
-                                   [nil false current-generation])
+                                   [false current-generation])
                         :open
                         (when (= @*cells* (transformer (spatial-pog-fn-from app pair-id)))
                           (invoke* (spatial-pog-fn-from app target-id)

@@ -15,7 +15,7 @@
         [tools.level-editor.widgets utilities]))
 
 
-(defn build-model [{:keys [x z id model-name direction collidable? x-delta y-delta z-delta app on-error!]}]
+(defn build-model [{:keys [x z id model-name direction collidable? mass x-delta y-delta z-delta app on-error!]}]
  (let [
        model (model :asset-manager app
                     :model-name model-name
@@ -25,7 +25,9 @@
                                                  (+ z-delta (* z 16)))
                     :local-rotation (angle->quaternion direction :y))]
    (when collidable?
-     (.addControl model (RigidBodyControl. 0.0)))
+     (.addControl model (RigidBodyControl. (if mass
+                                             (float mass)
+                                             0.0) )))
    model))
 
 (def model-template
@@ -37,6 +39,7 @@
                {:id :x-delta :type :decimal :label "X"}
                {:id :y-delta :type :decimal :label "Y"}
                {:id :z-delta :type :decimal :label "Z"}
+               {:id :mass :type :decimal :label "Mass"}
                {:id :collidable? :type :boolean :label "Collidable?"}]
    :build build-model
    })

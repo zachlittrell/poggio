@@ -1,8 +1,9 @@
 (ns tools.level-editor.widgets.utilities
   (:import [com.jme3.math ColorRGBA Vector3f])
   (:require [clojure.string :as str])
-  (:use [control assert bindings timer]
-        [data coll color notes object ring-buffer]
+  (:use [clojure.java io]
+        [control assert bindings timer]
+        [data coll color maybe notes object ring-buffer]
         [jme-clj control selector transform physics]
         [poggio.functions core modules parser utilities color scenegraph]))
 
@@ -81,6 +82,7 @@
              on-invoke!
              interactive?
              distance
+             inspection
            handle-continuation?
            app]
     :or {param "globules"
@@ -93,6 +95,11 @@
         on-value! (if handle-continuation? 
                     on-value! 
                     #(do (on-value! %1) (%2)))
+        fail-inspection (if (empty? inspection)
+                         (constantly nothing)
+                     (comp 
+                       (eval (load-string (slurp (resource inspection))))
+                       inspect))
         [my-error! transformer]
           (if (empty? transformer-id)
             [(constantly nil) transformer]
@@ -103,6 +110,8 @@
     LazyPogFn
     (lazy-invoke [_ env {player "player"
                          balls param}]
+      (if-just-let [error-message (fail-inspection balls)]
+          (on-error! (Exception. error-message))
       (when-close-enough on-error! player spatial distance
         (let [state @*state*]
           (when (= (:state state) :active)
@@ -144,7 +153,7 @@
                                                   :timer timer}))))
                   timer (new-timer balls)]
               (reset! *state* {:state :active :timer timer})
-              (start! timer))))))
+              (start! timer)))))))
     PogFn
     (parameters [_]
       (|_|?

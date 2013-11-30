@@ -81,6 +81,7 @@
                                      transform-id
                                      on-error!
                                      interactive?
+                                     inspection
                                      distance]
                               :or 
                               {distance 24}}]
@@ -118,6 +119,7 @@
                        :on-error! on-error!
                        :queue? queue?
                        :transformer-id transform-id
+                       :inspection inspection
                        :valid-input-type valid-input-type
                        :interactive? interactive?
                        :queue-init init-queue
@@ -147,6 +149,7 @@
                {:id :constraint :type :string  :label "Constraint"}
                {:id :interactive? :type [:boolean
                                          :init true] :label "Interactive?"}
+               {:id :inspection :type :string :label "Inspection"}
                {:id :distance :type [:integer
                                      :init 24] :label "Distance"}]
    :build build-function-cannon

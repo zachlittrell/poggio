@@ -3,19 +3,22 @@
   (:use [clojure.java io]
         [nifty-clj [builders :exclude [text]] elements events]))
 
-(defn -button [& {:keys [label id visible?]
-                  }]
+(defn -button [& {:keys [label id visible? height]
+                  :or {height "15%"}}]
   (button :id id
           :label label
           :align :center
           :padding "10%"
           :width "35%"
-          :height "15%"))
+          :height height))
 
 (def levels
   [["Levels/orientation.clj" "Orientation"]
-   ["Levels/manipulation.clj" "Manipulation"]
-   ["Levels/aggregation.clj" "Aggregation"]])
+   ["Levels/functionjunction.clj" "Function Junction"]
+   ["Levels/truthbeknown.clj" "Truth Be Known"]
+   ["Levels/musica.clj" "Musica"]
+   ["Levels/growth.clj" "Growth"]
+   ["Levels/theend.clj" "The End"]])
 
 (defn enable! [screen max-level-unlocked]
   (doseq [[file name] (take (inc max-level-unlocked)
@@ -84,8 +87,10 @@
                                     :color "#FFF")
                                   (concat (for [[file name] levels]
                                             (-button :id file
+                                                     :height "10%"
                                                      :label name))
                                           (list (-button :id "close-levels"
+                                                         :height "10%"
                                                          :label "Close"))))))
                                    ])
                 :sandbox

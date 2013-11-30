@@ -2,11 +2,12 @@
  :dir 1.5707963267948966,
  :walls
  #{[2 1] [8 7] [10 9] [6 6] [10 10] [6 7] [10 11] [1 2] [6 8] [9 11]
-   [1 3] [6 9] [8 11] [1 4] [5 9] [6 10] [7 11] [1 5] [4 9] [6 11]
-   [1 6] [3 9] [1 7] [2 9] [1 8] [1 9] [14 2] [15 3] [13 2] [15 4]
-   [12 2] [15 5] [11 2] [15 6] [10 2] [15 7] [9 2] [10 3] [8 2] [10 4]
-   [14 8] [7 2] [13 8] [5 1] [6 2] [10 6] [12 8] [4 1] [6 3] [10 7]
-   [11 8] [3 1] [6 4] [10 8]},
+   [10 12] [1 3] [6 9] [9 12] [10 13] [1 4] [5 9] [6 10] [7 11] [10 14]
+   [1 5] [4 9] [6 11] [10 15] [1 6] [3 9] [6 12] [9 15] [1 7] [2 9]
+   [6 13] [8 15] [1 8] [6 14] [7 15] [1 9] [6 15] [14 2] [15 3] [13 2]
+   [15 4] [12 2] [15 5] [11 2] [15 6] [10 2] [15 7] [9 2] [10 3] [8 2]
+   [10 4] [14 8] [7 2] [13 8] [5 1] [6 2] [10 6] [12 8] [4 1] [6 3]
+   [10 7] [11 8] [3 1] [6 4] [10 8]},
  :wall-mat "Textures/paper1.jpg",
  :widgets
  [{:name :ball-stereo,
@@ -123,6 +124,16 @@
     :target-ids [],
     :protocol :open-on-pattern,
     :transformer-id "",
+    :pattern []}}
+  {:name :globule-receiver,
+   :answers
+   {:z 4,
+    :x 11,
+    :id "",
+    :direction 0.02394751692220761,
+    :y 1,
+    :target-ids [],
+    :protocol :open-on-pattern,
     :pattern []}}
   {:name :function-cannon,
    :answers
@@ -268,13 +279,14 @@
    {:direction -1.6031233695506202,
     :protocol :none,
     :text
-    "POGGIO INSTITUTE\n================\n\n<=== MUSIC ROOM\n\n===> CANNON ROOM\n\n/\\  \n|| TERMINAL\n||\n||",
+    "POGGIO INSTITUTE\n================\n\n<=== MUSIC ROOM\n\n===> CANNON ROOM\n\n/\\  \n|| TERMINAL\n||\n||\n\n||\n|| CELL ROOM\n||\n\\/",
     :parameter "message",
     :text-color {:red 127, :green 255, :blue 0},
     :z 8,
     :x 8,
     :success-text "",
     :font-size 0.6,
+    :split? false,
     :transform "(function [x] x)",
     :end-level? false,
     :success? "",
@@ -282,4 +294,42 @@
     :docstring "",
     :distance 40,
     :id "",
-    :target-ids []}}]}
+    :target-ids []}}
+  {:name :text-screen,
+   :answers
+   {:direction 3.1326242841789744,
+    :protocol :pass,
+    :text
+    "POGGIO INSTITUTE\n================\n\nSEND A RULE TO POPULATE THE CELL WALL",
+    :parameter "rule",
+    :text-color {:red 127, :green 255, :blue 0},
+    :z 12,
+    :x 8,
+    :success-text "",
+    :font-size 0.6,
+    :split? false,
+    :transform "(function [x] x)",
+    :end-level? false,
+    :success? "",
+    :error-text "",
+    :docstring
+    "Takes: a 3-argument function called rule.\nReturns: Populates the cell wall using rule.",
+    :distance 40,
+    :id "Cell Wall Transformer",
+    :target-ids ["Cell Wall"]}}
+  {:name :cellular-automaton,
+   :answers
+   {:direction 1.5707963267948966,
+    :protocol :rule,
+    :z 14,
+    :init-id "",
+    :x 8,
+    :precompute? false,
+    :rule-id "",
+    :target-id "",
+    :row-id "",
+    :pair-id "",
+    :generations-id "",
+    :end-protocol :open,
+    :id "Cell Wall",
+    :rule "(function [left old right] \n   (not old))"}}]}

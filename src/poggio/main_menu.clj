@@ -47,7 +47,7 @@
   (let [current-level @*current-level*
         index (inc (level-index current-level))]
     (if (< index (count levels))
-      (load-level! app nifty on-error! *current-level* (first (levels (inc index))))
+      (load-level! app nifty on-error! *current-level* (first (levels index)))
       (.gotoScreen nifty "main-menu"))))
 
 

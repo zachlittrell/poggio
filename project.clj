@@ -1,8 +1,9 @@
-(defproject poggio "0.2.2-SNAPSHOT"
+(defproject poggio "0.3.1-SNAPSHOT"
   :description "FIXME: write description"
   :repositories {"local" ~(str (.toURI (java.io.File. "private_maven")))}
                 ;;{"oss-sonatype" "https://oss.sonatype.org/content/repositories/snapshots/"}
-;  :main poggio.core
+  :main poggio.core
+  :omit-source true
   :profiles {:dev {:dependencies 
                    [[lein-autodoc "0.9.0"]
                     [jME3-testdata "3.0.0.20130526-SNAPSHOT"]

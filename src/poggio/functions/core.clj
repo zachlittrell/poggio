@@ -161,6 +161,13 @@
   (== (count (parameters f))
       (count args)))
 
+(defn correct-invoke? [f arg-count]
+  (is-pog-fn? f arg-count))
+
+(defmethod error-message correct-invoke? [f [f* count]]
+  (format "Tried calling a %s with %s arguments."
+          (obj-type-str f*)
+          count))
 
 (defn invoke* 
   ([f args]
@@ -170,7 +177,7 @@
       (if (zero? (count args))
         f
         (let [args* (if (map? args) args (zipmap (map name* (parameters f)) args))]
-          (assert! (is-pog-fn? f (count args)))
+          (assert! (correct-invoke? f (count args)))
           (if (implements? LazyPogFn f)
             (lazy-invoke f env args*)
             (invoke f (map/value-map args* #(value % env)))))))))

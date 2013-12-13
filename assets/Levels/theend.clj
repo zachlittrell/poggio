@@ -20,22 +20,7 @@
    [2 32] [6 4] [8 6] [10 8] [11 9] [12 10] [17 15] [20 18] [0 30]},
  :wall-mat "Textures/paper1.jpg",
  :widgets
- [{:name :function-cannon,
-   :answers
-   {:direction -1.5707963267948966,
-    :init-queue "",
-    :constraint "",
-    :z 2,
-    :velocity 40,
-    :x 13,
-    :transform-id "",
-    :interactive? true,
-    :mass 0.5,
-    :queue? false,
-    :inspection "",
-    :distance 24,
-    :id "Earth Cannon 2"}}
-  {:name :text-screen,
+ [ {:name :text-screen,
    :answers
    {:direction -3.141592653589793,
     :protocol :none,
@@ -679,7 +664,7 @@
    :answers
    {:direction 1.5707963267948966,
     :init-queue "",
-    :constraint "",
+    :constraint "color",
     :z 27,
     :velocity 75,
     :x 3,

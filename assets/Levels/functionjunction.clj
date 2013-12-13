@@ -1,6 +1,6 @@
 {:loc [20 31],
  :dir 1.5707963267948966,
- :soundtrack ["Music/06_Ghosts_I.ogg"] 
+ :soundtrack ["Music/06_Ghosts_I.ogg"]
  :walls
  #{[19 18] [20 19] [19 19] [22 22] [19 20] [22 23] [22 24] [23 25]
    [18 21] [23 26] [24 27] [18 22] [20 24] [20 25] [21 26] [23 28]
@@ -604,13 +604,14 @@
    {:direction -1.5551725981744198,
     :protocol :hold,
     :text
-    "POGGIO INSTITUTE\n================\n\nSEND A FUNCTION THAT:\n\nMAKES THE FIRST CANNON SPIT (color 255 255 255)\n\nMAKES THE SECOND CANNON SPIT (color 255 255 0)",
+    "POGGIO INSTITUTE\n================\n\nSEND A FUNCTION THAT:\n\nMAKES THE FIRST CANNON SPIT (color 255 255 255)\n\nMAKES THE SECOND CANNON SPIT (color 255 255 0)\n\n(compose, partial, partial3, AND dec MAY BE HANDY. BUT WHAT DO I KNOW?)",
     :parameter "message",
     :text-color {:red 127, :green 255, :blue 0},
     :z 21,
     :x 31,
     :success-text "",
     :font-size 0.6,
+    :split? false,
     :transform "id",
     :end-level? false,
     :success? "",
@@ -667,7 +668,7 @@
     :font-size 0.6,
     :split? false,
     :transform
-    "{:start 0,\n 0\n {:label\n  \"HERE'S SOME MORE FUNCTIONS FOR OUR SPECIAL LITTLE MONKEY.\"\n  :states\n  [{:state 1, :label \"partial3\"}\n   {:state 2, :label \"flip\"}\n   {:state 3, :label \"inc\"}\n   {:state 4, :label \"dec\"}]},\n 1\n {:label\n  \"partial3\\n\\nTAKES A 3-ARGUMENT FUNCTION AND A VALUE FOR THE FIRST ARGUMENT, AND RETURNS A 2-ARGUMENT FUNCTION THAT TAKES IN THE SECOND AND THIRD ARGUMENT.\\n\\n( (partial3 color 255) 0 0) RETURNS red.\",\n  :states [{:state 0, :label \"Go Back\"}]},\n 2\n {:label\n  \"flip\\n\\nFLIPS A 2-ARGUMENT FUNCTION.\\n\\n( (flip subtract) 3 2) RETURNS (subtract 2 3)\",\n  :states [{:state 0, :label \"Go Back\"}]}\n 3\n {:label\n  \"inc\\n\\nINCREASES A NUMBER BY 1.\\n\\n(inc 1) RETURNS 2\",\n  :states [{:state 0, :label \"Go Back\"}]}\n\n 4\n {:label\n  \"inc\\n\\nDECREASES A NUMBER BY 1.\\n\\n(dec 1) RETURNS 0\",\n  :states [{:state 0, :label \"Go Back\"}]}\n}\n",
+    "{:start 0,\n 0\n {:label\n  \"HERE'S SOME MORE FUNCTIONS FOR OUR SPECIAL LITTLE MONKEY.\"\n  :states\n  [{:state 1, :label \"partial3\"}\n   {:state 2, :label \"flip\"}\n   {:state 3, :label \"inc\"}\n   {:state 4, :label \"dec\"}\n   {:state 5 :label \"compose\"}\n   {:state 6 :label \"id\"}]},\n 1\n {:label\n  \"partial3\\n\\nTAKES A 3-ARGUMENT FUNCTION AND A VALUE FOR THE FIRST ARGUMENT, AND RETURNS A 2-ARGUMENT FUNCTION THAT TAKES IN THE SECOND AND THIRD ARGUMENT.\\n\\n( (partial3 color 255) 0 0) RETURNS red.\",\n  :states [{:state 0, :label \"Go Back\"}]},\n 2\n {:label\n  \"flip\\n\\nFLIPS A 2-ARGUMENT FUNCTION.\\n\\n( (flip subtract) 3 2) RETURNS (subtract 2 3)\",\n  :states [{:state 0, :label \"Go Back\"}]}\n 3\n {:label\n  \"inc\\n\\nINCREASES A NUMBER BY 1.\\n\\n(inc 1) RETURNS 2\",\n  :states [{:state 0, :label \"Go Back\"}]}\n\n 4\n {:label\n  \"inc\\n\\nDECREASES A NUMBER BY 1.\\n\\n(dec 1) RETURNS 0\",\n  :states [{:state 0, :label \"Go Back\"}]}\n\n 5\n {:label\n  \"compose\\n\\nTAKES 2 1-ARGUMENT FUNCTIONS, f AND g, AND COMPOSES THEM TOGETHER INTO A 1-ARGUMENT FUNCTION OF THE FORM (f (g x)).\\n\\n( (compose repeat id) 5) RETURNS (repeat (id 5))\",\n  :states [{:state 0, :label \"Go Back\"}]}\n 6\n {:label\n  \"id\\n\\nRETURNS ANY VALUE GIVEN TO IT.\\n\\n(id 5) RETURNS 5\\n\\n(id red) RETURNS red\\n\\n(id id) RETURNS id\",\n  :states [{:state 0, :label \"Go Back\"}]}\n }\n}\n",
     :end-level? false,
     :success? "",
     :error-text "",

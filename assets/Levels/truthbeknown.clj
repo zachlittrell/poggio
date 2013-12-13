@@ -364,8 +364,7 @@
     :protocol :none,
     :text
     "POGGIO INSTITUTE\n================\n\nTHE if FUNCTION LETS YOU RETURN DIFFERENT THINGS DEPENDING ON A BOOLEAN.\n\nIT TAKES A CONDITION AND TWO VALUES.\n\nIF THE CONDITION IS true, IT RETURNS THE FIRST VALUE.\nIF THE CONDITION IS false, IT RETURNS THE SECOND VALUE.\n\nEXAMPLE:\n(if (equal? 1 2)\n  0\n  1)\n\nWILL RETURN 1, AS (equal? 1 2) IS false.",
-    :parameter "message",
-    :text-color {:red 127, :green 255, :blue 0},
+    :parameter "message", :text-color {:red 127, :green 255, :blue 0},
     :z 9,
     :x 6,
     :success-text "",
@@ -384,7 +383,7 @@
    {:direction 1.5707963267948966,
     :protocol :hold,
     :text
-    "POGGIO INSTITUTE\n================\n\nSEND A FUNCTION THAT:\n\nMAKES THE FIRST CANNON SPIT WHITE\n(color 255 255 255)\n\nMAKES THE SECOND CANNON SPIT BLACK\n(color 0 0 0)",
+    "POGGIO INSTITUTE\n================\n\nSEND A FUNCTION THAT:\n\nMAKES THE FIRST CANNON SPIT BLACK\n(color 0 0 0)\n\nMAKES THE SECOND CANNON SPIT WHITE\n(color 255 255 255)",
     :parameter "message",
     :text-color {:red 127, :green 255, :blue 0},
     :z 9,
@@ -434,7 +433,7 @@
     :font-size 0.6,
     :split? false,
     :transform
-    "{:start 0,\n 0\n {:label\n  \"THE FOLLOWING FUNCTIONS CAN BUILD NEW BOOLEANS OUT OF OLD ONES\",\n  :states\n  [{:state 1, :label \"not\"}\n   {:state 2, :label \"and\"}\n   {:state 3, :label \"and\"}]},\n 1\n {:label\n  \"not\\n\\nRETURNS THE OPPOSITE OF A BOOLEAN.\\n\\n(not true) RETURNS false.\",\n  :states [{:state 0, :label \"Go Back\"}]},\n 2\n {:label\n  \"and\\n\\nGIVEN TWO BOOLEANS, b1 AND b2:\\n\\n(and b1 b2) RETURNS TRUE ONLY IF BOTH ARE true.\",\n  :states [{:state 0, :label \"Go Back\"}]},\n 3\n {:label\n  \"and\\n\\nGIVEN TWO BOOLEANS, b1 AND b2:\\n\\n(or b1 b2) RETURNS TRUE IF EITHER OR BOTH ARE true.\",\n  :states [{:state 0, :label \"Go Back\"}]}}\n",
+    "{:start 0,\n 0\n {:label\n  \"THE FOLLOWING FUNCTIONS CAN BUILD NEW BOOLEANS OUT OF OLD ONES\",\n  :states\n  [{:state 1, :label \"not\"}\n   {:state 2, :label \"and\"}\n   {:state 3, :label \"or\"}]},\n 1\n {:label\n  \"not\\n\\nRETURNS THE OPPOSITE OF A BOOLEAN.\\n\\n(not true) RETURNS false.\",\n  :states [{:state 0, :label \"Go Back\"}]},\n 2\n {:label\n  \"and\\n\\nGIVEN TWO BOOLEANS, b1 AND b2:\\n\\n(and b1 b2) RETURNS TRUE ONLY IF BOTH ARE true.\",\n  :states [{:state 0, :label \"Go Back\"}]},\n 3\n {:label\n  \"or\\n\\nGIVEN TWO BOOLEANS, b1 AND b2:\\n\\n(or b1 b2) RETURNS TRUE IF EITHER OR BOTH ARE true.\",\n  :states [{:state 0, :label \"Go Back\"}]}}\n",
     :end-level? false,
     :success? "",
     :error-text "",

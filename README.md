@@ -4,6 +4,8 @@ A puzzle game for exploring functional programming in a 3d environment.
 
 ## Build
 
+Building and running Poggio from source requires using Leiningen. Alternatively, you can download the [most recent version pre-compiled](https://drive.google.com/file/d/0B0RQJFq0B7PgaXZvd294N0V4cGc/edit?usp=sharing).
+
 Download the newest JMonkeyEngine libraries from [the JMonkeyEngine nightly builds](http://nightly.jmonkeyengine.org). Preferably, download the release from April 26, 2013 and create a local maven repository for it (the project.clj is set up to look at private_maven).
 
 Alternatively, you can uncomment the older snapshots of the JMonkeyEngine libraries in project.clj. However, be aware that it may require some tweaks to the code and is not 100% compatible with certain Mac computers.
